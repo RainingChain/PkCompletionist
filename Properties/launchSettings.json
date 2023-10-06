@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Profile 1": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\samue\\source\\repos\\PkSimul\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "validate \"C:\\Users\\samue\\Downloads\\POKEMON_EMER_BPEE00.sav\""
+    }
+  }
+}

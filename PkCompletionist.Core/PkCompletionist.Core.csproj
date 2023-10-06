@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>PkCompletionist.Core</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsPackage>true</IsPackage>
+    <PackageId>PkCompletionist.Core</PackageId>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\**" />
+    <EmbeddedResource Include="Resources\**" />
+  </ItemGroup>
+
+</Project>
