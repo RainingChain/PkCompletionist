@@ -2,20 +2,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Numerics;
 
 namespace PkCompletionist.Core;
 
 internal class CompletionValidator3 : CompletionValidatorX
 {
-    public CompletionValidator3(Command command, SAV3 sav, bool living) : base(command, sav, living)
+    public CompletionValidator3(Command command, SAV3E sav, bool living) : base(command, sav, living)
     {
         this.sav = sav;
+
+        // Note that in US game, there are more unobtainable items than that
         this.unobtainableItems = new List<int>() { 44, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 72, 82, 87, 88, 89, 90, 91, 92, 99, 100, 101, 102, 105, 112, 113, 114, 115, 116, 117, 118, 119, 120, 176, 177, 178, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 266, 267, 276, 277, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 373, 374 };
-        // more than that if us-only
     }
 
-    new SAV3 sav;
+    new SAV3E sav;
 
     public override void GenerateAll()
     {
@@ -74,135 +76,148 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["CastformWater"] = HasPkm(351);
         ow["CastformIce"] = HasPkm(351);
     }
+    
+    public bool HasDeco(Decoration3 deco)
+    {
+        var CheckSpan = (Span<Decoration3> span) => {
+            return span.ToArray().Contains(deco);
+        };
+        return
+            CheckSpan(sav.Decorations.Chair) ||
+            CheckSpan(sav.Decorations.Cushion) ||
+            CheckSpan(sav.Decorations.Desk) ||
+            CheckSpan(sav.Decorations.Doll) ||
+            CheckSpan(sav.Decorations.Mat) ||
+            CheckSpan(sav.Decorations.Ornament) ||
+            CheckSpan(sav.Decorations.Plant) ||
+            CheckSpan(sav.Decorations.Poster);
+    }
 
     public void Generate_decoration()
     {
         var ow = new Dictionary<string, bool>();
         owned["decoration"] = ow;
 
-        //TODO
-        /*
-        ow["SmallChair"] = sav.GetEventFlag();
-        ow["PokemonChair"] = sav.GetEventFlag();
-        ow["HeavyChair"] = sav.GetEventFlag();
-        ow["RaggedChair"] = sav.GetEventFlag();
-        ow["ComfortChair"] = sav.GetEventFlag();
-        ow["BrickChair"] = sav.GetEventFlag();
-        ow["CampChair"] = sav.GetEventFlag();
-        ow["HardChair"] = sav.GetEventFlag();
-        ow["PrettyChair"] = sav.GetEventFlag();
-        ow["PikaCushion"] = sav.GetEventFlag();
-        ow["RoundCushion"] = sav.GetEventFlag();
-        ow["ZigzagCushion"] = sav.GetEventFlag();
-        ow["SpinCushion"] = sav.GetEventFlag();
-        ow["DiamondCushion"] = sav.GetEventFlag();
-        ow["BallCushion"] = sav.GetEventFlag();
-        ow["GrassCushion"] = sav.GetEventFlag();
-        ow["FireCushion"] = sav.GetEventFlag();
-        ow["WaterCushion"] = sav.GetEventFlag();
-        ow["KissCushion"] = sav.GetEventFlag();
-        ow["SmallDesk"] = sav.GetEventFlag();
-        ow["PokemonDesk"] = sav.GetEventFlag();
-        ow["HeavyDesk"] = sav.GetEventFlag();
-        ow["RaggedDesk"] = sav.GetEventFlag();
-        ow["ComfortDesk"] = sav.GetEventFlag();
-        ow["BrickDesk"] = sav.GetEventFlag();
-        ow["CampDesk"] = sav.GetEventFlag();
-        ow["HardDesk"] = sav.GetEventFlag();
-        ow["PrettyDesk"] = sav.GetEventFlag();
-        ow["CLowNoteMat"] = sav.GetEventFlag();
-        ow["DNoteMat"] = sav.GetEventFlag();
-        ow["ENoteMat"] = sav.GetEventFlag();
-        ow["FNoteMat"] = sav.GetEventFlag();
-        ow["GNoteMat"] = sav.GetEventFlag();
-        ow["ANoteMat"] = sav.GetEventFlag();
-        ow["BNoteMat"] = sav.GetEventFlag();
-        ow["CHighNoteMat"] = sav.GetEventFlag();
-        ow["GlitterMat"] = sav.GetEventFlag();
-        ow["JumpMat"] = sav.GetEventFlag();
-        ow["SpinMat"] = sav.GetEventFlag();
-        ow["SurfMat"] = sav.GetEventFlag();
-        ow["ThunderMat"] = sav.GetEventFlag();
-        ow["FireBlastMat"] = sav.GetEventFlag();
-        ow["PowderSnowMat"] = sav.GetEventFlag();
-        ow["AttractMat"] = sav.GetEventFlag();
-        ow["FissureMat"] = sav.GetEventFlag();
-        ow["SpikesMat"] = sav.GetEventFlag();
-        ow["RedPlant"] = sav.GetEventFlag();
-        ow["TropicalPlant"] = sav.GetEventFlag();
-        ow["PrettyFlowers"] = sav.GetEventFlag();
-        ow["ColorfulPlant"] = sav.GetEventFlag();
-        ow["BigPlant"] = sav.GetEventFlag();
-        ow["GorgeousPlant"] = sav.GetEventFlag();
-        ow["MudBall"] = sav.GetEventFlag();
-        ow["BreakableDoor"] = sav.GetEventFlag();
-        ow["SandOrnament"] = sav.GetEventFlag();
-        ow["FenceLength"] = sav.GetEventFlag();
-        ow["FenceWidth"] = sav.GetEventFlag();
-        ow["TV"] = sav.GetEventFlag();
-        ow["RoundTV"] = sav.GetEventFlag();
-        ow["CuteTV"] = sav.GetEventFlag();
-        ow["SilverShield"] = sav.GetEventFlag();
-        ow["GoldShield"] = sav.GetEventFlag();
-        ow["GlassOrnament"] = sav.GetEventFlag();
-        ow["Tire"] = sav.GetEventFlag();
-        ow["SolidBoard"] = sav.GetEventFlag();
-        ow["Stand"] = sav.GetEventFlag();
-        ow["Slide"] = sav.GetEventFlag();
-        ow["RedBrick"] = sav.GetEventFlag();
-        ow["YellowBrick"] = sav.GetEventFlag();
-        ow["BlueBrick"] = sav.GetEventFlag();
-        ow["RedBalloon"] = sav.GetEventFlag();
-        ow["YellowBalloon"] = sav.GetEventFlag();
-        ow["BlueBalloon"] = sav.GetEventFlag();
-        ow["RedTent"] = sav.GetEventFlag();
-        ow["BlueTent"] = sav.GetEventFlag();
-        ow["AzurillDoll"] = sav.GetEventFlag();
-        ow["DollBaltoy"] = sav.GetEventFlag();
-        ow["DollChikorita"] = sav.GetEventFlag();
-        ow["DollClefairy"] = sav.GetEventFlag();
-        ow["DollCyndaquil"] = sav.GetEventFlag();
-        ow["DollDitto"] = sav.GetEventFlag();
-        ow["DollDuskull"] = sav.GetEventFlag();
-        ow["DollGulpin"] = sav.GetEventFlag();
-        ow["DollJigglypuff"] = sav.GetEventFlag();
-        ow["DollKecleon"] = sav.GetEventFlag();
-        ow["DollLotad"] = sav.GetEventFlag();
-        ow["DollMarill"] = sav.GetEventFlag();
-        ow["DollMeowth"] = sav.GetEventFlag();
-        ow["DollMudkip"] = sav.GetEventFlag();
-        ow["DollPichu"] = sav.GetEventFlag();
-        ow["DollPikachu"] = sav.GetEventFlag();
-        ow["DollSeedot"] = sav.GetEventFlag();
-        ow["DollSkitty"] = sav.GetEventFlag();
-        ow["DollSmoochum"] = sav.GetEventFlag();
-        ow["DollSwablu"] = sav.GetEventFlag();
-        ow["DollTogepi"] = sav.GetEventFlag();
-        ow["DollTorchic"] = sav.GetEventFlag();
-        ow["DollTotodile"] = sav.GetEventFlag();
-        ow["DollTreecko"] = sav.GetEventFlag();
-        ow["DollWynaut"] = sav.GetEventFlag();
-        ow["DollBlastoise"] = sav.GetEventFlag();
-        ow["DollCharizard"] = sav.GetEventFlag();
-        ow["DollLapras"] = sav.GetEventFlag();
-        ow["DollRhydon"] = sav.GetEventFlag();
-        ow["DollSnorlax"] = sav.GetEventFlag();
-        ow["DollVenusaur"] = sav.GetEventFlag();
-        ow["DollWailmer"] = sav.GetEventFlag();
-        ow["RegirockDoll"] = sav.GetEventFlag();
-        ow["RegiceDoll"] = sav.GetEventFlag();
-        ow["RegisteelDoll"] = sav.GetEventFlag();
-        ow["BallPoster"] = sav.GetEventFlag();
-        ow["BluePoster"] = sav.GetEventFlag();
-        ow["CutePoster"] = sav.GetEventFlag();
-        ow["GreenPoster"] = sav.GetEventFlag();
-        ow["RedPoster"] = sav.GetEventFlag();
-        ow["LongPoster"] = sav.GetEventFlag();
-        ow["PikaPoster"] = sav.GetEventFlag();
-        ow["SeaPoster"] = sav.GetEventFlag();
-        ow["SkyPoster"] = sav.GetEventFlag();
-        ow["KissPoster"] = sav.GetEventFlag();
-        */
+        ow["SmallChair"] = HasDeco(Decoration3.SMALL_CHAIR);
+        ow["PokemonChair"] = HasDeco(Decoration3.POKEMON_CHAIR);
+        ow["HeavyChair"] = HasDeco(Decoration3.HEAVY_CHAIR);
+        ow["RaggedChair"] = HasDeco(Decoration3.RAGGED_CHAIR);
+        ow["ComfortChair"] = HasDeco(Decoration3.COMFORT_CHAIR);
+        ow["BrickChair"] = HasDeco(Decoration3.BRICK_CHAIR);
+        ow["CampChair"] = HasDeco(Decoration3.CAMP_CHAIR);
+        ow["HardChair"] = HasDeco(Decoration3.HARD_CHAIR);
+        ow["PrettyChair"] = HasDeco(Decoration3.PRETTY_CHAIR);
+        ow["PikaCushion"] = HasDeco(Decoration3.PIKA_CUSHION);
+        ow["RoundCushion"] = HasDeco(Decoration3.ROUND_CUSHION);
+        ow["ZigzagCushion"] = HasDeco(Decoration3.ZIGZAG_CUSHION);
+        ow["SpinCushion"] = HasDeco(Decoration3.SPIN_CUSHION);
+        ow["DiamondCushion"] = HasDeco(Decoration3.DIAMOND_CUSHION);
+        ow["BallCushion"] = HasDeco(Decoration3.BALL_CUSHION);
+        ow["GrassCushion"] = HasDeco(Decoration3.GRASS_CUSHION);
+        ow["FireCushion"] = HasDeco(Decoration3.FIRE_CUSHION);
+        ow["WaterCushion"] = HasDeco(Decoration3.WATER_CUSHION);
+        ow["KissCushion"] = HasDeco(Decoration3.KISS_CUSHION);
+        ow["SmallDesk"] = HasDeco(Decoration3.SMALL_DESK);
+        ow["PokemonDesk"] = HasDeco(Decoration3.POKEMON_DESK);
+        ow["HeavyDesk"] = HasDeco(Decoration3.HEAVY_DESK);
+        ow["RaggedDesk"] = HasDeco(Decoration3.RAGGED_DESK);
+        ow["ComfortDesk"] = HasDeco(Decoration3.COMFORT_DESK);
+        ow["BrickDesk"] = HasDeco(Decoration3.BRICK_DESK);
+        ow["CampDesk"] = HasDeco(Decoration3.CAMP_DESK);
+        ow["HardDesk"] = HasDeco(Decoration3.HARD_DESK);
+        ow["PrettyDesk"] = HasDeco(Decoration3.PRETTY_DESK);
+        ow["CLowNoteMat"] = HasDeco(Decoration3.C_LOW_NOTE_MAT);
+        ow["DNoteMat"] = HasDeco(Decoration3.D_NOTE_MAT);
+        ow["ENoteMat"] = HasDeco(Decoration3.E_NOTE_MAT);
+        ow["FNoteMat"] = HasDeco(Decoration3.F_NOTE_MAT);
+        ow["GNoteMat"] = HasDeco(Decoration3.G_NOTE_MAT);
+        ow["ANoteMat"] = HasDeco(Decoration3.A_NOTE_MAT);
+        ow["BNoteMat"] = HasDeco(Decoration3.B_NOTE_MAT);
+        ow["CHighNoteMat"] = HasDeco(Decoration3.C_HIGH_NOTE_MAT);
+        ow["GlitterMat"] = HasDeco(Decoration3.GLITTER_MAT);
+        ow["JumpMat"] = HasDeco(Decoration3.JUMP_MAT);
+        ow["SpinMat"] = HasDeco(Decoration3.SPIN_MAT);
+        ow["SurfMat"] = HasDeco(Decoration3.SURF_MAT);
+        ow["ThunderMat"] = HasDeco(Decoration3.THUNDER_MAT);
+        ow["FireBlastMat"] = HasDeco(Decoration3.FIRE_BLAST_MAT);
+        ow["PowderSnowMat"] = HasDeco(Decoration3.POWDER_SNOW_MAT);
+        ow["AttractMat"] = HasDeco(Decoration3.ATTRACT_MAT);
+        ow["FissureMat"] = HasDeco(Decoration3.FISSURE_MAT);
+        ow["SpikesMat"] = HasDeco(Decoration3.SPIKES_MAT);
+        ow["RedPlant"] = HasDeco(Decoration3.RED_PLANT);
+        ow["TropicalPlant"] = HasDeco(Decoration3.TROPICAL_PLANT);
+        ow["PrettyFlowers"] = HasDeco(Decoration3.PRETTY_FLOWERS);
+        ow["ColorfulPlant"] = HasDeco(Decoration3.COLORFUL_PLANT);
+        ow["BigPlant"] = HasDeco(Decoration3.BIG_PLANT);
+        ow["GorgeousPlant"] = HasDeco(Decoration3.GORGEOUS_PLANT);
+        ow["MudBall"] = HasDeco(Decoration3.MUD_BALL);
+        ow["BreakableDoor"] = HasDeco(Decoration3.BREAKABLE_DOOR);
+        ow["SandOrnament"] = HasDeco(Decoration3.SAND_ORNAMENT);
+        ow["FenceLength"] = HasDeco(Decoration3.FENCE_LENGTH);
+        ow["FenceWidth"] = HasDeco(Decoration3.FENCE_WIDTH);
+        ow["TV"] = HasDeco(Decoration3.TV);
+        ow["RoundTV"] = HasDeco(Decoration3.ROUND_TV);
+        ow["CuteTV"] = HasDeco(Decoration3.CUTE_TV);
+        ow["SilverShield"] = HasDeco(Decoration3.SILVER_SHIELD);
+        ow["GoldShield"] = HasDeco(Decoration3.GOLD_SHIELD);
+        ow["GlassOrnament"] = HasDeco(Decoration3.GLASS_ORNAMENT);
+        ow["Tire"] = HasDeco(Decoration3.TIRE);
+        ow["SolidBoard"] = HasDeco(Decoration3.SOLID_BOARD);
+        ow["Stand"] = HasDeco(Decoration3.STAND);
+        ow["Slide"] = HasDeco(Decoration3.SLIDE);
+        ow["RedBrick"] = HasDeco(Decoration3.RED_BRICK);
+        ow["YellowBrick"] = HasDeco(Decoration3.YELLOW_BRICK);
+        ow["BlueBrick"] = HasDeco(Decoration3.BLUE_BRICK);
+        ow["RedBalloon"] = HasDeco(Decoration3.RED_BALLOON);
+        ow["YellowBalloon"] = HasDeco(Decoration3.YELLOW_BALLOON);
+        ow["BlueBalloon"] = HasDeco(Decoration3.BLUE_BALLOON);
+        ow["RedTent"] = HasDeco(Decoration3.RED_TENT);
+        ow["BlueTent"] = HasDeco(Decoration3.BLUE_TENT);
+        ow["AzurillDoll"] = HasDeco(Decoration3.AZURILL_DOLL);
+        ow["DollBaltoy"] = HasDeco(Decoration3.BALTOY_DOLL);
+        ow["DollChikorita"] = HasDeco(Decoration3.CHIKORITA_DOLL);
+        ow["DollClefairy"] = HasDeco(Decoration3.CLEFAIRY_DOLL);
+        ow["DollCyndaquil"] = HasDeco(Decoration3.CYNDAQUIL_DOLL);
+        ow["DollDitto"] = HasDeco(Decoration3.DITTO_DOLL);
+        ow["DollDuskull"] = HasDeco(Decoration3.DUSKULL_DOLL);
+        ow["DollGulpin"] = HasDeco(Decoration3.GULPIN_DOLL);
+        ow["DollJigglypuff"] = HasDeco(Decoration3.JIGGLYPUFF_DOLL);
+        ow["DollKecleon"] = HasDeco(Decoration3.KECLEON_DOLL);
+        ow["DollLotad"] = HasDeco(Decoration3.LOTAD_DOLL);
+        ow["DollMarill"] = HasDeco(Decoration3.MARILL_DOLL);
+        ow["DollMeowth"] = HasDeco(Decoration3.MEOWTH_DOLL);
+        ow["DollMudkip"] = HasDeco(Decoration3.MUDKIP_DOLL);
+        ow["DollPichu"] = HasDeco(Decoration3.PICHU_DOLL);
+        ow["DollPikachu"] = HasDeco(Decoration3.PIKACHU_DOLL);
+        ow["DollSeedot"] = HasDeco(Decoration3.SEEDOT_DOLL);
+        ow["DollSkitty"] = HasDeco(Decoration3.SKITTY_DOLL);
+        ow["DollSmoochum"] = HasDeco(Decoration3.SMOOCHUM_DOLL);
+        ow["DollSwablu"] = HasDeco(Decoration3.SWABLU_DOLL);
+        ow["DollTogepi"] = HasDeco(Decoration3.TOGEPI_DOLL);
+        ow["DollTorchic"] = HasDeco(Decoration3.TORCHIC_DOLL);
+        ow["DollTotodile"] = HasDeco(Decoration3.TOTODILE_DOLL);
+        ow["DollTreecko"] = HasDeco(Decoration3.TREECKO_DOLL);
+        ow["DollWynaut"] = HasDeco(Decoration3.WYNAUT_DOLL);
+        ow["DollBlastoise"] = HasDeco(Decoration3.BLASTOISE_DOLL);
+        ow["DollCharizard"] = HasDeco(Decoration3.CHARIZARD_DOLL);
+        ow["DollLapras"] = HasDeco(Decoration3.LAPRAS_DOLL);
+        ow["DollRhydon"] = HasDeco(Decoration3.RHYDON_DOLL);
+        ow["DollSnorlax"] = HasDeco(Decoration3.SNORLAX_DOLL);
+        ow["DollVenusaur"] = HasDeco(Decoration3.VENUSAUR_DOLL);
+        ow["DollWailmer"] = HasDeco(Decoration3.WAILMER_DOLL);
+        ow["RegirockDoll"] = HasDeco(Decoration3.REGIROCK_DOLL);
+        ow["RegiceDoll"] = HasDeco(Decoration3.REGICE_DOLL);
+        ow["RegisteelDoll"] = HasDeco(Decoration3.REGISTEEL_DOLL);
+        ow["BallPoster"] = HasDeco(Decoration3.BALL_POSTER);
+        ow["BluePoster"] = HasDeco(Decoration3.BLUE_POSTER);
+        ow["CutePoster"] = HasDeco(Decoration3.CUTE_POSTER);
+        ow["GreenPoster"] = HasDeco(Decoration3.GREEN_POSTER);
+        ow["RedPoster"] = HasDeco(Decoration3.RED_POSTER);
+        ow["LongPoster"] = HasDeco(Decoration3.LONG_POSTER);
+        ow["PikaPoster"] = HasDeco(Decoration3.PIKA_POSTER);
+        ow["SeaPoster"] = HasDeco(Decoration3.SEA_POSTER);
+        ow["SkyPoster"] = HasDeco(Decoration3.SKY_POSTER);
+        ow["KissPoster"] = HasDeco(Decoration3.KISS_POSTER);
     }
 
     public void Generate_inGameTrade()
@@ -312,6 +327,7 @@ internal class CompletionValidator3 : CompletionValidatorX
     public bool HasPhone()
     {
         return true;
+        //NO_PROD
     }
 
     public void Generate_phone()
@@ -411,17 +427,10 @@ internal class CompletionValidator3 : CompletionValidatorX
         owned["trainerStar"] = ow;
 
         ow["HallofFame"] = sav.GetEventFlag(2148);
-        ow["HoennPokedex"] = true;
-        ow["PokemonContests"] = true;
-        ow["BattleTower"] = sav.GetEventFlag(0x01D2);
+        ow["HoennPokedex"] = true; //NO_PROD
 
-        ow["GoldKnowledgeSymbol"] = 
-        ow["GoldGutsSymbol"] = sav.GetEventFlag(2251);
-        ow["GoldTacticsSymbol"] = sav.GetEventFlag(2247);
-        ow["GoldLuckSymbol"] = sav.GetEventFlag(2255);
-        ow["GoldSpiritsSymbol"] = sav.GetEventFlag(2249);
-        ow["GoldBraveSymbol"] = sav.GetEventFlag(2257);
-        ow["GoldAbilitySymbol"] = sav.GetEventFlag(2245);
+        ow["PokemonContests"] = HasDeco(Decoration3.GLASS_ORNAMENT);
+        ow["BattleTower"] = sav.GetEventFlag(0x01D2);
     }
 
     
@@ -429,26 +438,33 @@ internal class CompletionValidator3 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["eReaderBattles"] = ow;
+
+        // None for US version
     }
+    public bool HasPokeblock(PokeBlock3Color color)
+    {
+        return sav.PokeBlocks.Blocks.Any(b => b.Color == color);
+    }
+
     public void Generate_pokeblock()
     {
         var ow = new Dictionary<string, bool>();
         owned["pokeblock"] = ow;
 
-        ow["BlackPokeblock"] = true;
-        ow["RedPokeblock"] = true;
-        ow["BluePokeblock"] = true;
-        ow["PinkPokeblock"] = true;
-        ow["GreenPokeblock"] = true;
-        ow["YellowPokeblock"] = true;
-        ow["GoldPokeblock"] = true;
-        ow["PurplePokeblock"] = true;
-        ow["IndigoPokeblock"] = true;
-        ow["LiteBluePokeblock"] = true;
-        ow["BrownPokeblock"] = true;
-        ow["OlivePokeblock"] = true;
-        ow["GrayPokeblock"] = true;
-        ow["WhitePokeblock"] = true;
+        ow["BlackPokeblock"] = HasPokeblock(PokeBlock3Color.Black);
+        ow["RedPokeblock"] = HasPokeblock(PokeBlock3Color.Red);
+        ow["BluePokeblock"] = HasPokeblock(PokeBlock3Color.Blue);
+        ow["PinkPokeblock"] = HasPokeblock(PokeBlock3Color.Pink);
+        ow["GreenPokeblock"] = HasPokeblock(PokeBlock3Color.Green);
+        ow["YellowPokeblock"] = HasPokeblock(PokeBlock3Color.Yellow);
+        ow["GoldPokeblock"] = HasPokeblock(PokeBlock3Color.Gold);
+        ow["PurplePokeblock"] = HasPokeblock(PokeBlock3Color.Purple);
+        ow["IndigoPokeblock"] = HasPokeblock(PokeBlock3Color.Indigo);
+        ow["LiteBluePokeblock"] = HasPokeblock(PokeBlock3Color.LightBlue);
+        ow["BrownPokeblock"] = HasPokeblock(PokeBlock3Color.Brown);
+        ow["OlivePokeblock"] = HasPokeblock(PokeBlock3Color.Olive);
+        ow["GrayPokeblock"] = HasPokeblock(PokeBlock3Color.Gray);
+        ow["WhitePokeblock"] = HasPokeblock(PokeBlock3Color.White);
     }
 
     public void Generate_easyChatSystemWord()
