@@ -27,7 +27,6 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_inGameGift();
         Generate_battleFrontier();
         Generate_ribbon();
-        
         Generate_phone();
         Generate_trainerStar();
         Generate_eReaderBattles();
@@ -81,9 +80,10 @@ internal class CompletionValidator3 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["decoration"] = ow;
 
+        //TODO
         /*
         ow["SmallChair"] = sav.GetEventFlag();
-        ow["PokmonChair"] = sav.GetEventFlag();
+        ow["PokemonChair"] = sav.GetEventFlag();
         ow["HeavyChair"] = sav.GetEventFlag();
         ow["RaggedChair"] = sav.GetEventFlag();
         ow["ComfortChair"] = sav.GetEventFlag();
@@ -102,7 +102,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["WaterCushion"] = sav.GetEventFlag();
         ow["KissCushion"] = sav.GetEventFlag();
         ow["SmallDesk"] = sav.GetEventFlag();
-        ow["PokmonDesk"] = sav.GetEventFlag();
+        ow["PokemonDesk"] = sav.GetEventFlag();
         ow["HeavyDesk"] = sav.GetEventFlag();
         ow["RaggedDesk"] = sav.GetEventFlag();
         ow["ComfortDesk"] = sav.GetEventFlag();
@@ -307,5 +307,209 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["NationalRibbon"] = HasRibbon(p => p.RibbonNational);
         ow["EarthRibbon"] = HasRibbon(p => p.RibbonEarth);
         ow["WorldRibbon"] = HasRibbon(p => p.RibbonWorld);
+    }
+
+    public bool HasPhone()
+    {
+        return true;
+    }
+
+    public void Generate_phone()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["phone"] = ow;
+
+        ow["RadNeighborBrendan"] = HasPhone();
+        ow["RadNeighborMay"] = HasPhone();
+        ow["TriathleteAbigail"] = HasPhone();
+        ow["TwinsAmyLiv"] = HasPhone();
+        ow["RuinManiacAndres"] = HasPhone();
+        ow["SrandJrAnnaMeg"] = HasPhone();
+        ow["TriathleteBenjamin"] = HasPhone();
+        ow["KindlerBernie"] = HasPhone();
+        ow["ManiacJeffrey"] = HasPhone();
+        ow["TheBigHitBrawly"] = HasPhone();
+        ow["CooltrainerBrooke"] = HasPhone();
+        ow["YoungsterCalvin"] = HasPhone();
+        ow["PsychicCameron"] = HasPhone();
+        ow["PKMNRangerCatherine"] = HasPhone();
+        ow["LadyCindy"] = HasPhone();
+        ow["SailorCory"] = HasPhone();
+        ow["CooltrainerCristin"] = HasPhone();
+        ow["BattleGirlCyndy"] = HasPhone();
+        ow["GuitaristDalton"] = HasPhone();
+        ow["PicnickerDiana"] = HasPhone();
+        ow["EliteFourDrake"] = HasPhone();
+        ow["RuinManiacDusty"] = HasPhone();
+        ow["TriathleteDylan"] = HasPhone();
+        ow["CollectorEdwin"] = HasPhone();
+        ow["FishermanElliot"] = HasPhone();
+        ow["SailorErnest"] = HasPhone();
+        ow["CamperEthan"] = HasPhone();
+        ow["GuitaristFernando"] = HasPhone();
+        ow["PassionBurnFlannery"] = HasPhone();
+        ow["PKMNBreederGabrielle"] = HasPhone();
+        ow["EliteFourGlacia"] = HasPhone();
+        ow["LassHaley"] = HasPhone();
+        ow["PKMNBreederIsaac"] = HasPhone();
+        ow["PokefanIsabel"] = HasPhone();
+        ow["TriathleteIsaiah"] = HasPhone();
+        ow["PsychicJacki"] = HasPhone();
+        ow["PKMNRangerJackson"] = HasPhone();
+        ow["BugCatcherJames"] = HasPhone();
+        ow["SwimmerJenny"] = HasPhone();
+        ow["SchoolKidJerry"] = HasPhone();
+        ow["BeautyJessica"] = HasPhone();
+        ow["OldCoupleJohnJay"] = HasPhone();
+        ow["DandyCharmJuan"] = HasPhone();
+        ow["SchoolKidKaren"] = HasPhone();
+        ow["TriathleteKatelyn"] = HasPhone();
+        ow["BlackBeltKoji"] = HasPhone();
+        ow["NinjaBoyLao"] = HasPhone();
+        ow["MysticDuoTateLiza"] = HasPhone();
+        ow["YoungCoupleKiraDan"] = HasPhone();
+        ow["TuberLola"] = HasPhone();
+        ow["PKMNBreederLydia"] = HasPhone();
+        ow["ParasolLadyMadeline"] = HasPhone();
+        ow["TriathleteMaria"] = HasPhone();
+        ow["PokefanMiguel"] = HasPhone();
+        ow["CalmKindMom"] = HasPhone();
+        ow["DevonPresMrStone"] = HasPhone();
+        ow["DragonTamerNicolas"] = HasPhone();
+        ow["BlackBeltNob"] = HasPhone();
+        ow["ReliableOneDad"] = HasPhone();
+        ow["TriathletePablo"] = HasPhone();
+        ow["EliteFourPhoebe"] = HasPhone();
+        ow["PKMNProfProfBirch"] = HasPhone();
+        ow["TuberRicky"] = HasPhone();
+        ow["SisandBroLilaRoy"] = HasPhone();
+        ow["BirdKeeperRobert"] = HasPhone();
+        ow["AromaLadyRose"] = HasPhone();
+        ow["RockinWhizRoxanne"] = HasPhone();
+        ow["HikerSawyer"] = HasPhone();
+        ow["ElusiveEyesScott"] = HasPhone();
+        ow["ExpertShelby"] = HasPhone();
+        ow["EliteFourSidney"] = HasPhone();
+        ow["PokeManiacSteve"] = HasPhone();
+        ow["HardasRockSteven"] = HasPhone();
+        ow["BeautyThaliaE"] = HasPhone();
+        ow["ExpertTimothy"] = HasPhone();
+        ow["SwimmerTony"] = HasPhone();
+        ow["HikerTrent"] = HasPhone();
+        ow["HexManiacValerie"] = HasPhone();
+        ow["ChampionWallace"] = HasPhone();
+        ow["PKMNLoverWally"] = HasPhone();
+        ow["GentlemanWalter"] = HasPhone();
+        ow["SwellShockWattson"] = HasPhone();
+        ow["CooltrainerWilton"] = HasPhone();
+        ow["SkyTamerWinona"] = HasPhone();
+        ow["RichBoyWinston"] = HasPhone();
+    }
+    public void Generate_trainerStar()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["trainerStar"] = ow;
+
+        ow["HallofFame"] = sav.GetEventFlag(2148);
+        ow["HoennPokedex"] = true;
+        ow["PokemonContests"] = true;
+        ow["BattleTower"] = sav.GetEventFlag(0x01D2);
+
+        ow["GoldKnowledgeSymbol"] = 
+        ow["GoldGutsSymbol"] = sav.GetEventFlag(2251);
+        ow["GoldTacticsSymbol"] = sav.GetEventFlag(2247);
+        ow["GoldLuckSymbol"] = sav.GetEventFlag(2255);
+        ow["GoldSpiritsSymbol"] = sav.GetEventFlag(2249);
+        ow["GoldBraveSymbol"] = sav.GetEventFlag(2257);
+        ow["GoldAbilitySymbol"] = sav.GetEventFlag(2245);
+    }
+
+    
+    public void Generate_eReaderBattles()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["eReaderBattles"] = ow;
+    }
+    public void Generate_pokeblock()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["pokeblock"] = ow;
+
+        ow["BlackPokeblock"] = true;
+        ow["RedPokeblock"] = true;
+        ow["BluePokeblock"] = true;
+        ow["PinkPokeblock"] = true;
+        ow["GreenPokeblock"] = true;
+        ow["YellowPokeblock"] = true;
+        ow["GoldPokeblock"] = true;
+        ow["PurplePokeblock"] = true;
+        ow["IndigoPokeblock"] = true;
+        ow["LiteBluePokeblock"] = true;
+        ow["BrownPokeblock"] = true;
+        ow["OlivePokeblock"] = true;
+        ow["GrayPokeblock"] = true;
+        ow["WhitePokeblock"] = true;
+    }
+
+    public void Generate_easyChatSystemWord()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["easyChatSystemWord"] = ow;
+
+        ow["RegionalPokemonNames"] = true;
+        ow["NonRegionalPokemonNames"] = true;
+        ow["Events"] = true;
+        ow["Move1"] = true;
+        ow["Move2"] = true;
+        ow["TrendyKTHXBYE"] = true;
+        ow["TrendyYESSIR"] = true;
+        ow["TrendyAVANTGARDE"] = true;
+        ow["TrendyCOUPLE"] = true;
+        ow["TrendyMUCHOBLIGED"] = true;
+        ow["TrendyYEEHAW"] = true;
+        ow["TrendyMEGA"] = true;
+        ow["Trendy1HITKO"] = true;
+        ow["TrendyDESTINY"] = true;
+        ow["TrendyCANCEL"] = true;
+        ow["TrendyNEW"] = true;
+        ow["TrendyFLATTEN"] = true;
+        ow["TrendyKIDDING"] = true;
+        ow["TrendyLOSER"] = true;
+        ow["TrendyLOSING"] = true;
+        ow["TrendyHAPPENING"] = true;
+        ow["TrendyHIPAND"] = true;
+        ow["TrendySHAKE"] = true;
+        ow["TrendySHADY"] = true;
+        ow["TrendyUPBEAT"] = true;
+        ow["TrendyMODERN"] = true;
+        ow["TrendySMELLYA"] = true;
+        ow["TrendyBANG"] = true;
+        ow["TrendyKNOCKOUT"] = true;
+        ow["TrendyHASSLE"] = true;
+        ow["TrendyWINNER"] = true;
+        ow["TrendyFEVER"] = true;
+        ow["TrendyWANNABE"] = true;
+        ow["TrendyBABY"] = true;
+        ow["TrendyHEART"] = true;
+        ow["TrendyOLD"] = true;
+        ow["TrendyYOUNG"] = true;
+        ow["TrendyUGLY"] = true;
+    }
+
+
+    public void Generate_misc()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["misc"] = ow;
+
+        ow["DefeatSteven"] = true;
+        ow["BeatSlateportBattleTent"] = true;
+        ow["BeatVerdanturfBattleTent"] = true;
+        ow["BeatFallarborBattleTent"] = true;
+        ow["BeatTrainerHillNormalMode"] = true;
+        ow["BeatTrainerHillVarietyMode"] = true;
+        ow["BeatTrainerHillUniqueMode"] = true;
+        ow["BeatTrainerHillExpertMode"] = true;
+        ow["UnlockMysteryGiftsystem"] = true;
     }
 }
