@@ -27,6 +27,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_inGameGift();
         Generate_battleFrontier();
         Generate_ribbon();
+        
         Generate_phone();
         Generate_trainerStar();
         Generate_eReaderBattles();
