@@ -60,4 +60,20 @@ partial class CompletionValidatorX
             ow[i.ToString()] = SavUtils.HasItem(sav, i);
         }
     }
+    public bool HasForm(int species, byte form)
+    {
+        var pkms = sav.GetAllPKM();
+        return pkms.FirstOrDefault(pkm =>
+        {
+            if (pkm.Species != species)
+                return false;
+            return pkm.Form == form;
+        }) != null;
+    }
+    public bool HasPkm(ushort speciesId)
+    {
+        return SavUtils.HasPkm(sav, speciesId);
+    }
+
+
 }

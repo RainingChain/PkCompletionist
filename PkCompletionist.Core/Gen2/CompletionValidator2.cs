@@ -94,13 +94,7 @@ internal class CompletionValidator2 : CompletionValidatorX
 
     public bool HasUnownForm(byte form)
     {
-        var pkms = sav.GetAllPKM();
-        return pkms.FirstOrDefault(pkm =>
-            {
-            if(pkm.Species != 201) // Unown
-                return false;
-            return pkm.Form == form;
-            }) != null;
+        return HasForm(201, form);
     }
 
     public void Generate_pokemonForm()
