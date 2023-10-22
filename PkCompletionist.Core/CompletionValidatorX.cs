@@ -11,11 +11,34 @@ partial class CompletionValidatorX
     protected List<int> unobtainableItems = new ();
     Command command;
 
+    private List<ushort> OwnedPkms = new List<ushort>();
+    private List<ushort> OwnedPkmsTID = new List<ushort>();
+    private List<int> OwnedItems = new List<int>();
+
     public CompletionValidatorX(Command command, SaveFile sav, bool living) 
     {
         this.command = command;
         this.sav = sav;
         this.living = living;
+
+        var pkms = sav.GetAllPKM();
+        foreach (var pkm in pkms)
+        {
+            OwnedPkms.Add(pkm.Species);
+            if (pkm.TID16 == sav.TID16)
+                OwnedPkmsTID.Add(pkm.Species);
+            if (pkm.HeldItem != 0)
+                OwnedItems.Add(pkm.HeldItem);
+        }
+
+        foreach (var pouch in sav.Inventory)
+        {
+            foreach(var item in pouch.Items)
+            {
+                if (item.Index != 0)
+                    OwnedItems.Add(item.Index);
+            }
+        }
     }
 
 
@@ -35,17 +58,8 @@ partial class CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["pokemon"] = ow;
 
-        if (this.living)
-        {
-            var pkms = sav.GetAllPKM();
-            for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
-                ow[i.ToString()] = pkms.Any(pkm => pkm.Species == i);
-        }
-        else
-        {
-            for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
-                ow[i.ToString()] = sav.GetCaught(i);
-        }
+        for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
+            ow[i.ToString()] = this.living ? HasPkm(i) : sav.GetCaught(i);
     }
 
     public virtual void Generate_item()
@@ -57,11 +71,14 @@ partial class CompletionValidatorX
         {
             if (this.unobtainableItems.Contains(i))
                 continue;
-            ow[i.ToString()] = SavUtils.HasItem(sav, i);
+            ow[i.ToString()] = HasItem(i);
         }
     }
-    public bool HasForm(int species, byte form)
+    public bool HasPkmForm(ushort species, byte form)
     {
+        if (!HasPkm(species))
+            return false;
+
         var pkms = sav.GetAllPKM();
         return pkms.FirstOrDefault(pkm =>
         {
@@ -70,10 +87,20 @@ partial class CompletionValidatorX
             return pkm.Form == form;
         }) != null;
     }
+
     public bool HasPkm(ushort speciesId)
     {
-        return SavUtils.HasPkm(sav, speciesId);
+        return OwnedPkms.Contains(speciesId);
     }
 
+    public bool HasPkmWithTID(ushort speciesId)
+    {
+        return OwnedPkmsTID.Contains(speciesId);
+    }
+
+    public bool HasItem(ushort itemId)
+    {
+        return OwnedItems.Contains(itemId);
+    }
 
 }
