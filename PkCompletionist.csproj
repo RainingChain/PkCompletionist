@@ -19,8 +19,8 @@
   </PropertyGroup>
 
     <ItemGroup>
-	    <None Remove="**\Resources\**" />
-	    <EmbeddedResource Include="**\Resources\**" />
+	    <None Remove="*.pk*" />
+	    <EmbeddedResource Include="*.pk*" />
     </ItemGroup>
 
     <ItemGroup>
