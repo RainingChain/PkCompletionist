@@ -14,6 +14,14 @@ internal class SavUtils
         return pkms.Any(pkm => pkm.Species == speciesId);
     }
 
+    public static bool HasPkmWithTID(SaveFile sav, ushort speciesId)
+    {
+        var pkms = sav.GetAllPKM();
+        if (pkms == null)
+            return false;
+        return pkms.Any(pkm => pkm.Species == speciesId && pkm.TID16 == sav.TID16);
+    }
+
     public static bool HasItem(SaveFile sav, ushort itemId)
     {
         return HasItemInPouch(sav, itemId) || HasItemOnPkm(sav, itemId);
@@ -76,6 +84,7 @@ internal class SavUtils
 
         var isEmpty = (PKM pkm) => pkm.Species <= 0;
         int slot = sav.FindSlotIndex(isEmpty, sav.SlotCount);
+
         if (slot < 0)
             return "Error: All pokemon boxes are full. Free a box slot to fix the issue.";
 

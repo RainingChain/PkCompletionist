@@ -46,9 +46,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         if (sav.GetEventFlag(0x001E))
             ow["69"] = true; // Mystery Egg
 
-        var pkms = sav.GetAllPKM();
-        var hasScyther = pkms.Any(pkm => pkm.Species == 123 && pkm.TID16 == sav.TID16);
-        if (hasScyther) // Only way to get Scyther is with Park Ball
+        if (HasPkmWithTID(123)) // Only way to get Scyther is with Park Ball
             ow["177"] = true; // Park Ball
 
         if (this.living)
@@ -78,8 +76,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         if (sav.GetEventFlag(0x0321))
             ow["34"] = true; // Leaf Stone from Bill's grandfather
 
-        var hasCelebi = pkms.Any(pkm => pkm.Species == 251 && pkm.TID16 == sav.TID16);
-        if (hasCelebi)
+        if (HasPkmWithTID(251)) // Celebi
             ow["115"] = true; // GS Ball
     }
 
@@ -94,13 +91,7 @@ internal class CompletionValidator2 : CompletionValidatorX
 
     public bool HasUnownForm(byte form)
     {
-        var pkms = sav.GetAllPKM();
-        return pkms.FirstOrDefault(pkm =>
-            {
-            if(pkm.Species != 201) // Unown
-                return false;
-            return pkm.Form == form;
-            }) != null;
+        return HasPkmForm(201, form);
     }
 
     public void Generate_pokemonForm()
@@ -140,16 +131,18 @@ internal class CompletionValidator2 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
-        //0x0044 elite four
 
         var work = sav.GetAllEventWork();
-        ow["BeatBattleTower"] = work[0x002C] != 0 && work[0x002D] != 0 && work[0x002E] != 0 && work[0x002F] != 0; //BAD only check if accessed it
+        if (work[0x002C] == 0 || work[0x002D] == 0 || work[0x002E] == 0 || work[0x002F] == 0) // if not visited battle tower
+            ow["BeatBattleTower"] = false;
 
         ow["UnlockMysteryGiftoption"] = sav.Data[0xBE3] == 0x00; // 0xB51 in japan
         ow["NewMagikarpSizeRecord"] = sav.Data[0x2B76] >= 0x04; // if magikarp is 5'0 feet, 0x2B76 becomes 5. default value is 3.
                                                                 // for 5'0: hp=4, atk=0, def=13, spa=4, spd=4, spe=12
         ow["PokedexUnownMode"] = GetUnownFormCount() >= 3;
-        // DefeatRed can't be detected. It can be repeated.
+
+        if (!sav.GetEventFlag(0x0762) && sav.GetEventFlag(0x0044)) // if red not in mt silver and elite four defeated
+            ow["DefeatRed"] = true;
     }
 
 
@@ -186,16 +179,16 @@ internal class CompletionValidator2 : CompletionValidatorX
         ow["Buena"] = sav.GetEventFlag(0x033C) || sav.GetEventFlag(0x029E);
         ow["BugCatcherArnie"] = sav.GetEventFlag(0x0283);
         ow["JugglerIrwin"] = sav.GetEventFlag(0x0281);
-        ow["PokfanBeverly"] = sav.GetEventFlag(0x0261);
+        ow["PokefanBeverly"] = sav.GetEventFlag(0x0261);
         ow["SchoolKidJack"] = sav.GetEventFlag(0x025F);
         ow["SchoolKidAlan"] = sav.GetEventFlag(0x0285);
         ow["LassDana"] = sav.GetEventFlag(0x0289);
         ow["SchoolKidChad"] = sav.GetEventFlag(0x028B);
-        ow["PokfanDerek"] = sav.GetEventFlag(0x028D);
+        ow["PokefanDerek"] = sav.GetEventFlag(0x028D);
         ow["SailorHuey"] = sav.GetEventFlag(0x0263);
         ow["FishermanTully"] = sav.GetEventFlag(0x028F);
         ow["PicnickerTiffany"] = sav.GetEventFlag(0x0293);
-        ow["PokManiacBrent"] = sav.GetEventFlag(0x0291);
+        ow["PokeManiacBrent"] = sav.GetEventFlag(0x0291);
         ow["BirdKeeperVance"] = sav.GetEventFlag(0x0295);
         ow["FishermanWilton"] = sav.GetEventFlag(0x0297);
         ow["BlackBeltKenji"] = sav.GetEventFlag(0x0299);

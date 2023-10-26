@@ -33,8 +33,8 @@ partial class CompletionValidator : Command
         if (savA is SAV2)
             return new CompletionValidator2(this, (savA as SAV2)!, living);
 
-        if (savA is SAV3)
-            return new CompletionValidator3(this, (savA as SAV3)!, living);
+        if (savA is SAV3E)
+            return new CompletionValidator3(this, (savA as SAV3E)!, living);
 
         return new CompletionValidatorX(this, savA, living);
     }

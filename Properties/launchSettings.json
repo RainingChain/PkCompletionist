@@ -2,8 +2,8 @@
   "profiles": {
     "Profile 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samue\\source\\repos\\PkSimul\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\samue\\Downloads\\POKEMON_EMER_BPEE00.sav\""
+      "executablePath": "C:\\Users\\samue\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "exportEventFlags \"C:\\Users\\samue\\Game\\Gameboy\\ROMS\\Pokemon Emerald.sav\""
     }
   }
 }

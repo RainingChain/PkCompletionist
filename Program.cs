@@ -9,8 +9,6 @@ namespace PkCompletionist;
 // https://www.meziantou.net/using-dotnet-code-from-javascript-using-webassembly.htm
 // To generate .exe instead of wasm, check PkCompletionist settings (Right-Click -> Properties).
 
-
-
 internal class Program
 {
 
@@ -77,6 +75,35 @@ internal class Program
     {
         if (!ValidateArgLength(args, 1))
             return;
+
+        /*
+        overwriteFlags
+        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - before.sav"
+        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - after.sav"
+        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald.sav"
+        0
+        0
+        */
+        if (args[0] == "overwriteFlags")
+        {
+            Console.WriteLine(System.String.Join(' ', args));
+
+            if (!ValidateArgLength(args, 6))
+                return;
+
+            var sav1 = TryReadAllBytes(args[1]);
+            var sav2 = TryReadAllBytes(args[2]);
+            var changeRangeStart = TryParseInt(args[4]);
+            var changeRangeEnd = TryParseInt(args[5]);
+
+            if (sav1 == null || sav2 == null || changeRangeStart == null || changeRangeEnd == null)
+                return;
+
+            if (FlagAnalyzer.Execute(sav1, sav2, (int)changeRangeStart, (int)changeRangeEnd!))
+                LastCommandSave(args[3]);
+
+            LastCommandPrintMsgs();
+        }
 
         if (args[0] == "validate")
         {
@@ -150,27 +177,10 @@ internal class Program
         }
 
 
-        if (args[0] == "overwriteFlags")
+        if (args[0] == "exportEventFlags")
         {
-            Console.WriteLine(System.String.Join(' ', args));
-
-            if (!ValidateArgLength(args, 6))
-                return;
-
-            var sav1 = TryReadAllBytes(args[1]);
-            var sav2 = TryReadAllBytes(args[2]);
-            var changeRangeStart = TryParseInt(args[4]);
-            var changeRangeEnd = TryParseInt(args[5]);
-
-            if (sav1 == null || sav2 == null || changeRangeStart == null || changeRangeEnd == null)
-                return;
-
-            if (FlagAnalyzer.Execute(sav1, sav2, (int)changeRangeStart, (int)changeRangeEnd!))
-                LastCommandSave(args[3]);
-
-            LastCommandPrintMsgs();
+            ExportEventFlags(args[1]);
         }
-
 
         if (args[0] == "flagWatcher")
         {
@@ -205,6 +215,29 @@ internal class Program
         File.WriteAllBytes(dest, sav);
     }
 
+    static void ExportEventFlags(string file)
+    {
+        var savData = TryReadAllBytes(file);
+        if (savData == null)
+            return;
+
+        var savA = (SAV3E?)SaveUtil.GetVariantSAV(savData);
+        if (savA == null)
+            return;
+        //for (var i = 0; i < savA.EventFlagCount; i++)
+        //    Console.WriteLine($"0x{i:X} {savA.GetEventFlag(i)}");
+
+        //  /*0x2B50*/ PokeNews pokeNews[POKE_NEWS_COUNT];
+        for (var i = 0; i < 16; i++)
+        {
+            var kind = savA.Large[0x2B50 + i * 4 + 0];
+            var state = savA.Large[0x2B50 + i * 4 + 1];
+            var dayCountdown = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(savA.Large.AsSpan(0x2B50 + i * 4 + 2));
+            Console.WriteLine($"kind={kind}, state={state}, dayCountdown={dayCountdown}");
+        }
+        savA.Large[0x2B50 + 0 * 4 + 0] = 3;
+        File.WriteAllBytes(@"C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - Copy2.sav", savA.Write());
+    }
 
     static void StartFlagWatcher(string file)
     {
