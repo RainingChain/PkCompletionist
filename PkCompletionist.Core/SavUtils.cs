@@ -84,6 +84,7 @@ internal class SavUtils
 
         var isEmpty = (PKM pkm) => pkm.Species <= 0;
         int slot = sav.FindSlotIndex(isEmpty, sav.SlotCount);
+
         if (slot < 0)
             return "Error: All pokemon boxes are full. Free a box slot to fix the issue.";
 

@@ -6,12 +6,12 @@
     <Nullable>enable</Nullable>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-	  <!-- Comment this block to generate .exe
-	  
 	  <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
 	  <WasmMainJSPath>main.js</WasmMainJSPath>
 	  <InvariantGlobalization>true</InvariantGlobalization>
 	  <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
+
+	  <!-- Comment this block to generate .exe
 	  
 	  
 	  block end -->
@@ -19,15 +19,12 @@
   </PropertyGroup>
 
     <ItemGroup>
-	    <None Remove="*.pk*" />
-	    <EmbeddedResource Include="*.pk*" />
-    </ItemGroup>
+		<None Remove="**\Resources\**" />
+		<EmbeddedResource Include="**\Resources\**" />
+	</ItemGroup>
 
-    <ItemGroup>
-      <None Remove="index.html" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Content Include="index.html" />
+	<ItemGroup>
+		<None Remove="index.html" />
+		<Content Include="index.html" />
     </ItemGroup>
 </Project>
