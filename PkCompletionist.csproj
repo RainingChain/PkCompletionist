@@ -6,15 +6,15 @@
     <Nullable>enable</Nullable>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-	  <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-	  <WasmMainJSPath>main.js</WasmMainJSPath>
-	  <InvariantGlobalization>true</InvariantGlobalization>
-	  <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
-
 	  <!-- Comment this block to generate .exe
 	  
 	  
 	  block end -->
+
+	  <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+	  <WasmMainJSPath>main.js</WasmMainJSPath>
+	  <InvariantGlobalization>true</InvariantGlobalization>
+	  <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
 
   </PropertyGroup>
 

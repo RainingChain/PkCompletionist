@@ -163,6 +163,12 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x009C)) // Skitty for Meowth trade
             ow["132"] = true; // Retro Mail
 
+        if (HasPkm(367) && sav.GetEventFlag(0x0126)) // Huntail, FLAG_EXCHANGED_SCANNER
+            ow["192"] = true; // DeepSeaTooth
+
+        if (HasPkm(368) && sav.GetEventFlag(0x0126)) // Gorebyss, FLAG_EXCHANGED_SCANNER
+            ow["193"] = true; // DeepSeaScale
+
         if (sav.GetEventFlag(0x0436))
             ow["278"] = true; // Scanner
 
@@ -186,15 +192,6 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         if (sav.GetEventFlag(0x010D))
             ow["334"] = true; // TM46 - Thief
-
-        if (HasPkmWithTID(386)) // Deoxys
-            ow["371"] = true; // AuroraTicket
-
-        if (HasPkmWithTID(249) || HasPkmWithTID(250)) // Lugia or Ho-oh
-            ow["370"] = true; // MysticTicket
-
-        if (HasPkmWithTID(151)) // Mew
-            ow["376"] = true; // Old Sea Map
     }
 
     public bool HasDeco(Decoration3 deco)
@@ -543,7 +540,7 @@ internal class CompletionValidator3 : CompletionValidatorX
                     return true;
                 if (id == 386)  // Deoxys
                     return true;
-                return HasPkm(id);
+                return sav.GetCaught(id);
              });
         };
         ow["HoennPokedex"] = HoennPokedex();
@@ -625,7 +622,7 @@ internal class CompletionValidator3 : CompletionValidatorX
             var byteIdx = bitIdx / 8;
             var bitoffset = bitIdx % 8;
             var span = sav.Large.AsSpan(0x2E20, 5);
-            return ((span[byteIdx / 8] >> bitoffset) & 1) != 0;
+            return ((span[byteIdx] >> bitoffset) & 1) != 0;
         };
         ow["TrendyKTHXBYE"] = IsTrendyUnlocked(0);
         ow["TrendyYESSIR"] = IsTrendyUnlocked(1);
