@@ -38,7 +38,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         Generate_battleFrontier();
 
         Generate_decoration();
-        Generate_undergroundSphere();
+        Generate_undergroundItem();
         Generate_ribbon();
         Generate_backdrop();
 

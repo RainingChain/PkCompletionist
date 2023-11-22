@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Buffers.Binary;
+using System.Reflection.Emit;
 
 namespace PkCompletionist.Core;
 
@@ -533,7 +534,8 @@ internal class CompletionValidator3 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["trainerBattle"] = ow;
 
-        for (var trainerId = 1; trainerId <= 854; trainerId++)
+        var TRAINER_FLAGS_START = 0x500;
+        for (var trainerId = 0; trainerId <= 854; trainerId++)
             ow[trainerId.ToString()] = sav.GetEventFlag(TRAINER_FLAGS_START + trainerId);
     }
 
@@ -676,6 +678,17 @@ internal class CompletionValidator3 : CompletionValidatorX
         owned["misc"] = ow;
 
         ow["DefeatSteven"] = sav.GetEventFlag(0x04F8);
+
+        var large = sav.Large;
+        var toFind = new List<byte> { 204, 201, 187, 197 };
+
+        for(var i = 0; i < large.Length - 4; i++) { 
+            if (large[i] == toFind[0] && large[i + 1] == toFind[1] && large[i + 2] == toFind[2] && large[i +3] == toFind[3])
+                Console.WriteLine(i);
+        }
+
+        //ow["BattleviaGameLinkCable"] = sav.BattleVideo
+
         // ow["BeatSlateportBattleTent"] = true; // Not trackable
         // ow["BeatVerdanturfBattleTent"] = true; // Not trackable
         // ow["BeatFallarborBattleTent"] = true; // Not trackable
