@@ -22,6 +22,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         Generate_inGameTrade();
         Generate_decoration();
         Generate_phone();
+        Generate_trainerBattle(); 
         Generate_pokegear();
         Generate_pokemonForm();
     }
@@ -168,36 +169,45 @@ internal class CompletionValidator2 : CompletionValidatorX
 
         ow["Mom"] = true;
         ow["ProfessorElm"] = true;
-        ow["YoungsterJoey"] = sav.GetEventFlag(0x0273);
-        ow["BugCatcherWade"] = sav.GetEventFlag(0x0275);
-        ow["PicnickerLiz"] = sav.GetEventFlag(0x0279);
-        ow["FishermanRalph"] = sav.GetEventFlag(0x0277);
-        ow["HikerAnthony"] = sav.GetEventFlag(0x027B);
-        ow["PicnickerGina"] = sav.GetEventFlag(0x027F);
-        ow["CamperTodd"] = sav.GetEventFlag(0x027D);
         ow["Bill"] = sav.GetEventFlag(0x004F); //BAD
         ow["Buena"] = sav.GetEventFlag(0x033C) || sav.GetEventFlag(0x029E);
-        ow["BugCatcherArnie"] = sav.GetEventFlag(0x0283);
-        ow["JugglerIrwin"] = sav.GetEventFlag(0x0281);
         ow["PokefanBeverly"] = sav.GetEventFlag(0x0261);
+        ow["PokefanDerek"] = sav.GetEventFlag(0x028D);
+
         ow["SchoolKidJack"] = sav.GetEventFlag(0x025F);
+        ow["SailorHuey"] = sav.GetEventFlag(0x0263);
+        ow["AceTrainerGaven"] = sav.GetEventFlag(0x026B);
+        ow["CooltrainerBeth"] = sav.GetEventFlag(0x026D);
+        ow["BirdKeeperJose"] = sav.GetEventFlag(0x026F);
+        ow["AceTrainerReena"] = sav.GetEventFlag(0x0271);
+        ow["YoungsterJoey"] = sav.GetEventFlag(0x0273);
+        ow["BugCatcherWade"] = sav.GetEventFlag(0x0275);
+        ow["FishermanRalph"] = sav.GetEventFlag(0x0277);
+        ow["PicnickerLiz"] = sav.GetEventFlag(0x0279);
+        ow["HikerAnthony"] = sav.GetEventFlag(0x027B);
+        ow["CamperTodd"] = sav.GetEventFlag(0x027D);
+        ow["PicnickerGina"] = sav.GetEventFlag(0x027F);
+        ow["JugglerIrwin"] = sav.GetEventFlag(0x0281);
+        ow["BugCatcherArnie"] = sav.GetEventFlag(0x0283);
         ow["SchoolKidAlan"] = sav.GetEventFlag(0x0285);
         ow["LassDana"] = sav.GetEventFlag(0x0289);
         ow["SchoolKidChad"] = sav.GetEventFlag(0x028B);
-        ow["PokefanDerek"] = sav.GetEventFlag(0x028D);
-        ow["SailorHuey"] = sav.GetEventFlag(0x0263);
         ow["FishermanTully"] = sav.GetEventFlag(0x028F);
-        ow["PicnickerTiffany"] = sav.GetEventFlag(0x0293);
         ow["PokeManiacBrent"] = sav.GetEventFlag(0x0291);
+        ow["PicnickerTiffany"] = sav.GetEventFlag(0x0293);
         ow["BirdKeeperVance"] = sav.GetEventFlag(0x0295);
         ow["FishermanWilton"] = sav.GetEventFlag(0x0297);
         ow["BlackBeltKenji"] = sav.GetEventFlag(0x0299);
         ow["HikerParry"] = sav.GetEventFlag(0x029B);
         ow["PicnickerErin"] = sav.GetEventFlag(0x029D);
-        ow["CooltrainerBeth"] = sav.GetEventFlag(0x026D);
-        ow["AceTrainerGaven"] = sav.GetEventFlag(0x026B);
-        ow["AceTrainerReena"] = sav.GetEventFlag(0x0271);
-        ow["BirdKeeperJose"] = sav.GetEventFlag(0x026F);
+    }
+
+
+    public void Generate_trainerBattle()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["trainerBattle"] = ow;
+        
     }
 
     public void Generate_pokegear()
