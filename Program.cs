@@ -73,6 +73,12 @@ internal class Program
 
     static void Main(string[] args)
     {
+        /* For debug:
+        var file = "";
+        var mySav = (SAV2)SaveUtil.GetVariantSAV(TryReadAllBytes(file));
+        File.WriteAllBytes(file + "2", mySav.Write());
+        */
+
         if (!ValidateArgLength(args, 1))
             return;
 

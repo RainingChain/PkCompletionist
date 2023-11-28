@@ -150,6 +150,9 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x0416))
             ow["94"] = true; // Moon Stone
 
+        if (sav.GetEventFlag(0x457)) // FLAG_ITEM_FIERY_PATH_FIRE_STONE
+            ow["95"] = true; // Fire Stone
+
         if (sav.GetEventFlag(0x0403))
             ow["98"] = true; // Leaf Stone
 
@@ -165,12 +168,15 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x009C)) // Skitty for Meowth trade
             ow["132"] = true; // Retro Mail
 
-        if (HasPkm(367) && sav.GetEventFlag(0x0126)) // Huntail, FLAG_EXCHANGED_SCANNER
+        if (sav.GetEventFlag(0x114)) // FLAG_RECEIVED_KINGS_ROCK
+            ow["187"] = true; // King's Rock        
+
+        if (HasPkm(367) && sav.GetEventFlag(0x436)) // Huntail, FLAG_ITEM_ABANDONED_SHIP_HIDDEN_FLOOR_ROOM_2_SCANNER
             ow["192"] = true; // DeepSeaTooth
 
-        if (HasPkm(368) && sav.GetEventFlag(0x0126)) // Gorebyss, FLAG_EXCHANGED_SCANNER
+        if (HasPkm(368) && sav.GetEventFlag(0x436)) // Gorebyss, FLAG_ITEM_ABANDONED_SHIP_HIDDEN_FLOOR_ROOM_2_SCANNER
             ow["193"] = true; // DeepSeaScale
-
+                
         if (sav.GetEventFlag(0x0436))
             ow["278"] = true; // Scanner
 
@@ -679,15 +685,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         ow["DefeatSteven"] = sav.GetEventFlag(0x04F8);
 
-        var large = sav.Large;
-        var toFind = new List<byte> { 204, 201, 187, 197 };
-
-        for(var i = 0; i < large.Length - 4; i++) { 
-            if (large[i] == toFind[0] && large[i + 1] == toFind[1] && large[i + 2] == toFind[2] && large[i +3] == toFind[3])
-                Console.WriteLine(i);
-        }
-
-        //ow["BattleviaGameLinkCable"] = sav.BattleVideo
+        ow["BattleviaGameLinkCable"] = sav.Large[0x3150 + 8] != 0; // LinkBattleRecord[0].trainerId
 
         // ow["BeatSlateportBattleTent"] = true; // Not trackable
         // ow["BeatVerdanturfBattleTent"] = true; // Not trackable
