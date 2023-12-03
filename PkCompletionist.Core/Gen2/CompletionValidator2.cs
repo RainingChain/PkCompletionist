@@ -208,60 +208,478 @@ internal class CompletionValidator2 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["trainerBattle"] = ow;
 
-        var flagDict = new Dictionary<string, int> { { "FALKNER1", 0x4BD }, { "WHITNEY1", 0x4BF }, { "BUGSY1", 0x4BE }, { "MORTY1", 0x4C0 }, { "PRYCE1", 0x4C3 }, { "JASMINE1", 0x4C1 }, { "CHUCK1", 0x4C2 }, { "CLAIR1", 0x4C4 }, { "WILL1", 0x5B8 }, { "BRUNO1", 0x5BA }, { "KAREN1", 0x5BB }, { "KOGA1", 0x5B9 }, { "LANCE", 0x5BC }, { "BROCK1", 0x4C5 }, { "MISTY1", 0x4C6 }, { "LT_SURGE1", 0x4C7 }, { "ROSS", 0x49F }, { "MITCH", 0x4A0 }, { "JED", 0x4A1 }, { "MARC", 0x4A2 }, { "RICH", 0x4A3 }, { "ERIKA1", 0x4C8 }, { "JOEY1", 0x5A9 }, { "MIKEY", 0x5AA }, { "ALBERT", 0x5AB }, { "GORDON", 0x5AC }, { "SAMUEL", 0x5AD }, { "IAN", 0x5AE }, { "JOEY2", 0x5AF }, { "JOEY3", 0x5B0 }, { "WARREN", 0x5B1 }, { "JIMMY", 0x5B2 }, { "OWEN", 0x5B3 }, { "JASON", 0x5B4 }, { "JACK1", 0x46C }, { "KIPP", 0x46D }, { "ALAN1", 0x46E }, { "JOHNNY", 0x46F }, { "DANNY", 0x470 }, { "TOMMY", 0x471 }, { "DUDLEY", 0x472 }, { "JOE", 0x473 }, { "BILLY", 0x474 }, { "CHAD1", 0x475 }, { "NATE", 0x476 }, { "RICKY", 0x477 }, { "JACK2", 0x478 }, { "JACK3", 0x479 }, { "ALAN2", 0x47A }, { "ALAN3", 0x47B }, { "CHAD2", 0x47C }, { "CHAD3", 0x47D }, { "ROD", 0x3FB }, { "ABE", 0x3FC }, { "BRYAN", 0x3FD }, { "THEO", 0x3FE }, { "TOBY", 0x3FF }, { "DENIS", 0x400 }, { "VANCE1", 0x401 }, { "HANK", 0x402 }, { "ROY", 0x403 }, { "BORIS", 0x404 }, { "BOB", 0x405 }, { "JOSE1", 0x406 }, { "PETER", 0x407 }, { "JOSE2", 0x408 }, { "PERRY", 0x409 }, { "BRET", 0x40A }, { "JOSE3", 0x40B }, { "VANCE2", 0x40C }, { "VANCE3", 0x40D }, { "CARRIE", 0x515 }, { "BRIDGET", 0x516 }, { "ALICE", 0x517 }, { "KRISE", 0x518 }, { "CONNIE1", 0x519 }, { "LINDA", 0x51A }, { "LAURA", 0x51B }, { "SHANNON", 0x51C }, { "MICHELLE", 0x51D }, { "DANA1", 0x51E }, { "ELLEN", 0x51F }, { "DANA2", 0x522 }, { "DANA3", 0x523 }, { "JANINE1", 0x4C9 }, { "NICK", 0x548 }, { "AARON", 0x549 }, { "PAUL", 0x54A }, { "CODY", 0x54B }, { "MIKE", 0x54C }, { "GAVEN1", 0x551 }, { "GAVEN2", 0x54D }, { "RYAN", 0x54F }, { "JAKE", 0x550 }, { "GAVEN3", 0x54E }, { "BLAKE", 0x552 }, { "BRIAN", 0x553 }, { "SEAN", 0x557 }, { "KEVIN", 0x558 }, { "ALLEN", 0x55A }, { "DARIN", 0x5BD }, { "GWEN", 0x55B }, { "LOIS", 0x55C }, { "FRAN", 0x55D }, { "LOLA", 0x55E }, { "KATE", 0x55F }, { "IRENE", 0x560 }, { "KELLY", 0x561 }, { "JOYCE", 0x562 }, { "BETH1", 0x563 }, { "REENA1", 0x564 }, { "MEGAN", 0x565 }, { "BETH2", 0x566 }, { "CAROL", 0x567 }, { "QUINN", 0x568 }, { "EMMA", 0x569 }, { "CYBIL", 0x56A }, { "JENN", 0x56B }, { "BETH3", 0x56C }, { "REENA2", 0x56D }, { "REENA3", 0x56E }, { "CARA", 0x5BE }, { "VICTORIA", 0x4AD }, { "SAMANTHA", 0x4AE }, { "CASSIE", 0x4B2 }, { "JULIA", 0x4BA }, { "VALERIE", 0x4BC }, { "OLIVIA", 0x5C1 }, { "LARRY", 0x4E4 }, { "ANDREW", 0x4E5 }, { "CALVIN", 0x4E6 }, { "SHANE", 0x4E7 }, { "BEN", 0x4E8 }, { "BRENT1", 0x4E9 }, { "RON", 0x4EA }, { "ETHAN", 0x4EB }, { "BRENT2", 0x4EC }, { "BRENT3", 0x4ED }, { "ISSAC", 0x4EE }, { "DONALD", 0x4EF }, { "ZACH", 0x4F0 }, { "MILLER", 0x5C4 }, { "GRUNTM_1", 0x4F1 }, { "GRUNTM_2", 0x4F2 }, { "GRUNTM_3", 0x4F3 }, { "GRUNTM_4", 0x4F4 }, { "GRUNTM_5", 0x4F5 }, { "GRUNTM_6", 0x4F6 }, { "GRUNTM_7", 0x4F7 }, { "GRUNTM_8", 0x4F8 }, { "GRUNTM_9", 0x4F9 }, { "GRUNTM_10", 0x4FA }, { "GRUNTM_11", 0x4FB }, { "GRUNTM_13", 0x4FD }, { "GRUNTM_14", 0x4FE }, { "GRUNTM_15", 0x4FF }, { "GRUNTM_16", 0x500 }, { "GRUNTM_17", 0x501 }, { "GRUNTM_18", 0x502 }, { "GRUNTM_19", 0x503 }, { "GRUNTM_20", 0x504 }, { "GRUNTM_21", 0x505 }, { "GRUNTM_24", 0x508 }, { "GRUNTM_25", 0x509 }, { "GRUNTM_28", 0x50C }, { "GRUNTM_29", 0x50D }, { "PRESTON", 0x49A }, { "EDWARD", 0x49B }, { "GREGORY", 0x49C }, { "ALFRED", 0x49E }, { "ROXANNE", 0x592 }, { "CLARISSA", 0x593 }, { "COLETTE", 0x5B5 }, { "HILLARY", 0x5B6 }, { "SHIRLEY", 0x5B7 }, { "SABRINA1", 0x4CA }, { "DON", 0x538 }, { "ROB", 0x539 }, { "ED", 0x53A }, { "WADE1", 0x53B }, { "BUG_CATCHER_BENNY", 0x53C }, { "AL", 0x53D }, { "JOSH", 0x53E }, { "ARNIE1", 0x53F }, { "KEN", 0x540 }, { "WADE2", 0x541 }, { "WADE3", 0x542 }, { "DOUG", 0x543 }, { "ARNIE2", 0x544 }, { "ARNIE3", 0x545 }, { "WAYNE", 0x5C0 }, { "JUSTIN", 0x44E }, { "RALPH1", 0x44F }, { "ARNOLD", 0x450 }, { "KYLE", 0x451 }, { "HENRY", 0x452 }, { "MARVIN", 0x453 }, { "TULLY1", 0x454 }, { "ANDRE", 0x455 }, { "RAYMOND", 0x456 }, { "WILTON1", 0x457 }, { "EDGAR", 0x458 }, { "JONAH", 0x459 }, { "MARTIN", 0x45A }, { "STEPHEN", 0x45B }, { "BARNEY", 0x45C }, { "RALPH2", 0x45D }, { "RALPH3", 0x45E }, { "TULLY2", 0x45F }, { "TULLY3", 0x460 }, { "WILTON2", 0x461 }, { "SCOTT", 0x462 }, { "WILTON3", 0x463 }, { "RALPH4", 0x45D }, { "RALPH5", 0x45E }, { "HAROLD", 0x594 }, { "SIMON", 0x595 }, { "RANDALL", 0x596 }, { "CHARLIE", 0x597 }, { "GEORGE", 0x598 }, { "BERKE", 0x599 }, { "KIRK", 0x59A }, { "MATHEW", 0x59B }, { "JEROME", 0x5A1 }, { "TUCKER", 0x5A2 }, { "CAMERON", 0x5A4 }, { "SETH", 0x5A5 }, { "PARKER", 0x5A8 }, { "ELAINE", 0x3E8 }, { "PAULA", 0x3E9 }, { "KAYLEE", 0x3EA }, { "SUSIE", 0x3EB }, { "DENISE", 0x3EC }, { "KARA", 0x3ED }, { "WENDY", 0x3EE }, { "DAWN", 0x3F3 }, { "NICOLE", 0x3F5 }, { "LORI", 0x3F6 }, { "NIKKI", 0x3F8 }, { "DIANA", 0x3F9 }, { "BRIANA", 0x3FA }, { "EUGENE", 0x575 }, { "HUEY1", 0x576 }, { "TERRELL", 0x577 }, { "KENT", 0x578 }, { "ERNEST", 0x579 }, { "JEFF", 0x57A }, { "GARRETT", 0x57B }, { "KENNETH", 0x57C }, { "STANLY", 0x57D }, { "HARRY", 0x57E }, { "HUEY2", 0x57F }, { "HUEY3", 0x580 }, { "STAN", 0x581 }, { "ERIC", 0x582 }, { "SAM", 0x586 }, { "TOM", 0x587 }, { "PAT", 0x588 }, { "SHAWN", 0x589 }, { "TERU", 0x58A }, { "HUGH", 0x5C5 }, { "MARKUS", 0x5C6 }, { "CLYDE", 0x493 }, { "VINCENT", 0x494 }, { "ANTHONY1", 0x528 }, { "RUSSELL", 0x525 }, { "PHILLIP", 0x526 }, { "LEONARD", 0x527 }, { "ANTHONY2", 0x524 }, { "BENJAMIN", 0x529 }, { "ERIK", 0x52A }, { "MICHAEL", 0x52B }, { "PARRY1", 0x52C }, { "TIMOTHY", 0x52D }, { "BAILEY", 0x52E }, { "ANTHONY3", 0x52F }, { "TIM", 0x530 }, { "NOLAND", 0x531 }, { "SIDNEY", 0x532 }, { "KENNY", 0x533 }, { "JIM", 0x534 }, { "DANIEL", 0x535 }, { "PARRY2", 0x536 }, { "PARRY3", 0x537 }, { "DWAYNE", 0x433 }, { "HARRIS", 0x434 }, { "ZEKE", 0x435 }, { "CHARLES", 0x436 }, { "RILEY", 0x437 }, { "JOEL", 0x438 }, { "GLENN", 0x439 }, { "BLAINE1", 0x4CB }, { "DUNCAN", 0x42D }, { "EDDIE", 0x42E }, { "COREY", 0x42F }, { "OTIS", 0x446 }, { "BURT", 0x449 }, { "BILL", 0x44A }, { "WALT", 0x44B }, { "RAY", 0x44C }, { "LYLE", 0x44D }, { "IRWIN1", 0x495 }, { "FRITZ", 0x496 }, { "HORTON", 0x497 }, { "YOSHI", 0x4A5 }, { "LAO", 0x4A7 }, { "NOB", 0x4A8 }, { "KIYO", 0x4A9 }, { "LUNG", 0x4AA }, { "KENJI3", 0x4AB }, { "WAI", 0x4AC }, { "EXECUTIVEM_1", 0x571 }, { "EXECUTIVEM_2", 0x572 }, { "EXECUTIVEM_3", 0x573 }, { "EXECUTIVEM_4", 0x574 }, { "NATHAN", 0x43A }, { "FRANKLIN", 0x43B }, { "HERMAN", 0x43C }, { "FIDEL", 0x43D }, { "GREG", 0x43E }, { "NORMAN", 0x43F }, { "MARK", 0x440 }, { "PHIL", 0x441 }, { "RICHARD", 0x442 }, { "GILBERT", 0x443 }, { "JARED", 0x444 }, { "RODNEY", 0x445 }, { "LIZ1", 0x47E }, { "GINA1", 0x47F }, { "BROOKE", 0x480 }, { "KIM", 0x481 }, { "CINDY", 0x482 }, { "HOPE", 0x483 }, { "SHARON", 0x484 }, { "DEBRA", 0x485 }, { "GINA2", 0x486 }, { "ERIN1", 0x487 }, { "LIZ2", 0x488 }, { "LIZ3", 0x489 }, { "HEIDI", 0x48A }, { "EDNA", 0x48B }, { "GINA3", 0x48C }, { "TIFFANY1", 0x491 }, { "TIFFANY2", 0x48D }, { "ERIN2", 0x48F }, { "TANYA", 0x490 }, { "TIFFANY3", 0x48E }, { "ERIN3", 0x492 }, { "ROLAND", 0x41A }, { "TODD1", 0x41B }, { "IVAN", 0x41C }, { "ELLIOT", 0x41D }, { "BARRY", 0x41E }, { "LLOYD", 0x41F }, { "DEAN", 0x420 }, { "SID", 0x421 }, { "TED", 0x424 }, { "TODD2", 0x425 }, { "TODD3", 0x426 }, { "JERRY", 0x42B }, { "SPENCER", 0x42C }, { "QUENTIN", 0x5C3 }, { "EXECUTIVEF_1", 0x56F }, { "EXECUTIVEF_2", 0x570 }, { "CHOW", 0x411 }, { "NICO", 0x412 }, { "JIN", 0x413 }, { "TROY", 0x414 }, { "JEFFREY", 0x415 }, { "PING", 0x416 }, { "EDMOND", 0x417 }, { "NEAL", 0x418 }, { "LI", 0x419 }, { "GAKU", 0x5C9 }, { "MASA", 0x5CA }, { "KOJI", 0x5CB }, { "MARTHA", 0x58B }, { "GRACE", 0x58C }, { "REBECCA", 0x590 }, { "DORIS", 0x591 }, { "RONALD", 0x40E }, { "BRAD", 0x40F }, { "DOUGLAS", 0x410 }, { "WILLIAM", 0x4CD }, { "DEREK1", 0x4CE }, { "ROBERT", 0x4CF }, { "JOSHUA", 0x4D0 }, { "CARTER", 0x4D1 }, { "TREVOR", 0x4D2 }, { "BRANDON", 0x4D3 }, { "JEREMY", 0x4D4 }, { "COLIN", 0x4D5 }, { "ALEX", 0x4D8 }, { "REX", 0x5C7 }, { "ALLAN", 0x5C8 }, { "NAOKO", 0x4DF }, { "SAYO", 0x4E0 }, { "ZUKI", 0x4E1 }, { "KUNI", 0x4E2 }, { "MIKI", 0x4E3 }, { "AMYANDMAY1", 0x464 }, { "ANNANDANNE1", 0x465 }, { "ANNANDANNE2", 0x466 }, { "AMYANDMAY2", 0x467 }, { "JOANDZOE1", 0x468 }, { "JOANDZOE2", 0x469 }, { "MEGANDPEG1", 0x46A }, { "MEGANDPEG2", 0x46B }, { "LEAANDPIA1", 0x5BF }, { "BEVERLY1", 0x4D9 }, { "RUTH", 0x4DA }, { "GEORGIA", 0x4DD }, { "JAIME", 0x5C2 }, { "BLUE1", 0x4CC }, { "KEITH", 0x546 }, { "DIRK", 0x547 }, { "GRUNTF_1", 0x510 }, { "GRUNTF_2", 0x511 }, { "GRUNTF_3", 0x512 }, { "GRUNTF_4", 0x513 }, { "GRUNTF_5", 0x514 }, { "EUSINE", 0x333 } };
+        var flagDict = new Dictionary<string, int> {
+         { "AARON", 0x549 },
+         { "ABE", 0x3FC },
+         { "AL", 0x53D },
+         { "ALBERT", 0x5AB },
+         { "ALEX", 0x4D8 },
+         { "ALFRED", 0x49E },
+         { "ALICE", 0x517 },
+         { "ALLAN", 0x5C8 },
+         { "ALLEN", 0x55A },
+         { "AMYANDMAY1", 0x464 },
+         { "AMYANDMAY2", 0x467 },
+         { "ANDRE", 0x455 },
+         { "ANDREW", 0x4E5 },
+         { "ANNANDANNE1", 0x465 },
+         { "ANNANDANNE2", 0x466 },
+         { "ARNOLD", 0x450 },
+         { "BAILEY", 0x52E },
+         { "BARNEY", 0x45C },
+         { "BARRY", 0x41E },
+         { "BEN", 0x4E8 },
+         { "BENJAMIN", 0x529 },
+         { "BERKE", 0x599 },
+         { "BEVERLY1", 0x4D9 },
+         { "BILL", 0x44A },
+         { "BILLY", 0x474 },
+         { "BLAINE1", 0x4CB },
+         { "BLAKE", 0x552 },
+         { "BLUE1", 0x4CC },
+         { "BOB", 0x405 },
+         { "BORIS", 0x404 },
+         { "BRAD", 0x40F },
+         { "BRANDON", 0x4D3 },
+         { "BRET", 0x40A },
+         { "BRIAN", 0x553 },
+         { "BRIANA", 0x3FA },
+         { "BRIDGET", 0x516 },
+         { "BROCK1", 0x4C5 },
+         { "BROOKE", 0x480 },
+         { "BRUNO1", 0x5BA },
+         { "BRYAN", 0x3FD },
+         { "BUG_CATCHER_BENNY", 0x53C },
+         { "BUGSY1", 0x4BE },
+         { "BURT", 0x449 },
+         { "CALVIN", 0x4E6 },
+         { "CAMERON", 0x5A4 },
+         { "CARA", 0x5BE },
+         { "CAROL", 0x567 },
+         { "CARRIE", 0x515 },
+         { "CARTER", 0x4D1 },
+         { "CASSIE", 0x4B2 },
+         { "CHARLES", 0x436 },
+         { "CHARLIE", 0x597 },
+         { "CHOW", 0x411 },
+         { "CHUCK1", 0x4C2 },
+         { "CINDY", 0x482 },
+         { "CLAIR1", 0x4C4 },
+         { "CLARISSA", 0x593 },
+         { "CLYDE", 0x493 },
+         { "CODY", 0x54B },
+         { "COLETTE", 0x5B5 },
+         { "COLIN", 0x4D5 },
+         { "CONNIE1", 0x519 },
+         { "COREY", 0x42F },
+         { "CYBIL", 0x56A },
+         { "DANIEL", 0x535 },
+         { "DANNY", 0x470 },
+         { "DARIN", 0x5BD },
+         { "DAWN", 0x3F3 },
+         { "DEAN", 0x420 },
+         { "DEBRA", 0x485 },
+         { "DENIS", 0x400 },
+         { "DENISE", 0x3EC },
+         { "DEREK1", 0x4CE },
+         { "DIANA", 0x3F9 },
+         { "DIRK", 0x547 },
+         { "DON", 0x538 },
+         { "DONALD", 0x4EF },
+         { "DORIS", 0x591 },
+         { "DOUG", 0x543 },
+         { "DOUGLAS", 0x410 },
+         { "DUDLEY", 0x472 },
+         { "DUNCAN", 0x42D },
+         { "DWAYNE", 0x433 },
+         { "ED", 0x53A },
+         { "EDDIE", 0x42E },
+         { "EDGAR", 0x458 },
+         { "EDMOND", 0x417 },
+         { "EDNA", 0x48B },
+         { "EDWARD", 0x49B },
+         { "ELAINE", 0x3E8 },
+         { "ELLEN", 0x51F },
+         { "ELLIOT", 0x41D },
+         { "EMMA", 0x569 },
+         { "ERIC", 0x582 },
+         { "ERIK", 0x52A },
+         { "ERIKA1", 0x4C8 },
+         { "ERNEST", 0x579 },
+         { "ETHAN", 0x4EB },
+         { "EUGENE", 0x575 },
+         { "EUSINE", 0x333 },
+         { "EXECUTIVEF_1", 0x56F },
+         { "EXECUTIVEF_2", 0x570 },
+         { "EXECUTIVEM_1", 0x571 },
+         { "EXECUTIVEM_2", 0x572 },
+         { "EXECUTIVEM_3", 0x573 },
+         { "EXECUTIVEM_4", 0x574 },
+         { "FALKNER1", 0x4BD },
+         { "FIDEL", 0x43D },
+         { "FRAN", 0x55D },
+         { "FRANKLIN", 0x43B },
+         { "FRITZ", 0x496 },
+         { "GAKU", 0x5C9 },
+         { "GARRETT", 0x57B },
+         { "GEORGE", 0x598 },
+         { "GEORGIA", 0x4DD },
+         { "GILBERT", 0x443 },
+         { "GLENN", 0x439 },
+         { "GORDON", 0x5AC },
+         { "GRACE", 0x58C },
+         { "GREG", 0x43E },
+         { "GREGORY", 0x49C },
+         { "GRUNTF_1", 0x510 },
+         { "GRUNTF_2", 0x511 },
+         { "GRUNTF_3", 0x512 },
+         { "GRUNTF_4", 0x513 },
+         { "GRUNTF_5", 0x514 },
+         { "GRUNTM_1", 0x4F1 },
+         { "GRUNTM_10", 0x4FA },
+         { "GRUNTM_11", 0x4FB },
+         { "GRUNTM_13", 0x4FD },
+         { "GRUNTM_14", 0x4FE },
+         { "GRUNTM_15", 0x4FF },
+         { "GRUNTM_16", 0x500 },
+         { "GRUNTM_17", 0x501 },
+         { "GRUNTM_18", 0x502 },
+         { "GRUNTM_19", 0x503 },
+         { "GRUNTM_2", 0x4F2 },
+         { "GRUNTM_20", 0x504 },
+         { "GRUNTM_21", 0x505 },
+         { "GRUNTM_24", 0x508 },
+         { "GRUNTM_25", 0x509 },
+         { "GRUNTM_28", 0x50C },
+         { "GRUNTM_29", 0x50D },
+         { "GRUNTM_3", 0x4F3 },
+         { "GRUNTM_4", 0x4F4 },
+         { "GRUNTM_5", 0x4F5 },
+         { "GRUNTM_6", 0x4F6 },
+         { "GRUNTM_7", 0x4F7 },
+         { "GRUNTM_8", 0x4F8 },
+         { "GRUNTM_9", 0x4F9 },
+         { "GWEN", 0x55B },
+         { "HANK", 0x402 },
+         { "HAROLD", 0x594 },
+         { "HARRIS", 0x434 },
+         { "HARRY", 0x57E },
+         { "HEIDI", 0x48A },
+         { "HENRY", 0x452 },
+         { "HERMAN", 0x43C },
+         { "HILLARY", 0x5B6 },
+         { "HOPE", 0x483 },
+         { "HORTON", 0x497 },
+         { "HUGH", 0x5C5 },
+         { "IAN", 0x5AE },
+         { "IRENE", 0x560 },
+         { "IRWIN1", 0x495 },
+         { "ISSAC", 0x4EE },
+         { "IVAN", 0x41C },
+         { "JAIME", 0x5C2 },
+         { "JAKE", 0x550 },
+         { "JANINE1", 0x4C9 },
+         { "JARED", 0x444 },
+         { "JASMINE1", 0x4C1 },
+         { "JASON", 0x5B4 },
+         { "JED", 0x4A1 },
+         { "JEFF", 0x57A },
+         { "JEFFREY", 0x415 },
+         { "JENN", 0x56B },
+         { "JEREMY", 0x4D4 },
+         { "JEROME", 0x5A1 },
+         { "JERRY", 0x42B },
+         { "JIM", 0x534 },
+         { "JIMMY", 0x5B2 },
+         { "JIN", 0x413 },
+         { "JOANDZOE1", 0x468 },
+         { "JOANDZOE2", 0x469 },
+         { "JOE", 0x473 },
+         { "JOEL", 0x438 },
+         { "JOHNNY", 0x46F },
+         { "JONAH", 0x459 },
+         { "JOSH", 0x53E },
+         { "JOSHUA", 0x4D0 },
+         { "JOYCE", 0x562 },
+         { "JULIA", 0x4BA },
+         { "JUSTIN", 0x44E },
+         { "KARA", 0x3ED },
+         { "KAREN1", 0x5BB },
+         { "KATE", 0x55F },
+         { "KAYLEE", 0x3EA },
+         { "KEITH", 0x546 },
+         { "KELLY", 0x561 },
+         { "KEN", 0x540 },
+         { "KENJI3", 0x4AB },
+         { "KENNETH", 0x57C },
+         { "KENNY", 0x533 },
+         { "KENT", 0x578 },
+         { "KEVIN", 0x558 },
+         { "KIM", 0x481 },
+         { "KIPP", 0x46D },
+         { "KIRK", 0x59A },
+         { "KIYO", 0x4A9 },
+         { "KOGA1", 0x5B9 },
+         { "KOJI", 0x5CB },
+         { "KRISE", 0x518 },
+         { "KUNI", 0x4E2 },
+         { "KYLE", 0x451 },
+         { "LANCE", 0x5BC },
+         { "LAO", 0x4A7 },
+         { "LARRY", 0x4E4 },
+         { "LAURA", 0x51B },
+         { "LEAANDPIA1", 0x5BF },
+         { "LEONARD", 0x527 },
+         { "LI", 0x419 },
+         { "LINDA", 0x51A },
+         { "LLOYD", 0x41F },
+         { "LOIS", 0x55C },
+         { "LOLA", 0x55E },
+         { "LORI", 0x3F6 },
+         { "LT_SURGE1", 0x4C7 },
+         { "LUNG", 0x4AA },
+         { "LYLE", 0x44D },
+         { "MARC", 0x4A2 },
+         { "MARK", 0x440 },
+         { "MARKUS", 0x5C6 },
+         { "MARTHA", 0x58B },
+         { "MARTIN", 0x45A },
+         { "MARVIN", 0x453 },
+         { "MASA", 0x5CA },
+         { "MATHEW", 0x59B },
+         { "MEGAN", 0x565 },
+         { "MEGANDPEG1", 0x46A },
+         { "MEGANDPEG2", 0x46B },
+         { "MICHAEL", 0x52B },
+         { "MICHELLE", 0x51D },
+         { "MIKE", 0x54C },
+         { "MIKEY", 0x5AA },
+         { "MIKI", 0x4E3 },
+         { "MILLER", 0x5C4 },
+         { "MISTY1", 0x4C6 },
+         { "MITCH", 0x4A0 },
+         { "MORTY1", 0x4C0 },
+         { "NAOKO", 0x4DF },
+         { "NATE", 0x476 },
+         { "NATHAN", 0x43A },
+         { "NEAL", 0x418 },
+         { "NICK", 0x548 },
+         { "NICO", 0x412 },
+         { "NICOLE", 0x3F5 },
+         { "NIKKI", 0x3F8 },
+         { "NOB", 0x4A8 },
+         { "NOLAND", 0x531 },
+         { "NORMAN", 0x43F },
+         { "OLIVIA", 0x5C1 },
+         { "OTIS", 0x446 },
+         { "OWEN", 0x5B3 },
+         { "PARKER", 0x5A8 },
+         { "PAT", 0x588 },
+         { "PAUL", 0x54A },
+         { "PAULA", 0x3E9 },
+         { "PERRY", 0x409 },
+         { "PETER", 0x407 },
+         { "PHIL", 0x441 },
+         { "PHILLIP", 0x526 },
+         { "PING", 0x416 },
+         { "PRESTON", 0x49A },
+         { "PRYCE1", 0x4C3 },
+         { "QUENTIN", 0x5C3 },
+         { "QUINN", 0x568 },
+         { "RANDALL", 0x596 },
+         { "RAY", 0x44C },
+         { "RAYMOND", 0x456 },
+         { "REBECCA", 0x590 },
+         { "REX", 0x5C7 },
+         { "RICH", 0x4A3 },
+         { "RICHARD", 0x442 },
+         { "RICKY", 0x477 },
+         { "RILEY", 0x437 },
+         { "ROB", 0x539 },
+         { "ROBERT", 0x4CF },
+         { "ROD", 0x3FB },
+         { "RODNEY", 0x445 },
+         { "ROLAND", 0x41A },
+         { "RON", 0x4EA },
+         { "RONALD", 0x40E },
+         { "ROSS", 0x49F },
+         { "ROXANNE", 0x592 },
+         { "ROY", 0x403 },
+         { "RUSSELL", 0x525 },
+         { "RUTH", 0x4DA },
+         { "RYAN", 0x54F },
+         { "SABRINA1", 0x4CA },
+         { "SAM", 0x586 },
+         { "SAMANTHA", 0x4AE },
+         { "SAMUEL", 0x5AD },
+         { "SAYO", 0x4E0 },
+         { "SCOTT", 0x462 },
+         { "SEAN", 0x557 },
+         { "SETH", 0x5A5 },
+         { "SHANE", 0x4E7 },
+         { "SHANNON", 0x51C },
+         { "SHARON", 0x484 },
+         { "SHAWN", 0x589 },
+         { "SHIRLEY", 0x5B7 },
+         { "SID", 0x421 },
+         { "SIDNEY", 0x532 },
+         { "SIMON", 0x595 },
+         { "SPENCER", 0x42C },
+         { "STAN", 0x581 },
+         { "STANLY", 0x57D },
+         { "STEPHEN", 0x45B },
+         { "SUSIE", 0x3EB },
+         { "TANYA", 0x490 },
+         { "TED", 0x424 },
+         { "TERRELL", 0x577 },
+         { "TERU", 0x58A },
+         { "THEO", 0x3FE },
+         { "TIM", 0x530 },
+         { "TIMOTHY", 0x52D },
+         { "TOBY", 0x3FF },
+         { "TOM", 0x587 },
+         { "TOMMY", 0x471 },
+         { "TREVOR", 0x4D2 },
+         { "TROY", 0x414 },
+         { "TUCKER", 0x5A2 },
+         { "VALERIE", 0x4BC },
+         { "VICTORIA", 0x4AD },
+         { "VINCENT", 0x494 },
+         { "WAI", 0x4AC },
+         { "WALT", 0x44B },
+         { "WARREN", 0x5B1 },
+         { "WAYNE", 0x5C0 },
+         { "WENDY", 0x3EE },
+         { "WHITNEY1", 0x4BF },
+         { "WILL1", 0x5B8 },
+         { "WILLIAM", 0x4CD },
+         { "YOSHI", 0x4A5 },
+         { "ZACH", 0x4F0 },
+         { "ZEKE", 0x435 },
+         { "ZUKI", 0x4E1 },
+        };
 
+
+        /*
+            wVanceFightCount
+            wWiltonFightCount
+        */
+
+        // Rematch Logic:
+        // After first battle, sets a regular EventFlag
+        // If rematch, increments EventWork by 1
+        // The rematch can be against the same pokemons as the first battle
+        // In most cases, impossible to know if last battle is done
+
+        var func = (List<string> list, string eventFlag, string eventWork) => {
+            var eventFlagAddr = Cnst2.EventNameToAddress.GetValueOrDefault(eventFlag);
+            if (eventFlagAddr == 0)
+                throw new System.Exception("Invalid eventFlag " + eventFlag);
+
+            var eventWorkAddr = Cnst2.EventWorkNameToAddress.GetValueOrDefault(eventWork);
+            if (eventWorkAddr == 0)
+                throw new System.Exception("Invalid eventFlag " + eventWork);
+
+            ow[list[0]] = sav.GetEventFlag(eventFlagAddr);
+            for (var i = 1; i < list.Count - 1; i++)
+                ow[list[i]] = sav.GetWork(eventWorkAddr) >= i + 1;
+            if (sav.GetWork(eventWorkAddr) < list.Count - 1)
+                ow[list[list.Count - 1]] = false;
+        };
+          
+        var func2 = (List<string> list, string eventFlag, string eventWork, string eventFlag2) => {
+            var eventFlagAddr = Cnst2.EventNameToAddress.GetValueOrDefault(eventFlag);
+            if (eventFlagAddr == 0)
+                throw new System.Exception("Invalid eventFlag " + eventFlag);
+
+            var eventFlagAddr2 = Cnst2.EventNameToAddress.GetValueOrDefault(eventFlag2);
+            if (eventFlagAddr2 == 0)
+                throw new System.Exception("Invalid eventFlag " + eventFlag2);
+
+            var eventWorkAddr = Cnst2.EventWorkNameToAddress.GetValueOrDefault(eventWork);
+            if (eventWorkAddr == 0)
+                throw new System.Exception("Invalid eventFlag " + eventWork);
+
+
+            ow[list[0]] = sav.GetEventFlag(eventFlagAddr);
+            for (var i = 1; i < list.Count - 2; i++)
+                ow[list[i]] = sav.GetWork(eventWorkAddr) >= i + 1;
+            
+            ow[list[list.Count - 1]] = sav.GetEventFlag(eventFlagAddr2);
+        };
+
+        func(new List<string>{"ALAN1", "ALAN2", "ALAN3", "ALAN4", "ALAN5"}, "EVENT_BEAT_SCHOOLBOY_ALAN", "wAlanFightCount");
+        func(new List<string>{"ANTHONY2", "ANTHONY1", "ANTHONY3", "ANTHONY4", "ANTHONY5"}, "EVENT_BEAT_HIKER_ANTHONY", "wAnthonyFightCount");
+        func(new List<string>{"ARNIE1", "ARNIE2", "ARNIE3", "ARNIE4", "ARNIE5"}, "EVENT_BEAT_BUG_CATCHER_ARNIE", "wArnieFightCount");
+        func(new List<string>{"BETH1", "BETH2", "BETH3"}, "EVENT_BEAT_COOLTRAINERF_BETH", "wBethFightCount");        
+        func(new List<string>{"BRENT1", "BRENT2", "BRENT3", "BRENT4"}, "EVENT_BEAT_POKEMANIAC_BRENT", "wBrentFightCount");        
+        func(new List<string>{"CHAD1", "CHAD2", "CHAD3", "CHAD4", "CHAD5"}, "EVENT_BEAT_SCHOOLBOY_CHAD", "wChadFightCount");        
+        func(new List<string>{"DANA1", "DANA2", "DANA3", "DANA4", "DANA5"}, "EVENT_BEAT_LASS_DANA", "wDanaFightCount");
+        func(new List<string>{"GINA1", "GINA2", "GINA3", "GINA4", "GINA5"}, "EVENT_BEAT_PICNICKER_GINA", "wGinaFightCount");          
+        func2(new List<string>{"HUEY1", "HUEY2", "HUEY3", "HUEY4"}, "EVENT_BEAT_SAILOR_HUEY", "wHueyFightCount","EVENT_GOT_PROTEIN_FROM_HUEY");
+        func(new List<string>{"JACK1", "JACK2", "JACK3", "JACK4", "JACK5"}, "EVENT_BEAT_SCHOOLBOY_JACK", "wJackFightCount");
+        func2(new List<string>{"JOEY1", "JOEY2", "JOEY3", "JOEY4", "JOEY5"}, "EVENT_BEAT_YOUNGSTER_JOEY", "wJoeyFightCount", "EVENT_JOEY_HP_UP");
+        func(new List<string>{"LIZ1", "LIZ2", "LIZ3", "LIZ4", "LIZ5"}, "EVENT_BEAT_PICNICKER_LIZ", "wLizFightCount");
+        func(new List<string>{"TIFFANY3", "TIFFANY1", "TIFFANY2", "TIFFANY4"}, "EVENT_BEAT_PICNICKER_TIFFANY", "wTiffanyFightCount");
+        func(new List<string>{"TODD1", "TODD2", "TODD3", "TODD4", "TODD5"}, "EVENT_BEAT_CAMPER_TODD", "wToddFightCount");
+        func(new List<string>{"TULLY3", "TULLY1", "TULLY2", "TULLY4"}, "EVENT_BEAT_FISHER_TULLY", "wTullyFightCount");
+        func(new List<string>{"WADE1", "WADE2", "WADE3", "WADE4", "WADE5"}, "EVENT_BEAT_BUG_CATCHER_WADE", "wWadeFightCount");
+
+
+        func2(new List<string>{"ERIN1", "ERIN2", "ERIN3"}, "EVENT_BEAT_PICNICKER_ERIN", "wErinFightCount", "EVENT_GOT_CALCIUM_FROM_ERIN");
+
+        func(new List<string>{"GAVEN3", "GAVEN1", "GAVEN2"}, "EVENT_BEAT_COOLTRAINERM_GAVEN", "wGavenFightCount");
+        func(new List<string>{"JOSE2", "JOSE1", "JOSE3"}, "EVENT_BEAT_BIRD_KEEPER_JOSE2", "wJoseFightCount");
+
+        func2(new List<string>{"PARRY3", "PARRY1", "PARRY2"}, "EVENT_BEAT_HIKER_PARRY", "wParryFightCount","EVENT_GOT_IRON_FROM_PARRY");
+
+        func(new List<string>{"REENA1", "REENA2", "REENA3"}, "EVENT_BEAT_COOLTRAINERF_REENA", "wReenaFightCount");
+        func(new List<string>{"RALPH1", "RALPH2", "RALPH3", "RALPH4", "RALPH5"}, "EVENT_BEAT_FISHER_RALPH", "wRalphFightCount");
+
+        func2(new List<string>{"VANCE1", "VANCE2", "VANCE3"}, "EVENT_BEAT_BIRD_KEEPER_VANCE", "wVanceFightCount","EVENT_GOT_CARBOS_FROM_VANCE");
+        func(new List<string>{"WILTON1", "WILTON2", "WILTON3"}, "EVENT_BEAT_FISHER_WILTON", "wWiltonFightCount");
+         
         foreach (var pair in flagDict)
             ow[pair.Key] = sav.GetEventFlag(pair.Value);
 
-        ow["ALAN4"] = sav.GetEventFlag();
-        ow["ALAN5"] = sav.GetEventFlag();
-        ow["ANTHONY4"] = sav.GetEventFlag();
-        ow["ANTHONY5"] = sav.GetEventFlag();
-        ow["ARNIE4"] = sav.GetEventFlag();
-        ow["ARNIE5"] = sav.GetEventFlag();
-        ow["BRENT4"] = sav.GetEventFlag();
-        ow["CHAD4"] = sav.GetEventFlag();
-        ow["CHAD5"] = sav.GetEventFlag();
-        ow["DANA4"] = sav.GetEventFlag();
-        ow["DANA5"] = sav.GetEventFlag();
-        ow["GINA4"] = sav.GetEventFlag();
-        ow["GINA5"] = sav.GetEventFlag();
-        ow["GRUNTM_31"] = sav.GetEventFlag();
-        ow["HUEY4"] = sav.GetEventFlag();
-        ow["JACK4"] = sav.GetEventFlag();
-        ow["JACK5"] = sav.GetEventFlag();
-        ow["JOEY4"] = sav.GetEventFlag();
-        ow["JOEY5"] = sav.GetEventFlag();
-        ow["LIZ4"] = sav.GetEventFlag();
-        ow["LIZ5"] = sav.GetEventFlag();
-        ow["RIVAL1_1_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL1_1_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL1_1_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL1_2_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL1_2_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL1_2_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL1_3_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL1_3_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL1_3_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL1_4_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL1_4_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL1_4_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL1_5_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL1_5_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL1_5_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL2_1_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL2_1_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL2_1_TOTODILE"] = sav.GetEventFlag();
-        ow["RIVAL2_2_CHIKORITA"] = sav.GetEventFlag();
-        ow["RIVAL2_2_CYNDAQUIL"] = sav.GetEventFlag();
-        ow["RIVAL2_2_TOTODILE"] = sav.GetEventFlag();
-        ow["TIFFANY4"] = sav.GetEventFlag();
-        ow["TODD4"] = sav.GetEventFlag();
-        ow["TODD5"] = sav.GetEventFlag();
-        ow["TULLY4"] = sav.GetEventFlag();
-        ow["WADE4"] = sav.GetEventFlag();
-        ow["WADE5"] = sav.GetEventFlag();
+        if (sav.GetEventFlag(0x0044)) // BEAT_ELITE_FOUR
+        {
+            ow["GRUNTM_31"] = true;
 
+            if (sav.GetEventFlag(0x1B)) // EVENT_GOT_CYNDAQUIL_FROM_ELM
+            {
+                ow["RIVAL1_1_TOTODILE"] = true;
+                ow["RIVAL1_2_TOTODILE"] = true;
+                ow["RIVAL1_3_TOTODILE"] = true;
+                ow["RIVAL1_4_TOTODILE"] = true;
+                ow["RIVAL1_5_TOTODILE"] = true;
+                ow["RIVAL2_1_TOTODILE"] = true;
+                ow["RIVAL2_2_TOTODILE"] = true;
+            }
+
+            if (sav.GetEventFlag(0x1C)) // EVENT_GOT_TOTODILE_FROM_ELM
+            {
+                ow["RIVAL1_1_CHIKORITA"] = true;
+                ow["RIVAL1_2_CHIKORITA"] = true;
+                ow["RIVAL1_3_CHIKORITA"] = true;
+                ow["RIVAL1_4_CHIKORITA"] = true;
+                ow["RIVAL1_5_CHIKORITA"] = true;
+                ow["RIVAL2_1_CHIKORITA"] = true;
+                ow["RIVAL2_2_CHIKORITA"] = true;
+            }
+
+            if (sav.GetEventFlag(0x1D)) // EVENT_GOT_CHIKORITA_FROM_ELM
+            {
+                ow["RIVAL1_1_CYNDAQUIL"] = true;
+                ow["RIVAL1_2_CYNDAQUIL"] = true;
+                ow["RIVAL1_3_CYNDAQUIL"] = true;
+                ow["RIVAL1_4_CYNDAQUIL"] = true;
+                ow["RIVAL1_5_CYNDAQUIL"] = true;
+                ow["RIVAL2_1_CYNDAQUIL"] = true;
+                ow["RIVAL2_2_CYNDAQUIL"] = true;
+            }
+        }
+        
 
 
     }

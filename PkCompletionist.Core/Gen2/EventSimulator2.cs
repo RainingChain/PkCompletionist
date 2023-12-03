@@ -16,7 +16,7 @@ enum PK_EVENT2
 internal class EventSimulator2 : EventSimulatorX
 {
 
-    public EventSimulator2(Command command, SAV2 sav) : base(command, sav)
+    public EventSimulator2(Command command, SAV2 sav) : base(command, sav, null)
     {
         this.sav = sav;
     }

@@ -2,8 +2,8 @@
   "profiles": {
     "Profile 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samue\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\samue\\Game\\Gameboy\\ROMS\\Pokemon Emerald.sav\""
+      "executablePath": "C:\\Users\\Samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "event ShayminMicleBerry \"C:\\Users\\Samuel\\Downloads\\newPkFilesEvents\\Pokemon Platinum 99%.sav\" \"C:\\Users\\Samuel\\Downloads\\newPkFilesEvents\\Pokemon Platinum 99%_2.sav\""
     }
   }
 }
