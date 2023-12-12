@@ -13,6 +13,7 @@ partial class Command
     public static Command? LastCommand = null;
 
     List<string> Messages = new();
+    public string? LastError = null;
     public SaveFile? savA = null;
     public SaveFile? savB = null;
 
@@ -23,21 +24,24 @@ partial class Command
 
     public void AddError(string msg)
     {
+        if (LastError == msg)
+            return;
         AddMessage(msg);
+        LastError = msg;
     }
 
     public SaveFile? SetSavA(byte[] data)
     {
         savA = SaveUtil.GetVariantSAV(data);
         if (savA == null)
-            Messages.Add("Error: Failed to parse the content of the save file.");
+            Messages.Add("Error: Failed to parse the content of the save file #1.");
         return savA;
     }
     public SaveFile? SetSavB(byte[] data)
     {
         savB = SaveUtil.GetVariantSAV(data);
         if (savB == null)
-            Messages.Add("Error: Failed to parse the content of the save file.");
+            Messages.Add("Error: Failed to parse the content of the save file #2.");
         return savB;
     }
 

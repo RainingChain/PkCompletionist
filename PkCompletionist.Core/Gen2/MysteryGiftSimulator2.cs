@@ -13,41 +13,141 @@ true
 100
 */
 
+internal class MysteryGiftSimulatorCmd2 : Command
+{
+    public static bool Execute(byte[] savAData, byte[] savBData, bool onlyPrintDecoOfPlayer1, int count)
+    {
+        var simulCmd = new MysteryGiftSimulatorCmd2();
+
+        simulCmd.SetSavA(savAData);
+        simulCmd.SetSavB(savBData);
+
+        return MysteryGiftSimulator2.ExecuteXCmd(simulCmd, count, onlyPrintDecoOfPlayer1) == null;
+    }
+}
+
 internal class MysteryGiftSimulator2 : Command
 {
-    MysteryGiftSimulator2(bool onlyPrintDecoOfPlayer1)
+
+    public static string? ExecuteXCmd(Command cmd, int count, bool onlyPrintDecoOfPlayer1)
     {
-        this.onlyPrintDecoOfPlayer1 = onlyPrintDecoOfPlayer1;
+        var savA = (SAV2?)cmd.savA;
+        var savB = (SAV2?)cmd.savB;
+
+        if (savA == null)
+        {
+            cmd.AddError("The first savefile is not generation 2.");
+            return cmd.LastError;
+        }
+        if (savB == null)
+        {
+            cmd.AddError("The second savefile is not generation 2.");
+            return cmd.LastError;
+        }
+
+        List<string> Msgs = new();
+
+        var err = ExecuteX(count, savA, savB, onlyPrintDecoOfPlayer1, ref Msgs);
+
+        foreach (var Msg in Msgs)
+            cmd.AddMessage(Msg);
+
+        if (err != null)
+        {
+            cmd.AddError(err);
+            return cmd.LastError;
+        }
+
+        return null;
     }
 
-    bool onlyPrintDecoOfPlayer1 = false;
-
-    public static bool Execute(byte[] savA, byte[] savB, bool onlyPrintDecoOfPlayer1, int count)
+    public static string? ExecuteX(int count, SAV2 savA, SAV2 savB, bool onlyPrintDecoOfPlayer1, ref List<string> Msgs)
     {
-        var simul = new MysteryGiftSimulator2(onlyPrintDecoOfPlayer1);
-        if (simul.SetSavA(savA) == null)
-            return false;
-        if (simul.SetSavA(savB) == null)
-            return false;
-
-        if (count <= 1)
-            return simul.Execute(false);
+        var overwriteItems = count <= 1;
 
         for (int i = 0; i < count; i++)
         {
-            if (!simul.Execute(true))
-                return false;
+            var err = MysteryGiftSimulator2.Execute(savA, savB, overwriteItems, onlyPrintDecoOfPlayer1, ref Msgs);
+            if (err != null)
+                return err;
         }
-        return true;
+        return null;
     }
 
-    byte RandomByte()
+    public static string? Execute(SAV2 savA, SAV2 savB, bool OverwriteItems, bool onlyPrintDecoOfPlayer1, ref List<string> Msgs)
+    {
+        if (savA.Data[0xBE3] != 0x00)
+            return "Player 1 has not unlocked Mystery Gift.";
+
+        if (savB.Data[0xBE3] != 0x00)
+            return "Player 2 has not unlocked Mystery Gift.";
+
+        if (OverwriteItems)
+        {
+            savA.SetEventFlag(1809, true);
+            savB.SetEventFlag(1809, true);
+            // Assumes international version
+            //NO_PROD
+            savA.Data[0xBE4] = 0;
+            savB.Data[0xBE4] = 0;
+        }
+
+        if (!savA.GetEventFlag(1809))
+            return "Player 1 has an item waiting at PK Center.";
+
+        if (!savB.GetEventFlag(1809))
+            return "Player 2 has an item waiting at PK Center.";
+
+        var decoIdx1 = GetRandomDecoIdx(savB.TID16);
+        var decoId1 = MysteryGiftDecoList[decoIdx1];
+        if (RandomByte() % 2 == 0 && !savA.GetEventFlag(decoId1))
+        {
+            var name = MysteryGiftDecoNameList[decoIdx1];
+            savA.SetEventFlag(decoId1, true);
+            Msgs.Add($"Player 1 received: {name} (Idx {decoIdx1})");
+        }
+        else
+        {
+            var idx = GetRandomItemIdx(savB.TID16);
+            var id = MysteryGiftItemList[idx];
+            var name = MysteryGiftItemNameList[idx];
+            savA.SetEventFlag(1809, false);
+            savA.Data[0xBE4] = id;
+            if (!onlyPrintDecoOfPlayer1)
+                Msgs.Add($"Player 1 received: {name} (Idx {idx})");
+        }
+
+        var decoIdx2 = GetRandomDecoIdx(savA.TID16);
+        var decoId2 = MysteryGiftDecoList[decoIdx2];
+
+        if (RandomByte() % 2 == 0 && !savB.GetEventFlag(decoId2))
+        {
+            var name = MysteryGiftDecoNameList[decoIdx2];
+            savB.SetEventFlag(decoId2, true);
+            if (!onlyPrintDecoOfPlayer1)
+                Msgs.Add($"Player 2 received: {name} (Idx {decoIdx2})");
+        }
+        else
+        {
+            var idx = GetRandomItemIdx(savA.TID16);
+            var id = MysteryGiftItemList[idx];
+            var name = MysteryGiftItemNameList[idx];
+            savB.SetEventFlag(1809, false);
+            savB.Data[0xBE4] = id;
+            if (!onlyPrintDecoOfPlayer1)
+                Msgs.Add($"Player 2 received: {name} (Idx {idx})");
+        }
+
+        return null;
+    }
+
+    static byte RandomByte()
     {
         System.Random rnd = new();
         return (byte)rnd.Next(0, 256);
     }
 
-    int GetRandomItemIdx(ushort tid)
+    static int GetRandomItemIdx(ushort tid)
     {
         if (RandomByte() >= 26)
         {
@@ -73,7 +173,7 @@ internal class MysteryGiftSimulator2 : Command
 
         return (tid & (1 << 15)) == 0 ? 32 : 33;
     }
-    int GetRandomDecoIdx(ushort tid)
+    static int GetRandomDecoIdx(ushort tid)
     {
         if (RandomByte() >= 26)
         {
@@ -100,99 +200,8 @@ internal class MysteryGiftSimulator2 : Command
         return (tid & (1 << 7)) == 0 ? 32 : 33;
     }
 
-    public bool Execute(bool OverwriteItems)
-    {
-        SAV2? sav1 = (SAV2?)savA;
-        SAV2? sav2 = (SAV2?)savB;
-        if (sav1 == null)
-        {
-            AddError("First save file is not generation 2.");
-            return false;
-        }
-        if (sav2 == null)
-        {
-            AddError("Second save file is not generation 2.");
-            return false;
-        }
 
-        if (sav1.Data[0xBE3] != 0x00)
-        {
-            AddError("Player 1 has not unlocked Mystery Gift.");
-            return false;
-        }
-
-        if (sav2.Data[0xBE3] != 0x00)
-        {
-            AddError("Player 2 has not unlocked Mystery Gift.");
-            return false;
-        }
-
-        if (OverwriteItems)
-        {
-            sav1.SetEventFlag(1809, true);
-            sav2.SetEventFlag(1809, true);
-            // Assumes international version
-            sav1.Data[0xBE4] = 0;
-            sav2.Data[0xBE4] = 0;
-        }
-
-        if (!sav1.GetEventFlag(1809))
-        {
-            AddMessage("Player 1 has an item waiting at PK Center.");
-            return false;
-        }
-
-        if (!sav2.GetEventFlag(1809))
-        {
-            AddMessage("Player 2 has an item waiting at PK Center.");
-            return false;
-        }
-
-        var decoIdx1 = GetRandomDecoIdx(sav2.TID16);
-        var decoId1 = MysteryGiftDecoList[decoIdx1];
-        if (RandomByte() % 2 == 0 && !sav1.GetEventFlag(decoId1))
-        {
-            var name = MysteryGiftDecoNameList[decoIdx1];
-            sav1.SetEventFlag(decoId1, true);
-            AddMessage($"Player 1 received: {name} (Idx {decoIdx1})");
-        }
-        else
-        {
-            var idx = GetRandomItemIdx(sav2.TID16);
-            var id = MysteryGiftItemList[idx];
-            var name = MysteryGiftItemNameList[idx];
-            sav1.SetEventFlag(1809, false);
-            sav1.Data[0xBE4] = id;
-            if (!onlyPrintDecoOfPlayer1)
-                AddMessage($"Player 1 received: {name} (Idx {idx})");
-        }
-
-
-        var decoIdx2 = GetRandomDecoIdx(sav1.TID16);
-        var decoId2 = MysteryGiftDecoList[decoIdx2];
-
-        if (RandomByte() % 2 == 0 && !sav2.GetEventFlag(decoId2))
-        {
-            var name = MysteryGiftDecoNameList[decoIdx2];
-            sav2.SetEventFlag(decoId2, true);
-            if (!onlyPrintDecoOfPlayer1)
-                AddMessage($"Player 2 received: {name} (Idx {decoIdx2})");
-        }
-        else
-        {
-            var idx = GetRandomItemIdx(sav1.TID16);
-            var id = MysteryGiftItemList[idx];
-            var name = MysteryGiftItemNameList[idx];
-            sav2.SetEventFlag(1809, false);
-            sav2.Data[0xBE4] = id;
-            if (!onlyPrintDecoOfPlayer1)
-                AddMessage($"Player 2 received: {name} (Idx {idx})");
-        }
-
-        return true;
-    }
-
-    readonly List<byte> MysteryGiftItemList = new List<byte>
+    static readonly List<byte> MysteryGiftItemList = new List<byte>
     {
         /*Berry*/173,
         /*PRZCureBerry*/78,
@@ -239,7 +248,7 @@ internal class MysteryGiftSimulator2 : Command
     };
 
 
-    readonly List<string> MysteryGiftItemNameList = new List<string>
+    static readonly List<string> MysteryGiftItemNameList = new List<string>
     {
         "Berry",
         "PRZCureBerry",
@@ -277,7 +286,7 @@ internal class MysteryGiftSimulator2 : Command
         "PP Up"
     };
 
-    readonly List<int> MysteryGiftDecoList = new List<int>
+    static readonly List<int> MysteryGiftDecoList = new List<int>
     {
         698,
         702,
@@ -317,7 +326,7 @@ internal class MysteryGiftSimulator2 : Command
         696
     };
 
-    readonly List<string> MysteryGiftDecoNameList = new List<string>
+    static readonly List<string> MysteryGiftDecoNameList = new List<string>
     {
         "Jigglypuff Doll",
         "Poliwag Doll",

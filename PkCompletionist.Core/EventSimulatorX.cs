@@ -7,7 +7,7 @@ partial class EventSimulatorX
 {
     protected SaveFile sav;
     protected SaveFile? savB;
-    Command command;
+    protected Command command;
 
     public EventSimulatorX(Command command, SaveFile sav, SaveFile? savB)
     {

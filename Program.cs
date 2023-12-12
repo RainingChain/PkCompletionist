@@ -73,6 +73,12 @@ internal class Program
 
     static void Main(string[] args)
     {
+
+        ReadOnlySpan<byte> data = new();
+        byte[] a = new byte[0];
+        data.CopyTo(a);
+
+
         /* For debug:
         var file = "";
         var mySav = (SAV2)SaveUtil.GetVariantSAV(TryReadAllBytes(file));
@@ -176,8 +182,16 @@ internal class Program
             if (savData == null)
                 return;
 
-            if (EventSimulator.Execute(args[1], savData))
+            byte[]? savBData = null;
+            if (args.Length  >= 6)
+                savBData = TryReadAllBytes(args[4]);
+
+            if (EventSimulator.Execute(args[1], savData, savBData))
+            {
                 LastCommandSave(args[3]);
+                if (savBData != null)
+                    LastCommandSave(args[5], false);
+            }
 
             LastCommandPrintMsgs();
         }

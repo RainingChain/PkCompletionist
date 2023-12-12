@@ -93,21 +93,7 @@ internal class EventSimulator3 : EventSimulatorX
 
 
         if (evt == PK_EVENT3.PokemonFestaRibbons)
-        {
-            if (this.sav.PartyData.Count == 0)
-                return "Your party is empty.";
-
-            var pkm = this.sav.PartyData[0] as G3PKM;
-            if (pkm == null)
-                return "Pokemon is not generation 3.";
-
-            pkm.RibbonCountry = true;
-            pkm.RibbonWorld = true;
-
-            this.sav.SetPartySlotAtIndex(pkm, 0);
-
-            return null;
-        }
+            return PokemonFestaRibbons(this.sav);
 
         if (evt == PK_EVENT3.Mew)
             return AddPkm("Mew.pk3");
@@ -124,4 +110,21 @@ internal class EventSimulator3 : EventSimulatorX
         return "Invalid event name.";
     }
 
+    public static string? PokemonFestaRibbons(SAV3 sav)
+    {
+        if (sav.PartyData.Count == 0)
+            return "Your party is empty.";
+
+        var pkm = sav.PartyData[0] as G3PKM;
+        if (pkm == null)
+            return "Pokemon is not generation 3.";
+
+        pkm.RibbonCountry = true;
+        pkm.RibbonWorld = true;
+
+        sav.SetPartySlotAtIndex(pkm, 0);
+
+        return null;
+
+    }
 }
