@@ -18,9 +18,9 @@ enum PK_EVENT2
 internal class EventSimulator2 : EventSimulatorX
 {
 
-    public EventSimulator2(Command command, SAV2 sav) : base(command, sav, null)
+    public EventSimulator2(Command command, SAV2 savA, SaveFile? savB) : base(command, savA, savB)
     {
-        this.sav = sav;
+        this.sav = savA;
     }
 
     new SAV2 sav;
@@ -45,6 +45,7 @@ internal class EventSimulator2 : EventSimulatorX
                 return err;
 
             sav.SetEventFlag(832, true);
+            return null;
         }
 
         if (evt == PK_EVENT2.EggTicket)

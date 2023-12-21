@@ -15,9 +15,10 @@ partial class EventSimulator : Command
         if (savA == null)
             return false;
 
+        SaveFile? savB = null;
         if (savBBytes != null)
         {
-            var savB = simul.SetSavB(savBBytes);
+            savB = simul.SetSavB(savBBytes);
             if (savB == null)
                 return false;
         }
@@ -33,7 +34,7 @@ partial class EventSimulator : Command
     }
 
 
-    EventSimulatorX CreateSimulatorX(SaveFile savA, SaveFile savB)
+    EventSimulatorX CreateSimulatorX(SaveFile savA, SaveFile? savB)
     {
         if (savA is SAV1)
             return new EventSimulator1(this, (savA as SAV1)!);

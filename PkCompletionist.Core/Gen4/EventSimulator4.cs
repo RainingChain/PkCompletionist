@@ -32,7 +32,7 @@ enum PK_EVENT4
 internal class EventSimulator4 : EventSimulatorX
 {
 
-    public EventSimulator4(Command command, SAV4 sav, SaveFile savB) : base(command, sav, savB)
+    public EventSimulator4(Command command, SAV4 sav, SaveFile? savB) : base(command, sav, savB)
     {
         this.sav = sav;
     }

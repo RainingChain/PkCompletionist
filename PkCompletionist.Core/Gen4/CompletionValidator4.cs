@@ -20,7 +20,6 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         this.sav = sav;
 
-        // Note that in US game, there are more unobtainable items than that
         this.unobtainableItems = new List<int>() { };
 
     }
@@ -93,31 +92,57 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["CastformIce"] = HasPkm(351);
 
         ow["DeoxysNormal"] = HasPkmForm(386, 0);
-        ow["DeoxysAttack"] = HasPkmForm(386, 1); 
+        ow["DeoxysAttack"] = HasPkmForm(386, 1);
         ow["DeoxysDefense"] = HasPkmForm(386, 2);
         ow["DeoxysSpeed"] = HasPkmForm(386, 3);
-        ow["BurmyPlantCloak"] = HasPkmForm(412, 0); 
+        ow["BurmyPlantCloak"] = HasPkmForm(412, 0);
         ow["BurmySandyCloak"] = HasPkmForm(412, 1);
         ow["BurmyTrashCloak"] = HasPkmForm(412, 2);
         ow["WormadamPlantCloak"] = HasPkmForm(413, 0);
         ow["WormadamSandyCloak"] = HasPkmForm(413, 1);
         ow["WormadamTrashCloak"] = HasPkmForm(413, 2);
-        ow["CherrimOvercast"] = false; // TODO
-        ow["CherrimSunshine"] = false; // TODO
-        ow["ShellosWestSea"] = false; // TODO
-        ow["ShellosEastSea"] = false; // TODO
-        ow["GastrodonWestSea"] = false; // TODO
-        ow["GastrodonEastSea"] = false; // TODO
-        ow["RotomGhost"] = false; // TODO
-        ow["RotomHeat"] = false; // TODO
-        ow["RotomWash"] = false; // TODO
-        ow["RotomFrost"] = false; // TODO
-        ow["RotomFan"] = false; // TODO
-        ow["RotomMow"] = false; // TODO
-        ow["GiratinaAltered"] = false; // TODO
-        ow["GiratinaOrigin"] = false; // TODO
-        ow["ShayminLand"] = false; // TODO
-        ow["ShayminSky"] = false; // TODO
+        ow["CherrimOvercast"] = HasPkm(421);
+        ow["CherrimSunshine"] = HasPkm(421);
+        ow["ShellosWestSea"] = HasPkmForm(422, 0);
+        ow["ShellosEastSea"] = HasPkmForm(422, 1);
+        ow["GastrodonWestSea"] = HasPkmForm(423, 0);
+        ow["GastrodonEastSea"] = HasPkmForm(423, 1);
+        ow["RotomGhost"] = HasPkmForm(479, 0);
+        ow["RotomHeat"] = HasPkmForm(479, 1);
+        ow["RotomWash"] = HasPkmForm(479, 2);
+        ow["RotomFrost"] = HasPkmForm(479, 3);
+        ow["RotomFan"] =  HasPkmForm(479, 4);
+        ow["RotomMow"] = HasPkmForm(479, 5);
+        ow["GiratinaAltered"] = HasPkmForm(487, 0);
+        ow["GiratinaOrigin"] = HasPkmForm(488, 1);
+        ow["ShayminLand"] = HasPkmForm(492, 0);
+        ow["ShayminSky"] = HasPkmForm(492, 1);
+
+        ow["AllMaleFemaleForms"] = new Func<bool>(() =>
+        {
+            var genderLess = new HashSet<ushort> { 81, 82, 100, 101, 120, 121, 137, 233, 292, 337, 338, 343, 344, 374, 375, 376, 436, 437, 462, 474, 479, 479, 479, 479, 479, 479, 489, 490, 132, 144, 144, 145, 145, 146, 146, 150, 151, 201, 243, 244, 245, 249, 250, 251, 377, 378, 379, 382, 383, 384, 385, 386, 386, 386, 386, 480, 481, 482, 483, 484, 486, 487, 487, 491, 492, 492, 493 };
+            for (ushort i = 0; i <= 493; i++)
+            {
+                if (!this.sav.Dex.GetSeen(i))
+                    return false;
+                if (genderLess.Contains(i))
+                    continue;
+                if (this.sav.Dex.GetSeenGenderFirst(i) == this.sav.Dex.GetSeenGenderSecond(i)) // 01 and 10 is when both genders are seen. 00 and 11 are when 1 is seen.
+                    return false;
+            }
+            return true;
+        })();
+
+        ow["AllForeignPokedexEntries"] = new Func<bool>(() =>
+        {
+            for (ushort i = 0; i <= 493; i++)
+            {
+                for (int j = 0; j < 6; j++)
+                    if (!this.sav.Dex.GetLanguageBitIndex(i, j))
+                        return false;
+            }
+            return true;
+        })();
     }
 
     public override void Generate_item()
@@ -561,21 +586,35 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["inGameTrade"] = ow;
 
-        ow["MachopforAbra"] = false; // TODO
-        ow["BuizelforChatot"] = false; // TODO
-        ow["MedichamforHaunter"] = false; // TODO
-        ow["FinneonforMagikarp"] = false; // TODO
+        ow["MachopforAbra"] = sav.GetEventFlag(0x0085);
+        ow["BuizelforChatot"] = sav.GetEventFlag(0x0086);
+        ow["MedichamforHaunter"] = sav.GetEventFlag(0x00F4);
+        ow["FinneonforMagikarp"] = sav.GetEventFlag(0x00F5);
     }
     public void Generate_inGameGift()
     {
         var ow = new Dictionary<string, bool>();
         owned["inGameGift"] = ow;
 
-        ow["StarterPokemon"] = false; // TODO
-        ow["TogepiEgg"] = false; // TODO
+        //0x0097, 0x0131
+        ow["StarterPokemon"] = true;
+        ow["TogepiEgg"] = sav.GetWork(0x007A) >= 5;
         ow["Eevee"] = false; // TODO
         ow["Porygon"] = false; // TODO
-        ow["RioluEgg"] = false; // TODO
+        ow["RioluEgg"] = false; // TODO // 0x0220 ?
+    }
+    public bool HasAccessory(Accessory accessory)
+    {
+        if (accessory <= Accessory.Confetti)
+        {
+            var enumIdx = (byte)accessory;
+            var val = sav.General[0x4E38 + enumIdx / 2];
+            if (enumIdx % 2 == 0)
+                return (val & 0x0F) != 0;
+            return (val & 0xF0) != 0;
+        }
+
+
     }
 
     public void Generate_accessory()
@@ -583,109 +622,109 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["accessory"] = ow;
 
-        ow["BlackFluff"] = false; // TODO
-        ow["BrownFluff"] = false; // TODO
-        ow["OrangeFluff"] = false; // TODO
-        ow["PinkFluff"] = false; // TODO
-        ow["WhiteFluff"] = false; // TODO
-        ow["YellowFluff"] = false; // TODO
-        ow["RoundPebble"] = false; // TODO
-        ow["GlitterBoulder"] = false; // TODO
-        ow["SnaggyPebble"] = false; // TODO
-        ow["JaggedBoulder"] = false; // TODO
-        ow["BlackPebble"] = false; // TODO
-        ow["MiniPebble"] = false; // TODO
-        ow["PinkScale"] = false; // TODO
-        ow["BlueScale"] = false; // TODO
-        ow["GreenScale"] = false; // TODO
-        ow["PurpleScale"] = false; // TODO
-        ow["BigScale"] = false; // TODO
-        ow["NarrowScale"] = false; // TODO
-        ow["BlueFeather"] = false; // TODO
-        ow["RedFeather"] = false; // TODO
-        ow["YellowFeather"] = false; // TODO
-        ow["WhiteFeather"] = false; // TODO
-        ow["BlackMoustache"] = false; // TODO
-        ow["WhiteMoustache"] = false; // TODO
-        ow["BlackBeard"] = false; // TODO
-        ow["WhiteBeard"] = false; // TODO
-        ow["SmallLeaf"] = false; // TODO
-        ow["BigLeaf"] = false; // TODO
-        ow["NarrowLeaf"] = false; // TODO
-        ow["ShedClaw"] = false; // TODO
-        ow["ShedHorn"] = false; // TODO
-        ow["ThinMushroom"] = false; // TODO
-        ow["ThickMushroom"] = false; // TODO
-        ow["Stump"] = false; // TODO
-        ow["PrettyDewdrop"] = false; // TODO
-        ow["SnowCrystal"] = false; // TODO
-        ow["Sparks"] = false; // TODO
-        ow["ShimmeringFire"] = false; // TODO
-        ow["MysticFire"] = false; // TODO
-        ow["Determination"] = false; // TODO
-        ow["PeculiarSpoon"] = false; // TODO
-        ow["PuffySmoke"] = false; // TODO
-        ow["PoisonExtract"] = false; // TODO
-        ow["WealthyCoin"] = false; // TODO
-        ow["EerieThing"] = false; // TODO
-        ow["Spring"] = false; // TODO
-        ow["Seashell"] = false; // TODO
-        ow["HummingNote"] = false; // TODO
-        ow["ShinyPowder"] = false; // TODO
-        ow["GlitterPowder"] = false; // TODO
-        ow["RedFlower"] = false; // TODO
-        ow["PinkFlower"] = false; // TODO
-        ow["WhiteFlower"] = false; // TODO
-        ow["BlueFlower"] = false; // TODO
-        ow["OrangeFlower"] = false; // TODO
-        ow["YellowFlower"] = false; // TODO
-        ow["GooglySpecs"] = false; // TODO
-        ow["BlackSpecs"] = false; // TODO
-        ow["GorgeousSpecs"] = false; // TODO
-        ow["SweetCandy"] = false; // TODO
-        ow["Confetti"] = false; // TODO
-        ow["ColoredParasol"] = false; // TODO
-        ow["OldUmbrella"] = false; // TODO
-        ow["Spotlight"] = false; // TODO
-        ow["Cape"] = false; // TODO
-        ow["StandingMike"] = false; // TODO
-        ow["Surfboard"] = false; // TODO
-        ow["Carpet"] = false; // TODO
-        ow["RetroPipe"] = false; // TODO
-        ow["FluffyBed"] = false; // TODO
-        ow["MirrorBall"] = false; // TODO
-        ow["PhotoBoard"] = false; // TODO
-        ow["PinkBarrette"] = false; // TODO
-        ow["RedBarrette"] = false; // TODO
-        ow["BlueBarrette"] = false; // TODO
-        ow["YellowBarrette"] = false; // TODO
-        ow["GreenBarrette"] = false; // TODO
-        ow["PinkBalloon"] = false; // TODO
-        ow["RedBalloons"] = false; // TODO
-        ow["BlueBalloons"] = false; // TODO
-        ow["YellowBalloon"] = false; // TODO
-        ow["GreenBalloons"] = false; // TODO
-        ow["LaceHeadress"] = false; // TODO
-        ow["TopHat"] = false; // TODO
-        ow["SilkVeil"] = false; // TODO
-        ow["HeroicHeadband"] = false; // TODO
-        ow["ProfessorHat"] = false; // TODO
-        ow["FlowerStage"] = false; // TODO
-        ow["GoldPedestal"] = false; // TODO
-        ow["GlassStage"] = false; // TODO
-        ow["AwardPodium"] = false; // TODO
-        ow["CubeStage"] = false; // TODO
-        ow["TurtwigMask"] = false; // TODO
-        ow["ChimcharMask"] = false; // TODO
-        ow["PiplupMask"] = false; // TODO
-        ow["BigTree"] = false; // TODO
-        ow["Flag"] = false; // TODO
-        ow["Crown"] = false; // TODO
-        ow["Tiara"] = false; // TODO
-        ow["Comet"] = false; // TODO
+        ow["WhiteFluff"] = HasAccessory(Accessory.WhiteFluff);
+        ow["YellowFluff"] = HasAccessory(Accessory.YellowFluff);
+        ow["PinkFluff"] = HasAccessory(Accessory.PinkFluff);
+        ow["BrownFluff"] = HasAccessory(Accessory.BrownFluff);
+        ow["BlackFluff"] = HasAccessory(Accessory.BlackFluff);
+        ow["OrangeFluff"] = HasAccessory(Accessory.OrangeFluff);
+        ow["RoundPebble"] = HasAccessory(Accessory.RoundPebble);
+        ow["GlitterBoulder"] = HasAccessory(Accessory.GlitterBoulder);
+        ow["SnaggyPebble"] = HasAccessory(Accessory.SnaggyPebble);
+        ow["JaggedBoulder"] = HasAccessory(Accessory.JaggedBoulder);
+        ow["BlackPebble"] = HasAccessory(Accessory.BlackPebble);
+        ow["MiniPebble"] = HasAccessory(Accessory.MiniPebble);
+        ow["PinkScale"] = HasAccessory(Accessory.PinkScale);
+        ow["BlueScale"] = HasAccessory(Accessory.BlueScale);
+        ow["GreenScale"] = HasAccessory(Accessory.GreenScale);
+        ow["PurpleScale"] = HasAccessory(Accessory.PurpleScale);
+        ow["BigScale"] = HasAccessory(Accessory.BigScale);
+        ow["NarrowScale"] = HasAccessory(Accessory.NarrowScale);
+        ow["BlueFeather"] = HasAccessory(Accessory.BlueFeather);
+        ow["RedFeather"] = HasAccessory(Accessory.RedFeather);
+        ow["YellowFeather"] = HasAccessory(Accessory.YellowFeather);
+        ow["WhiteFeather"] = HasAccessory(Accessory.WhiteFeather);
+        ow["BlackMoustache"] = HasAccessory(Accessory.BlackMoustache);
+        ow["WhiteMoustache"] = HasAccessory(Accessory.WhiteMoustache);
+        ow["BlackBeard"] = HasAccessory(Accessory.BlackBeard);
+        ow["WhiteBeard"] = HasAccessory(Accessory.WhiteBeard);
+        ow["SmallLeaf"] = HasAccessory(Accessory.SmallLeaf);
+        ow["BigLeaf"] = HasAccessory(Accessory.BigLeaf);
+        ow["NarrowLeaf"] = HasAccessory(Accessory.NarrowLeaf);
+        ow["ShedClaw"] = HasAccessory(Accessory.ShedClaw);
+        ow["ShedHorn"] = HasAccessory(Accessory.ShedHorn);
+        ow["ThinMushroom"] = HasAccessory(Accessory.ThinMushroom);
+        ow["ThickMushroom"] = HasAccessory(Accessory.ThickMushroom);
+        ow["Stump"] = HasAccessory(Accessory.Stump);
+        ow["PrettyDewdrop"] = HasAccessory(Accessory.PrettyDewdrop);
+        ow["SnowCrystal"] = HasAccessory(Accessory.SnowCrystal);
+        ow["Sparks"] = HasAccessory(Accessory.Sparks);
+        ow["ShimmeringFire"] = HasAccessory(Accessory.ShimmeringFire);
+        ow["MysticFire"] = HasAccessory(Accessory.MysticFire);
+        ow["Determination"] = HasAccessory(Accessory.Determination);
+        ow["PeculiarSpoon"] = HasAccessory(Accessory.PeculiarSpoon);
+        ow["PuffySmoke"] = HasAccessory(Accessory.PuffySmoke);
+        ow["PoisonExtract"] = HasAccessory(Accessory.PoisonExtract);
+        ow["WealthyCoin"] = HasAccessory(Accessory.WealthyCoin);
+        ow["EerieThing"] = HasAccessory(Accessory.EerieThing);
+        ow["Spring"] = HasAccessory(Accessory.Spring);
+        ow["Seashell"] = HasAccessory(Accessory.Seashell);
+        ow["HummingNote"] = HasAccessory(Accessory.HummingNote);
+        ow["ShinyPowder"] = HasAccessory(Accessory.ShinyPowder);
+        ow["GlitterPowder"] = HasAccessory(Accessory.GlitterPowder);
+        ow["RedFlower"] = HasAccessory(Accessory.RedFlower);
+        ow["PinkFlower"] = HasAccessory(Accessory.PinkFlower);
+        ow["WhiteFlower"] = HasAccessory(Accessory.WhiteFlower);
+        ow["BlueFlower"] = HasAccessory(Accessory.BlueFlower);
+        ow["OrangeFlower"] = HasAccessory(Accessory.OrangeFlower);
+        ow["YellowFlower"] = HasAccessory(Accessory.YellowFlower);
+        ow["GooglySpecs"] = HasAccessory(Accessory.GooglySpecs);
+        ow["BlackSpecs"] = HasAccessory(Accessory.BlackSpecs);
+        ow["GorgeousSpecs"] = HasAccessory(Accessory.GorgeousSpecs);
+        ow["SweetCandy"] = HasAccessory(Accessory.SweetCandy);
+        ow["Confetti"] = HasAccessory(Accessory.Confetti);
+        ow["ColoredParasol"] = HasAccessory(Accessory.ColoredParasol);
+        ow["OldUmbrella"] = HasAccessory(Accessory.OldUmbrella);
+        ow["Spotlight"] = HasAccessory(Accessory.Spotlight);
+        ow["Cape"] = HasAccessory(Accessory.Cape);
+        ow["StandingMike"] = HasAccessory(Accessory.StandingMike);
+        ow["Surfboard"] = HasAccessory(Accessory.Surfboard);
+        ow["Carpet"] = HasAccessory(Accessory.Carpet);
+        ow["RetroPipe"] = HasAccessory(Accessory.RetroPipe);
+        ow["FluffyBed"] = HasAccessory(Accessory.FluffyBed);
+        ow["MirrorBall"] = HasAccessory(Accessory.MirrorBall);
+        ow["PhotoBoard"] = HasAccessory(Accessory.PhotoBoard);
+        ow["PinkBarrette"] = HasAccessory(Accessory.PinkBarrette);
+        ow["RedBarrette"] = HasAccessory(Accessory.RedBarrette);
+        ow["BlueBarrette"] = HasAccessory(Accessory.BlueBarrette);
+        ow["YellowBarrette"] = HasAccessory(Accessory.YellowBarrette);
+        ow["GreenBarrette"] = HasAccessory(Accessory.GreenBarrette);
+        ow["PinkBalloon"] = HasAccessory(Accessory.PinkBalloon);
+        ow["RedBalloons"] = HasAccessory(Accessory.RedBalloons);
+        ow["BlueBalloons"] = HasAccessory(Accessory.BlueBalloons);
+        ow["YellowBalloon"] = HasAccessory(Accessory.YellowBalloon);
+        ow["GreenBalloons"] = HasAccessory(Accessory.GreenBalloons);
+        ow["LaceHeadress"] = HasAccessory(Accessory.LaceHeadress);
+        ow["TopHat"] = HasAccessory(Accessory.TopHat);
+        ow["SilkVeil"] = HasAccessory(Accessory.SilkVeil);
+        ow["HeroicHeadband"] = HasAccessory(Accessory.HeroicHeadband);
+        ow["ProfessorHat"] = HasAccessory(Accessory.ProfessorHat);
+        ow["FlowerStage"] = HasAccessory(Accessory.FlowerStage);
+        ow["GoldPedestal"] = HasAccessory(Accessory.GoldPedestal);
+        ow["GlassStage"] = HasAccessory(Accessory.GlassStage);
+        ow["AwardPodium"] = HasAccessory(Accessory.AwardPodium);
+        ow["CubeStage"] = HasAccessory(Accessory.CubeStage);
+        ow["TurtwigMask"] = HasAccessory(Accessory.TurtwigMask);
+        ow["ChimcharMask"] = HasAccessory(Accessory.ChimcharMask);
+        ow["PiplupMask"] = HasAccessory(Accessory.PiplupMask);
+        ow["BigTree"] = HasAccessory(Accessory.BigTree);
+        ow["Flag"] = HasAccessory(Accessory.Flag);
+        ow["Crown"] = HasAccessory(Accessory.Crown);
+        ow["Tiara"] = HasAccessory(Accessory.Tiara);
+        ow["Comet"] = HasAccessory(Accessory.Comet);
 
     }
-    
+
     public void Generate_poffin()
     {
         var ow = new Dictionary<string, bool>();
@@ -747,31 +786,36 @@ internal class CompletionValidator4 : CompletionValidatorX
     }
 
 
+    public bool GetVillaFurniturePurchased(VillaFurniture index)
+    {
+        return FlagUtil.GetFlag(sav.General, 0x111F + (byte)index / 8, (byte)index % 8);
+    }
+
     public void Generate_villaFurniture()
     {
         var ow = new Dictionary<string, bool>();
         owned["villaFurniture"] = ow;
 
-        ow["Table"] = false; // TODO
-        ow["BigSofa"] = false; // TODO
-        ow["SmallSofa"] = false; // TODO
-        ow["Bed"] = false; // TODO
-        ow["NightTable"] = false; // TODO
-        ow["TV"] = false; // TODO
-        ow["AudioSystem"] = false; // TODO
-        ow["Bookshelf"] = false; // TODO
-        ow["Rack"] = false; // TODO
-        ow["Houseplant"] = false; // TODO
-        ow["PCDesk"] = false; // TODO
-        ow["MusicBox"] = false; // TODO
-        ow["PokemonBust"] = false; // TODO
-        ow["Piano"] = false; // TODO
-        ow["GuestSet"] = false; // TODO
-        ow["WallClock"] = false; // TODO
-        ow["Masterpiece"] = false; // TODO
-        ow["TeaSet"] = false; // TODO
-        ow["Chandelier"] = false; // TODO
-
+        ow["Table"] = true;
+        ow["BigSofa"] = GetVillaFurniturePurchased(VillaFurniture.BigSofa);
+        ow["SmallSofa"] = GetVillaFurniturePurchased(VillaFurniture.SmallSofa);
+        ow["Bed"] = GetVillaFurniturePurchased(VillaFurniture.Bed);
+        ow["NightTable"] = GetVillaFurniturePurchased(VillaFurniture.NightTable);
+        ow["TV"] = GetVillaFurniturePurchased(VillaFurniture.TV);
+        ow["AudioSystem"] = GetVillaFurniturePurchased(VillaFurniture.AudioSystem);
+        ow["Bookshelf"] = GetVillaFurniturePurchased(VillaFurniture.Bookshelf);
+        ow["Rack"] = GetVillaFurniturePurchased(VillaFurniture.Rack);
+        ow["Houseplant"] = GetVillaFurniturePurchased(VillaFurniture.Houseplant);
+        ow["PCDesk"] = GetVillaFurniturePurchased(VillaFurniture.PCDesk);
+        ow["MusicBox"] = GetVillaFurniturePurchased(VillaFurniture.MusicBox);
+        ow["PokemonBust1"] = GetVillaFurniturePurchased(VillaFurniture.PokemonBust1);
+        ow["PokemonBust2"] = GetVillaFurniturePurchased(VillaFurniture.PokemonBust2);
+        ow["Piano"] = GetVillaFurniturePurchased(VillaFurniture.Piano);
+        ow["GuestSet"] = GetVillaFurniturePurchased(VillaFurniture.GuestSet);
+        ow["WallClock"] = GetVillaFurniturePurchased(VillaFurniture.WallClock);
+        ow["Masterpiece"] = GetVillaFurniturePurchased(VillaFurniture.Masterpiece);
+        ow["TeaSet"] = GetVillaFurniturePurchased(VillaFurniture.TeaSet);
+        ow["Chandelier"] = GetVillaFurniturePurchased(VillaFurniture.Chandelier);
     }
 
 
@@ -1062,4 +1106,133 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["DefeatRivalLevel85Rematch"] = false; // TODO
         ow["UnlockPokedexForeignEntries"] = false; // TODO
     }
+}
+
+public enum VillaFurniture
+{
+    BigSofa,
+    SmallSofa,
+    Bed,
+    NightTable,
+    TV,
+    AudioSystem,
+    Bookshelf,
+    Rack,
+    Houseplant,
+    PCDesk,
+    MusicBox,
+    PokemonBust1,
+    PokemonBust2,
+    Piano,
+    GuestSet,
+    WallClock,
+    Masterpiece,
+    TeaSet,
+    Chandelier,
+    MAX = Chandelier
+}
+
+public enum Accessory
+{
+  WhiteFluff,
+  YellowFluff,
+  PinkFluff,
+  BrownFluff,
+  BlackFluff,
+  OrangeFluff,
+  RoundPebble,
+  GlitterBoulder,
+  SnaggyPebble,
+  JaggedBoulder,
+  BlackPebble,
+  MiniPebble,
+  PinkScale,
+  BlueScale,
+  GreenScale,
+  PurpleScale,
+  BigScale,
+  NarrowScale,
+  BlueFeather,
+  RedFeather,
+  YellowFeather,
+  WhiteFeather,
+  BlackMoustache,
+  WhiteMoustache,
+  BlackBeard,
+  WhiteBeard,
+  SmallLeaf,
+  BigLeaf,
+  NarrowLeaf,
+  ShedClaw,
+  ShedHorn,
+  ThinMushroom,
+  ThickMushroom,
+  Stump,
+  PrettyDewdrop,
+  SnowCrystal,
+  Sparks,
+  ShimmeringFire,
+  MysticFire,
+  Determination,
+  PeculiarSpoon,
+  PuffySmoke,
+  PoisonExtract,
+  WealthyCoin,
+  EerieThing,
+  Spring,
+  Seashell,
+  HummingNote,
+  ShinyPowder,
+  GlitterPowder,
+  RedFlower,
+  PinkFlower,
+  WhiteFlower,
+  BlueFlower,
+  OrangeFlower,
+  YellowFlower,
+  GooglySpecs,
+  BlackSpecs,
+  GorgeousSpecs,
+  SweetCandy,
+  Confetti,
+  // For accessories below this point, only 1 copy can be owned at once
+  ColoredParasol,
+  OldUmbrella,
+  Spotlight,
+  Cape,
+  StandingMike,
+  Surfboard,
+  Carpet,
+  RetroPipe,
+  FluffyBed,
+  MirrorBall,
+  PhotoBoard,
+  PinkBarrette,
+  RedBarrette,
+  BlueBarrette,
+  YellowBarrette,
+  GreenBarrette,
+  PinkBalloon,
+  RedBalloons,
+  BlueBalloons,
+  YellowBalloon,
+  GreenBalloons,
+  LaceHeadress,
+  TopHat,
+  SilkVeil,
+  HeroicHeadband,
+  ProfessorHat,
+  FlowerStage,
+  GoldPedestal,
+  GlassStage,
+  AwardPodium,
+  CubeStage,
+  TurtwigMask,
+  ChimcharMask,
+  PiplupMask,
+  BigTree,
+  Flag,
+  Crown,
+  Tiara,
+  Comet,
 }

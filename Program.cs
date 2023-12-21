@@ -73,16 +73,27 @@ internal class Program
 
     static void Main(string[] args)
     {
-
-        ReadOnlySpan<byte> data = new();
-        byte[] a = new byte[0];
-        data.CopyTo(a);
-
-
         /* For debug:
         var file = "";
         var mySav = (SAV2)SaveUtil.GetVariantSAV(TryReadAllBytes(file));
         File.WriteAllBytes(file + "2", mySav.Write());
+        */
+        /*
+        var file = "C:\\Users\\samue\\Game\\DS\\ROM\\Pokemon Platinum";
+        var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes(file + ".sav"));
+        sav.State.Edited = true;
+
+        for (int i = 0; i < 100; i += 2)
+        {
+            for (int j = 0; j < 50; j++)
+                sav.General[0x4E38 + j] = 0;
+
+            var addr = 0x4E38 + i / 2;
+            sav.General[addr] = 0x2F;
+            File.WriteAllBytes($"{file} 0x{addr:X}.sav", sav.Write());
+        }
+
+        return;
         */
 
         if (!ValidateArgLength(args, 1))
@@ -100,18 +111,16 @@ internal class Program
         {
             Console.WriteLine(System.String.Join(' ', args));
 
-            if (!ValidateArgLength(args, 6))
+            if (!ValidateArgLength(args, 5))
                 return;
 
             var sav1 = TryReadAllBytes(args[1]);
             var sav2 = TryReadAllBytes(args[2]);
-            var changeRangeStart = TryParseInt(args[4]);
-            var changeRangeEnd = TryParseInt(args[5]);
 
-            if (sav1 == null || sav2 == null || changeRangeStart == null || changeRangeEnd == null)
+            if (sav1 == null || sav2 == null)
                 return;
 
-            if (FlagAnalyzer.Execute(sav1, sav2, (int)changeRangeStart, (int)changeRangeEnd!))
+            if (FlagAnalyzer.Execute(sav1, sav2, args[4]))
                 LastCommandSave(args[3]);
 
             LastCommandPrintMsgs();
@@ -163,7 +172,7 @@ internal class Program
             if (count == null)
                 return;
 
-            if (MysteryGiftSimulator2.Execute(sav1, sav2, onlyPrintDecoOfPlayer1, (int)count))
+            if (MysteryGiftSimulatorCmd2.Execute(sav1, sav2, onlyPrintDecoOfPlayer1, (int)count))
             {
                 LastCommandSave(args[3], true);
                 LastCommandSave(args[4], false);
