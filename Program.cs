@@ -2,6 +2,7 @@
 using System.IO;
 using PkCompletionist.Core;
 using PKHeX.Core;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PkCompletionist;
 
@@ -78,34 +79,61 @@ internal class Program
         var mySav = (SAV2)SaveUtil.GetVariantSAV(TryReadAllBytes(file));
         File.WriteAllBytes(file + "2", mySav.Write());
         */
-        /*
         var file = "C:\\Users\\samue\\Game\\DS\\ROM\\Pokemon Platinum";
-        var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes(file + ".sav"));
-        sav.State.Edited = true;
 
-        for (int i = 0; i < 100; i += 2)
+        /*
+        if (args.Length == 0)
         {
-            for (int j = 0; j < 50; j++)
-                sav.General[0x4E38 + j] = 0;
-
-            var addr = 0x4E38 + i / 2;
-            sav.General[addr] = 0x2F;
-            File.WriteAllBytes($"{file} 0x{addr:X}.sav", sav.Write());
+            var str = "";
+            var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes(@"C:\Users\samue\Game\DS\ROM\Pokemon Platinum 003 with ranch.sav"));
+            for (var i = 0x4E5D; i < 0x4E5D + 15; i++)
+                str += $"{sav.General[i]:X2} ";
+            Console.WriteLine(str);
+            return;
         }
-
-        return;
         */
+
+        if (args.Length == 0)
+        {
+
+            var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes($"{file}.sav"));
+            sav.State.Edited = true;
+
+            sav.Storage[0x121C6] = 0xFF;
+
+            File.WriteAllBytes($"{file}.sav", sav.Write());
+
+            /*for (int i = 0; i <= 5; i++)
+            {
+                for (int k = 0; k < 8; k++) // for every bit
+                {
+                    for (int j = 0; j <= 5 ; j++) // clear existing
+                        sav.General[0x4E5C + j] = 0;
+
+                    sav.General[i] = (byte)(1 << k); // set new byte
+                    File.WriteAllBytes($"{file} 0x{i:X} {k}.sav", sav.Write());
+                }
+
+            }*/
+
+            //for (int j = 0; j <= 5; j++) // clear existing
+            //    sav.General[0x4E5C + j] = (byte)0xff;
+
+            /*for (int i = 0; i <= 255; i++)
+            {
+                sav.State.Edited = true;
+                sav.General[0x4E61] = (byte)i;
+                File.WriteAllBytes($"{file} - {i:X2}.sav", sav.Write());
+            }*/
+
+            return;
+        }
 
         if (!ValidateArgLength(args, 1))
             return;
 
         /*
-        overwriteFlags
-        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - before.sav"
-        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - after.sav"
-        "C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald.sav"
-        0
-        0
+        C:\Users\samue\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0,0,0"
         */
         if (args[0] == "overwriteFlags")
         {

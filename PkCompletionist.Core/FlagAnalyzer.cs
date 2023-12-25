@@ -108,7 +108,7 @@ partial class FlagAnalyzer : Command
             int idx = diffIdx[i];
 
             //if (changeRangeEnd - changeRangeStart < 15)
-            AddMessage($"spanA[0x{idx:X}] = 0x{spanB[idx]:X} (old=0x{spanA[idx]:X})");
+            AddMessage($"spanA[0x{idx:X}] = 0x{spanB[idx]:X2} (old=0x{spanA[idx]:X2})");
 
             spanA[idx] = spanB[idx];
         }

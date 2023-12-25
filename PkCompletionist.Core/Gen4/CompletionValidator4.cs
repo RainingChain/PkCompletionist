@@ -2,17 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Buffers.Binary;
-using System.Diagnostics.Metrics;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using static PkCompletionist.Core.CompletionValidator4;
+using static System.Buffers.Binary.BinaryPrimitives;
 using static System.Formats.Asn1.AsnWriter;
-using static System.Net.WebRequestMethods;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PkCompletionist.Core;
+
+/*
+ * Modifications to PkHex.Core
+ * Geonet
+ * 
+ * */
 
 internal class CompletionValidator4 : CompletionValidatorX
 {
@@ -49,6 +48,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         Generate_villaFurniture();
         Generate_trainerStar();
         Generate_easyChatSystemWord();
+        Generate_geonet();
         Generate_misc();
     }
 
@@ -614,7 +614,8 @@ internal class CompletionValidator4 : CompletionValidatorX
             return (val & 0xF0) != 0;
         }
 
-
+        var diff = (byte)accessory - (byte)Accessory.Confetti;
+        return FlagUtil.GetFlag(sav.General, 0x4E58 + diff / 8, diff % 8);
     }
 
     public void Generate_accessory()
@@ -714,9 +715,9 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["GlassStage"] = HasAccessory(Accessory.GlassStage);
         ow["AwardPodium"] = HasAccessory(Accessory.AwardPodium);
         ow["CubeStage"] = HasAccessory(Accessory.CubeStage);
-        ow["TurtwigMask"] = HasAccessory(Accessory.TurtwigMask);
-        ow["ChimcharMask"] = HasAccessory(Accessory.ChimcharMask);
-        ow["PiplupMask"] = HasAccessory(Accessory.PiplupMask);
+        ow["TurtwigMask"] = HasAccessory(Accessory.TURTWIGMask);
+        ow["ChimcharMask"] = HasAccessory(Accessory.CHIMCHARMask);
+        ow["PiplupMask"] = HasAccessory(Accessory.PIPLUPMask);
         ow["BigTree"] = HasAccessory(Accessory.BigTree);
         ow["Flag"] = HasAccessory(Accessory.Flag);
         ow["Crown"] = HasAccessory(Accessory.Crown);
@@ -762,20 +763,29 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["SweetSourPoffin"] = HasPoffin(PoffinFlavor4.Sweet_Sour);
         ow["SweetSpicyPoffin"] = HasPoffin(PoffinFlavor4.Sweet_Spicy);
     }
+
+    public bool GetWallpaperUnlocked(byte id)
+    {
+        return FlagUtil.GetFlag(sav.Storage, 0x121C6 + id / 8, id % 8);
+    }
     public void Generate_pcWallPaper()
     {
         var ow = new Dictionary<string, bool>();
         owned["pcWallPaper"] = ow;
 
-        var HasWallPaper = (int id) =>
+        var HasWallPaper = (byte id) =>
         {
+            if (!this.living)
+                return GetWallpaperUnlocked(id);
+
             for (int i = 0; i < this.sav.BoxCount; i++)
                 if (this.sav.GetBoxWallpaper(i) == id)
                     return true;
+
             return false;
         };
-        //TODO if not living, only get if unlocked
-        ow["Distortion"] = HasWallPaper(0); // TODO
+
+        ow["Distortion"] = HasWallPaper(0);
         ow["Contest"] = HasWallPaper(1);
         ow["Nostalgic"] = HasWallPaper(2);
         ow["Croagunk"] = HasWallPaper(3);
@@ -908,49 +918,59 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["TwinkleSeal"] = HasSeal(Seal4.Twinkle);
     }
 
+    public bool GetBackdropUnlocked(Backdrop backdrop)
+    {
+        return sav.General[0x4E60 + (byte)backdrop] != 0x12;
+    }
 
     public void Generate_backdrop()
     {
         var ow = new Dictionary<string, bool>();
         owned["backdrop"] = ow;
 
-        ow["DressUp"] = false; // TODO
-        ow["Ranch"] = false; // TODO
-        ow["CityatNight"] = false; // TODO
-        ow["SnowyTown"] = false; // TODO
-        ow["Fiery"] = false; // TODO
-        ow["OuterSpace"] = false; // TODO
-        ow["Desert"] = false; // TODO
-        ow["CumulusCloud"] = false; // TODO
-        ow["FlowerPatch"] = false; // TODO
-        ow["FutureRoom"] = false; // TODO
-        ow["OpenSea"] = false; // TODO
-        ow["TotalDarkness"] = false; // TODO
-        ow["TatamiRoom"] = false; // TODO
-        ow["GingerbreadRoom"] = false; // TODO
-        ow["Seafloor"] = false; // TODO
-        ow["Underground"] = false; // TODO
-        ow["Sky"] = false; // TODO
-        ow["Theater"] = false; // TODO
+        ow["DressUp"] = GetBackdropUnlocked(Backdrop.DressUp);
+        ow["Ranch"] = GetBackdropUnlocked(Backdrop.Ranch);
+        ow["CityatNight"] = GetBackdropUnlocked(Backdrop.CityatNight);
+        ow["SnowyTown"] = GetBackdropUnlocked(Backdrop.SnowyTown);
+        ow["Fiery"] = GetBackdropUnlocked(Backdrop.Fiery);
+        ow["OuterSpace"] = GetBackdropUnlocked(Backdrop.OuterSpace);
+        ow["Desert"] = GetBackdropUnlocked(Backdrop.Desert);
+        ow["CumulusCloud"] = GetBackdropUnlocked(Backdrop.CumulusCloud);
+        ow["FlowerPatch"] = GetBackdropUnlocked(Backdrop.FlowerPatch);
+        ow["FutureRoom"] = GetBackdropUnlocked(Backdrop.FutureRoom);
+        ow["OpenSea"] = GetBackdropUnlocked(Backdrop.OpenSea);
+        ow["TotalDarkness"] = GetBackdropUnlocked(Backdrop.TotalDarkness);
+        ow["TatamiRoom"] = GetBackdropUnlocked(Backdrop.TatamiRoom);
+        ow["GingerbreadRoom"] = GetBackdropUnlocked(Backdrop.GingerbreadRoom);
+        ow["Seafloor"] = GetBackdropUnlocked(Backdrop.Seafloor);
+        ow["Underground"] = GetBackdropUnlocked(Backdrop.Underground);
+        ow["Sky"] = GetBackdropUnlocked(Backdrop.Sky);
+        ow["Theater"] = GetBackdropUnlocked(Backdrop.Theater);
     }
 
 
+    public bool IsBattleFrontierPrintObtained(int index, int wantedVal)
+    {
+        var currentVal = ReadInt32LittleEndian(sav.General[(0xE4A + (index << 1))..]);
+        return currentVal >= wantedVal;
+    }
 
     public void Generate_battleFrontier()
     {
         var ow = new Dictionary<string, bool>();
         owned["battleFrontier"] = ow;
 
-        ow["BattleTowerSilver"] = false; // TODO
-        ow["BattleFactorySilver"] = false; // TODO
-        ow["BattleArcadeSilver"] = false; // TODO
-        ow["BattleCastleSilver"] = false; // TODO
-        ow["BattleHallSilver"] = false; // TODO
-        ow["BattleTowerGold"] = false; // TODO
-        ow["BattleFactoryGold"] = false; // TODO
-        ow["BattleArcadeGold"] = false; // TODO
-        ow["BattleCastleGold"] = false; // TODO
-        ow["BattleHallGold"] = false; // TODO
+
+        ow["BattleTowerSilver"] = IsBattleFrontierPrintObtained(0, 1);
+        ow["BattleFactorySilver"] = IsBattleFrontierPrintObtained(1, 1);
+        ow["BattleHallSilver"] = IsBattleFrontierPrintObtained(2, 1);
+        ow["BattleCastleSilver"] = IsBattleFrontierPrintObtained(3, 1);
+        ow["BattleArcadeSilver"] = IsBattleFrontierPrintObtained(4, 1);
+        ow["BattleTowerGold"] = IsBattleFrontierPrintObtained(0, 2);
+        ow["BattleFactoryGold"] = IsBattleFrontierPrintObtained(1, 2);
+        ow["BattleHallGold"] = IsBattleFrontierPrintObtained(2, 2);
+        ow["BattleCastleGold"] = IsBattleFrontierPrintObtained(3, 2);
+        ow["BattleArcadeGold"] = IsBattleFrontierPrintObtained(4, 2);
     }
 
     public bool HasRibbon(Func<PK4, bool> func)
@@ -974,7 +994,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["ribbon"] = ow;
 
-        ow["ChampionRibbon"] = HasRibbon(pk4 => pk4.RibbonChampionBattle); //TODO
+        ow["ChampionRibbon"] = HasRibbon(pk4 => pk4.RibbonChampionG3);
         ow["SinnohChampionRibbon"] = HasRibbon(pk4 => pk4.RibbonChampionSinnoh);
         ow["CoolRibbonHoenn"] = HasRibbon(pk4 => pk4.RibbonG3Cool);
         ow["CoolRibbonSuperHoenn"] = HasRibbon(pk4 => pk4.RibbonG3CoolSuper);
@@ -1050,51 +1070,69 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["trainerStar"] = ow;
 
-        ow["HallofFame"] = false; // TODO
-        ow["PokemonContest"] = false; // TODO
-        ow["Underground"] = false; // TODO
-        ow["BattleTower"] = false; // TODO
+        ow["HallofFame"] = sav.GetEventFlag(2404);
+        ow["PokemonContest"] = sav.GetEventFlag(2408) && sav.GetEventFlag(2409) && sav.GetEventFlag(2410) && sav.GetEventFlag(2411) && sav.GetEventFlag(2412);
+        ow["Underground"] = sav.UG_Flags >= 50;
+        ow["BattleTower"] = IsBattleFrontierPrintObtained(0, 2);
 
     }
-
-
+    
     public void Generate_easyChatSystemWord()
     {
         var ow = new Dictionary<string, bool>();
         owned["easyChatSystemWord"] = ow;
 
         ow["ToughWordsArtery"] = false; //TODO
-        ow["ToughWordsBone Density"] = false; //TODO
+        ow["ToughWordsBoneDensity"] = false; //TODO
         ow["ToughWordsCadenza"] = false; //TODO
         ow["ToughWordsConductivity"] = false; //TODO
         ow["ToughWordsContour"] = false; //TODO
         ow["ToughWordsCopyright"] = false; //TODO
-        ow["ToughWordsCross-Stitch"] = false; //TODO
+        ow["ToughWordsCrossStitch"] = false; //TODO
         ow["ToughWordsCubism"] = false; //TODO
-        ow["ToughWordsEarth Tones"] = false; //TODO
+        ow["ToughWordsEarthTones"] = false; //TODO
         ow["ToughWordsEducation"] = false; //TODO
         ow["ToughWordsFlambe"] = false; //TODO
         ow["ToughWordsFractals"] = false; //TODO
         ow["ToughWordsGMT"] = false; //TODO
-        ow["ToughWordsGolden Ratio"] = false; //TODO
+        ow["ToughWordsGoldenRatio"] = false; //TODO
         ow["ToughWordsGommage"] = false; //TODO
         ow["ToughWordsHowling"] = false; //TODO
         ow["ToughWordsImplant"] = false; //TODO
         ow["ToughWordsIrritability"] = false; //TODO
-        ow["ToughWordsMoney Rate"] = false; //TODO
+        ow["ToughWordsMoneyRate"] = false; //TODO
         ow["ToughWordsNeutrino"] = false; //TODO
         ow["ToughWordsOmnibus"] = false; //TODO
         ow["ToughWordsPH Balance"] = false; //TODO
         ow["ToughWordsPolyphenol"] = false; //TODO
-        ow["ToughWordsREM Sleep"] = false; //TODO
+        ow["ToughWordsREMSleep"] = false; //TODO
         ow["ToughWordsResolution"] = false; //TODO
         ow["ToughWordsSpreadsheet"] = false; //TODO
         ow["ToughWordsStarboard"] = false; //TODO
-        ow["ToughWordsStock Prices"] = false; //TODO
+        ow["ToughWordsStockPrices"] = false; //TODO
         ow["ToughWordsStreaming"] = false; //TODO
-        ow["ToughWordsTwo-Step"] = false; //TODO
+        ow["ToughWordsTwoStep"] = false; //TODO
         ow["ToughWordsUbiquitous"] = false; //TODO
         ow["ToughWordsVector"] = false; //TODO
+    }
+
+    public void Generate_geonet()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["geonet"] = ow;
+        Geonet4 geonet = new (sav);
+
+        foreach (var country in Geonet4.LegalCountries)
+        {
+            var subRegionCount = Geonet4.GetSubregionCount(country);
+            if (subRegionCount == 0)
+                ow[$"{country}-0"] = geonet.GetCountrySubregion(country, 0) != Geonet4.Point.None;
+            else 
+            { 
+                for (byte i = 1; i <= subRegionCount; i++)
+                    ow[$"{country}-{i}"] = geonet.GetCountrySubregion(country, i) != Geonet4.Point.None;
+            }
+        }
     }
 
     public void Generate_misc()
@@ -1102,9 +1140,12 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
 
-        ow["DefeatEliteFourAfterNationalDex"] = false; // TODO
-        ow["DefeatRivalLevel85Rematch"] = false; // TODO
-        ow["UnlockPokedexForeignEntries"] = false; // TODO
+        ow["RegisteredaGeonetlocation"] = sav.GeonetGlobalFlag;
+        ow["DefeatEliteFourAfterNationalDex"] = sav.GetEventFlag(0x08B5); // TR_CHAMPION_02
+        ow["DefeatRivalLevel85Rematch"] = sav.GetEventFlag(0x08EA) || sav.GetEventFlag(0x08EB) || sav.GetEventFlag(0x08EC); // TR_RIVAL_31-33
+        ow["3500ScoreinCatchingShow"] = sav.GetWork(0224) >= 3500;
+        ow["UnlockPokedexForeignEntries"] = sav.GetAllPKM().Any(pk => pk.Language != this.sav.Language);
+        // ow["UnlockMysteryGift"] = sav.MysteryGift; //TODO
     }
 }
 
@@ -1196,7 +1237,7 @@ public enum Accessory
   SweetCandy,
   Confetti,
   // For accessories below this point, only 1 copy can be owned at once
-  ColoredParasol,
+  ColoredParasol, 
   OldUmbrella,
   Spotlight,
   Cape,
@@ -1227,12 +1268,35 @@ public enum Accessory
   GlassStage,
   AwardPodium,
   CubeStage,
-  TurtwigMask,
-  ChimcharMask,
-  PiplupMask,
+  TURTWIGMask,
+  CHIMCHARMask,
+  PIPLUPMask,
   BigTree,
   Flag,
   Crown,
   Tiara,
   Comet,
+  MAX = Comet
+}
+
+public enum Backdrop
+{
+    DressUp,
+    Ranch,
+    CityatNight,
+    SnowyTown,
+    Fiery,
+    OuterSpace,
+    Desert,
+    CumulusCloud,
+    FlowerPatch,
+    FutureRoom,
+    OpenSea,
+    TotalDarkness,
+    TatamiRoom,
+    GingerbreadRoom,
+    Seafloor,
+    Underground,
+    Sky,
+    Theater,
 }
