@@ -1076,45 +1076,48 @@ internal class CompletionValidator4 : CompletionValidatorX
 
     }
     
+    public bool GetThoughWordUnlocked(ThoughWord word)
+    {
+        var idx = (byte)word;
+        return FlagUtil.GetFlag(sav.General, 0xCEB4 + idx / 8, idx % 8);
+    }
     public void Generate_easyChatSystemWord()
     {
         var ow = new Dictionary<string, bool>();
         owned["easyChatSystemWord"] = ow;
 
-        //0xCEB4 is start
-
-        ow["ToughWordsArtery"] = false; //TODO
-        ow["ToughWordsBoneDensity"] = false; //TODO
-        ow["ToughWordsCadenza"] = false; //TODO
-        ow["ToughWordsConductivity"] = false; //TODO
-        ow["ToughWordsContour"] = false; //TODO
-        ow["ToughWordsCopyright"] = false; //TODO
-        ow["ToughWordsCrossStitch"] = false; //TODO
-        ow["ToughWordsCubism"] = false; //TODO
-        ow["ToughWordsEarthTones"] = false; //TODO
-        ow["ToughWordsEducation"] = false; //TODO
-        ow["ToughWordsFlambe"] = false; //TODO
-        ow["ToughWordsFractals"] = false; //TODO
-        ow["ToughWordsGMT"] = false; //TODO
-        ow["ToughWordsGoldenRatio"] = false; //TODO
-        ow["ToughWordsGommage"] = false; //TODO
-        ow["ToughWordsHowling"] = false; //TODO
-        ow["ToughWordsImplant"] = false; //TODO
-        ow["ToughWordsIrritability"] = false; //TODO
-        ow["ToughWordsMoneyRate"] = false; //TODO
-        ow["ToughWordsNeutrino"] = false; //TODO
-        ow["ToughWordsOmnibus"] = false; //TODO
-        ow["ToughWordsPH Balance"] = false; //TODO
-        ow["ToughWordsPolyphenol"] = false; //TODO
-        ow["ToughWordsREMSleep"] = false; //TODO
-        ow["ToughWordsResolution"] = false; //TODO
-        ow["ToughWordsSpreadsheet"] = false; //TODO
-        ow["ToughWordsStarboard"] = false; //TODO
-        ow["ToughWordsStockPrices"] = false; //TODO
-        ow["ToughWordsStreaming"] = false; //TODO
-        ow["ToughWordsTwoStep"] = false; //TODO
-        ow["ToughWordsUbiquitous"] = false; //TODO
-        ow["ToughWordsVector"] = false; //TODO
+        ow["ToughWordsArtery"] = GetThoughWordUnlocked(ThoughWord.Artery);
+        ow["ToughWordsBoneDensity"] = GetThoughWordUnlocked(ThoughWord.BoneDensity);
+        ow["ToughWordsCadenza"] = GetThoughWordUnlocked(ThoughWord.Cadenza);
+        ow["ToughWordsConductivity"] = GetThoughWordUnlocked(ThoughWord.Conductivity);
+        ow["ToughWordsContour"] = GetThoughWordUnlocked(ThoughWord.Contour);
+        ow["ToughWordsCopyright"] = GetThoughWordUnlocked(ThoughWord.Copyright);
+        ow["ToughWordsCrossStitch"] = GetThoughWordUnlocked(ThoughWord.CrossStitch);
+        ow["ToughWordsCubism"] = GetThoughWordUnlocked(ThoughWord.Cubism);
+        ow["ToughWordsEarthTones"] = GetThoughWordUnlocked(ThoughWord.EarthTones);
+        ow["ToughWordsEducation"] = GetThoughWordUnlocked(ThoughWord.Education);
+        ow["ToughWordsFlambe"] = GetThoughWordUnlocked(ThoughWord.Flambe);
+        ow["ToughWordsFractals"] = GetThoughWordUnlocked(ThoughWord.Fractals);
+        ow["ToughWordsGMT"] = GetThoughWordUnlocked(ThoughWord.GMT);
+        ow["ToughWordsGoldenRatio"] = GetThoughWordUnlocked(ThoughWord.GoldenRatio);
+        ow["ToughWordsGommage"] = GetThoughWordUnlocked(ThoughWord.Gommage);
+        ow["ToughWordsHowling"] = GetThoughWordUnlocked(ThoughWord.Howling);
+        ow["ToughWordsImplant"] = GetThoughWordUnlocked(ThoughWord.Implant);
+        ow["ToughWordsIrritability"] = GetThoughWordUnlocked(ThoughWord.Irritability);
+        ow["ToughWordsMoneyRate"] = GetThoughWordUnlocked(ThoughWord.MoneyRate);
+        ow["ToughWordsNeutrino"] = GetThoughWordUnlocked(ThoughWord.Neutrino);
+        ow["ToughWordsOmnibus"] = GetThoughWordUnlocked(ThoughWord.Omnibus);
+        ow["ToughWordsPHBalance"] = GetThoughWordUnlocked(ThoughWord.PHBalance);
+        ow["ToughWordsPolyphenol"] = GetThoughWordUnlocked(ThoughWord.Polyphenol);
+        ow["ToughWordsREMSleep"] = GetThoughWordUnlocked(ThoughWord.REMSleep);
+        ow["ToughWordsResolution"] = GetThoughWordUnlocked(ThoughWord.Resolution);
+        ow["ToughWordsSpreadsheet"] = GetThoughWordUnlocked(ThoughWord.Spreadsheet);
+        ow["ToughWordsStarboard"] = GetThoughWordUnlocked(ThoughWord.Starboard);
+        ow["ToughWordsStockPrices"] = GetThoughWordUnlocked(ThoughWord.StockPrices);
+        ow["ToughWordsStreaming"] = GetThoughWordUnlocked(ThoughWord.Streaming);
+        ow["ToughWordsTwoStep"] = GetThoughWordUnlocked(ThoughWord.TwoStep);
+        ow["ToughWordsUbiquitous"] = GetThoughWordUnlocked(ThoughWord.Ubiquitous);
+        ow["ToughWordsVector"] = GetThoughWordUnlocked(ThoughWord.Vector);
     }
 
     public void Generate_geonet()
@@ -1281,41 +1284,41 @@ public enum Accessory
   MAX = Comet
 }
 
-public enum ThoughWords
+public enum ThoughWord
 {
-    EarthTones,
-
+    EarthTones, 
+    Implant,
+    GoldenRatio,
+    Omnibus,
+    Starboard,
+    MoneyRate,
+    Resolution,
+    Cadenza,
+    Education,
+    Cubism,
+    CrossStitch,
     Artery,
     BoneDensity,
-    Cadenza,
-    Conductivity,
-    Contour,
-    Copyright,
-    CrossStitch,
-    Cubism,
-    Education,
-    Flambe,
-    Fractals,
-    GMT,
-    GoldenRatio,
     Gommage,
-    Howling,
-    Implant,
-    Irritability,
-    MoneyRate,
-    Neutrino,
-    Omnibus,
-    PHBalance,
-    Polyphenol,
-    REMSleep,
-    Resolution,
-    Spreadsheet,
-    Starboard,
-    StockPrices,
     Streaming,
+    Conductivity,
+    Copyright,
     TwoStep,
-    Ubiquitous,
+    Contour,
+    Neutrino,
+    Howling,
+    Spreadsheet,
+    GMT,
+    Irritability,
+    Fractals,
+    Flambe,
+    StockPrices,
+    PHBalance,
     Vector,
+    Polyphenol,
+    Ubiquitous,
+    REMSleep,
+    MAX = REMSleep,
 }
 
 public enum Backdrop
