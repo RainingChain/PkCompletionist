@@ -596,12 +596,11 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["inGameGift"] = ow;
 
-        //0x0097, 0x0131
         ow["StarterPokemon"] = true;
         ow["TogepiEgg"] = sav.GetWork(0x007A) >= 5;
-        ow["Eevee"] = false; // TODO
-        ow["Porygon"] = false; // TODO
-        ow["RioluEgg"] = false; // TODO // 0x0220 ?
+        ow["Eevee"] = sav.GetEventFlag(305);
+        ow["Porygon"] = sav.GetEventFlag(151); 
+        ow["RioluEgg"] = sav.GetEventFlag(0x220);
     }
     public bool HasAccessory(Accessory accessory)
     {
@@ -1082,6 +1081,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["easyChatSystemWord"] = ow;
 
+        //0xCEB4 is start
+
         ow["ToughWordsArtery"] = false; //TODO
         ow["ToughWordsBoneDensity"] = false; //TODO
         ow["ToughWordsCadenza"] = false; //TODO
@@ -1145,7 +1146,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["DefeatRivalLevel85Rematch"] = sav.GetEventFlag(0x08EA) || sav.GetEventFlag(0x08EB) || sav.GetEventFlag(0x08EC); // TR_RIVAL_31-33
         ow["3500ScoreinCatchingShow"] = sav.GetWork(0224) >= 3500;
         ow["UnlockPokedexForeignEntries"] = sav.GetAllPKM().Any(pk => pk.Language != this.sav.Language);
-        // ow["UnlockMysteryGift"] = sav.MysteryGift; //TODO
+        ow["UnlockMysteryGift"] = (sav.General[72] & 1) == 1;
+        ow["SignyourTrainerCard"] = sav.General[0x61A7] != 0; // not really accurate
     }
 }
 
@@ -1277,6 +1279,43 @@ public enum Accessory
   Tiara,
   Comet,
   MAX = Comet
+}
+
+public enum ThoughWords
+{
+    EarthTones,
+
+    Artery,
+    BoneDensity,
+    Cadenza,
+    Conductivity,
+    Contour,
+    Copyright,
+    CrossStitch,
+    Cubism,
+    Education,
+    Flambe,
+    Fractals,
+    GMT,
+    GoldenRatio,
+    Gommage,
+    Howling,
+    Implant,
+    Irritability,
+    MoneyRate,
+    Neutrino,
+    Omnibus,
+    PHBalance,
+    Polyphenol,
+    REMSleep,
+    Resolution,
+    Spreadsheet,
+    Starboard,
+    StockPrices,
+    Streaming,
+    TwoStep,
+    Ubiquitous,
+    Vector,
 }
 
 public enum Backdrop

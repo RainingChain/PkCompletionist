@@ -98,23 +98,22 @@ internal class Program
 
             var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes($"{file}.sav"));
             sav.State.Edited = true;
-
-            sav.Storage[0x121C6] = 0xFF;
+                       
 
             File.WriteAllBytes($"{file}.sav", sav.Write());
 
-            /*for (int i = 0; i <= 5; i++)
+            for (int i = 0; i <= 10; i++)
             {
                 for (int k = 0; k < 8; k++) // for every bit
                 {
-                    for (int j = 0; j <= 5 ; j++) // clear existing
-                        sav.General[0x4E5C + j] = 0;
+                    for (int j = 0; j <= 10; j++) // clear existing
+                        sav.General[52910 + j] = 0;
 
-                    sav.General[i] = (byte)(1 << k); // set new byte
-                    File.WriteAllBytes($"{file} 0x{i:X} {k}.sav", sav.Write());
+                    sav.General[52910 + i] = (byte)(1 << k); // set new byte
+                    File.WriteAllBytes($"{file} 0x{(52910 + i):X} {k}.sav", sav.Write());
                 }
 
-            }*/
+            }
 
             //for (int j = 0; j <= 5; j++) // clear existing
             //    sav.General[0x4E5C + j] = (byte)0xff;
