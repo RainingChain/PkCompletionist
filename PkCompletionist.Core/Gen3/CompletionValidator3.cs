@@ -603,6 +603,12 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["WhitePokeblock"] = HasPokeblock(PokeBlock3Color.White);
     }
 
+    public bool GetTrendyWordUnlocked(TrendyWord word)
+    {
+        var idx = (byte)word;
+        return FlagUtil.GetFlag(sav.Large, 0x2E20 + idx / 8, idx % 8);
+    }
+
     public void Generate_easyChatSystemWord()
     {
         var ow = new Dictionary<string, bool>();
@@ -636,47 +642,39 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["Move1"] = sav.GetEventFlag(2148); // Hall of Fame
         ow["Move2"] = sav.GetEventFlag(2148); // Hall of Fame
 
-        var IsTrendyUnlocked = (int bitIdx) =>
-        {
-            // 0x2E20 u8 unlockedTrendySayings[NUM_TRENDY_SAYING_BYTES];
-            var byteIdx = bitIdx / 8;
-            var bitoffset = bitIdx % 8;
-            var span = sav.Large.AsSpan(0x2E20, 5);
-            return ((span[byteIdx] >> bitoffset) & 1) != 0;
-        };
-        ow["TrendyKTHXBYE"] = IsTrendyUnlocked(0);
-        ow["TrendyYESSIR"] = IsTrendyUnlocked(1);
-        ow["TrendyAVANTGARDE"] = IsTrendyUnlocked(2);
-        ow["TrendyCOUPLE"] = IsTrendyUnlocked(3);
-        ow["TrendyMUCHOBLIGED"] = IsTrendyUnlocked(4);
-        ow["TrendyYEEHAW"] = IsTrendyUnlocked(5);
-        ow["TrendyMEGA"] = IsTrendyUnlocked(6);
-        ow["Trendy1HITKO"] = IsTrendyUnlocked(7);
-        ow["TrendyDESTINY"] = IsTrendyUnlocked(8);
-        ow["TrendyCANCEL"] = IsTrendyUnlocked(9);
-        ow["TrendyNEW"] = IsTrendyUnlocked(10);
-        ow["TrendyFLATTEN"] = IsTrendyUnlocked(11);
-        ow["TrendyKIDDING"] = IsTrendyUnlocked(12);
-        ow["TrendyLOSER"] = IsTrendyUnlocked(13);
-        ow["TrendyLOSING"] = IsTrendyUnlocked(14);
-        ow["TrendyHAPPENING"] = IsTrendyUnlocked(15);
-        ow["TrendyHIPAND"] = IsTrendyUnlocked(16);
-        ow["TrendySHAKE"] = IsTrendyUnlocked(17);
-        ow["TrendySHADY"] = IsTrendyUnlocked(18);
-        ow["TrendyUPBEAT"] = IsTrendyUnlocked(19);
-        ow["TrendyMODERN"] = IsTrendyUnlocked(20);
-        ow["TrendySMELLYA"] = IsTrendyUnlocked(21);
-        ow["TrendyBANG"] = IsTrendyUnlocked(22);
-        ow["TrendyKNOCKOUT"] = IsTrendyUnlocked(23);
-        ow["TrendyHASSLE"] = IsTrendyUnlocked(24);
-        ow["TrendyWINNER"] = IsTrendyUnlocked(25);
-        ow["TrendyFEVER"] = IsTrendyUnlocked(26);
-        ow["TrendyWANNABE"] = IsTrendyUnlocked(27);
-        ow["TrendyBABY"] = IsTrendyUnlocked(28);
-        ow["TrendyHEART"] = IsTrendyUnlocked(29);
-        ow["TrendyOLD"] = IsTrendyUnlocked(30);
-        ow["TrendyYOUNG"] = IsTrendyUnlocked(31);
-        ow["TrendyUGLY"] = IsTrendyUnlocked(32);
+        ow["TrendyKTHXBYE"] = GetTrendyWordUnlocked(TrendyWord.KTHXBYE);
+        ow["TrendyYESSIR"] = GetTrendyWordUnlocked(TrendyWord.YESSIR);
+        ow["TrendyAVANTGARDE"] = GetTrendyWordUnlocked(TrendyWord.AVANTGARDE);
+        ow["TrendyCOUPLE"] = GetTrendyWordUnlocked(TrendyWord.COUPLE);
+        ow["TrendyMUCHOBLIGED"] = GetTrendyWordUnlocked(TrendyWord.MUCHOBLIGED);
+        ow["TrendyYEEHAW"] = GetTrendyWordUnlocked(TrendyWord.YEEHAW);
+        ow["TrendyMEGA"] = GetTrendyWordUnlocked(TrendyWord.MEGA);
+        ow["Trendy1HITKO"] = GetTrendyWordUnlocked(TrendyWord.ONEHITKO);
+        ow["TrendyDESTINY"] = GetTrendyWordUnlocked(TrendyWord.DESTINY);
+        ow["TrendyCANCEL"] = GetTrendyWordUnlocked(TrendyWord.CANCEL);
+        ow["TrendyNEW"] = GetTrendyWordUnlocked(TrendyWord.NEW);
+        ow["TrendyFLATTEN"] = GetTrendyWordUnlocked(TrendyWord.FLATTEN);
+        ow["TrendyKIDDING"] = GetTrendyWordUnlocked(TrendyWord.KIDDING);
+        ow["TrendyLOSER"] = GetTrendyWordUnlocked(TrendyWord.LOSER);
+        ow["TrendyLOSING"] = GetTrendyWordUnlocked(TrendyWord.LOSING);
+        ow["TrendyHAPPENING"] = GetTrendyWordUnlocked(TrendyWord.HAPPENING);
+        ow["TrendyHIPAND"] = GetTrendyWordUnlocked(TrendyWord.HIPAND);
+        ow["TrendySHAKE"] = GetTrendyWordUnlocked(TrendyWord.SHAKE);
+        ow["TrendySHADY"] = GetTrendyWordUnlocked(TrendyWord.SHADY);
+        ow["TrendyUPBEAT"] = GetTrendyWordUnlocked(TrendyWord.UPBEAT);
+        ow["TrendyMODERN"] = GetTrendyWordUnlocked(TrendyWord.MODERN);
+        ow["TrendySMELLYA"] = GetTrendyWordUnlocked(TrendyWord.SMELLYA);
+        ow["TrendyBANG"] = GetTrendyWordUnlocked(TrendyWord.BANG);
+        ow["TrendyKNOCKOUT"] = GetTrendyWordUnlocked(TrendyWord.KNOCKOUT);
+        ow["TrendyHASSLE"] = GetTrendyWordUnlocked(TrendyWord.HASSLE);
+        ow["TrendyWINNER"] = GetTrendyWordUnlocked(TrendyWord.WINNER);
+        ow["TrendyFEVER"] = GetTrendyWordUnlocked(TrendyWord.FEVER);
+        ow["TrendyWANNABE"] = GetTrendyWordUnlocked(TrendyWord.WANNABE);
+        ow["TrendyBABY"] = GetTrendyWordUnlocked(TrendyWord.BABY);
+        ow["TrendyHEART"] = GetTrendyWordUnlocked(TrendyWord.HEART);
+        ow["TrendyOLD"] = GetTrendyWordUnlocked(TrendyWord.OLD);
+        ow["TrendyYOUNG"] = GetTrendyWordUnlocked(TrendyWord.YOUNG);
+        ow["TrendyUGLY"] = GetTrendyWordUnlocked(TrendyWord.UGLY);
     }
 
     public void Generate_gameStat()
@@ -727,4 +725,41 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["SetBerryPickingRecord"] = sav.JoyfulBerriesScore > 0;
         ow["SetBerryPickingInrowwith5playersRecord"] = sav.JoyfulBerries5InRow > 0;
     }
+}
+
+enum TrendyWord
+{
+    KTHXBYE,
+    YESSIR,
+    AVANTGARDE,
+    COUPLE,
+    MUCHOBLIGED,
+    YEEHAW,
+    MEGA,
+    ONEHITKO,
+    DESTINY,
+    CANCEL,
+    NEW,
+    FLATTEN,
+    KIDDING,
+    LOSER,
+    LOSING,
+    HAPPENING,
+    HIPAND,
+    SHAKE,
+    SHADY,
+    UPBEAT,
+    MODERN,
+    SMELLYA,
+    BANG,
+    KNOCKOUT,
+    HASSLE,
+    WINNER,
+    FEVER,
+    WANNABE,
+    BABY,
+    HEART,
+    OLD,
+    YOUNG,
+    UGLY,
 }
