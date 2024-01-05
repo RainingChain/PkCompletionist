@@ -53,11 +53,12 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_battleFrontier();
         Generate_ribbon();
         Generate_phone();
-        Generate_trainerBattle();
+        // Generate_trainerBattle();
         Generate_trainerStar();
         Generate_eReaderBattles();
         Generate_pokeblock();
         Generate_easyChatSystemWord();
+        Generate_gameStat();
         Generate_misc();
     }
 
@@ -678,14 +679,22 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["TrendyUGLY"] = IsTrendyUnlocked(32);
     }
 
+    public void Generate_gameStat()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["gameStat"] = ow;
+
+        Record3 rec3 = new(this.sav);
+        for (int i = 0; i < (byte)RecID3Emerald.BERRY_CRUSH_WITH_FRIENDS; i++)
+            ow[i.ToString()] = rec3.GetRecord(i) > 0;
+    }
+
     public void Generate_misc()
     {
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
 
         ow["DefeatSteven"] = sav.GetEventFlag(0x04F8);
-
-        ow["BattleviaGameLinkCable"] = sav.Large[0x3150 + 8] != 0; // LinkBattleRecord[0].trainerId
 
         // ow["BeatSlateportBattleTent"] = true; // Not trackable
         // ow["BeatVerdanturfBattleTent"] = true; // Not trackable
