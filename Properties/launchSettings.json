@@ -2,7 +2,8 @@
   "profiles": {
     "Profile 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samue\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe"
+      "executablePath": "C:\\Users\\samue\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "validate \"C:\\Users\\samue\\MyDocuments\\Backup-Game\\Pokemon\\2 Crystal\\Pokemon Crystal 100%.sav\""
     }
   }
 }

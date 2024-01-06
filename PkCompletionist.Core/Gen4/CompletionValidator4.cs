@@ -412,7 +412,7 @@ internal class CompletionValidator4 : CompletionValidatorX
     }
     public bool HasAccessory(Accessory accessory)
     {
-        if (accessory <= Accessory.Confetti)
+        if (accessory < Accessory.ColoredParasol)
         {
             var enumIdx = (byte)accessory;
             var val = sav.General[0x4E38 + enumIdx / 2];
@@ -421,7 +421,7 @@ internal class CompletionValidator4 : CompletionValidatorX
             return (val & 0xF0) != 0;
         }
 
-        var diff = (byte)accessory - (byte)Accessory.Confetti;
+        var diff = (byte)accessory - (byte)Accessory.ColoredParasol;
         return FlagUtil.GetFlag(sav.General, 0x4E58 + diff / 8, diff % 8);
     }
 
