@@ -6,10 +6,10 @@ internal class Cnst2
     public static Dictionary<string, int> EventNameToAddress = new Dictionary<string, int>
     {
         {"EVENT_GOT_PROTEIN_FROM_HUEY", 0x0265},
-        {"EVENT_JOEY_HP_UP", 0x0338},
-        {"EVENT_GOT_CALCIUM_FROM_ERIN",0x0269},
-        {"EVENT_GOT_IRON_FROM_PARRY", 0x0268},
+        {"EVENT_GOT_HP_UP_FROM_JOEY", 0x0266},
         {"EVENT_GOT_CARBOS_FROM_VANCE",0x0267},
+        {"EVENT_GOT_IRON_FROM_PARRY", 0x0268},
+        {"EVENT_GOT_CALCIUM_FROM_ERIN",0x0269},
 
         {"EVENT_BEAT_SWIMMERF_ELAINE", 0x03E8},
         {"EVENT_BEAT_SWIMMERF_PAULA", 0x03E9},

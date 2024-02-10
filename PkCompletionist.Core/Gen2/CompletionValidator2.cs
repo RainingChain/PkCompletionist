@@ -19,6 +19,8 @@ internal class CompletionValidator2 : CompletionValidatorX
 
         Generate_inGameGift();
         Generate_misc();
+        Generate_itemInMap();
+        Generate_itemGift();
         Generate_inGameTrade();
         Generate_decoration();
         Generate_phone();
@@ -126,6 +128,8 @@ internal class CompletionValidator2 : CompletionValidatorX
         ow["UnownX"] = HasUnownForm(23);
         ow["UnownY"] = HasUnownForm(24);
         ow["UnownZ"] = HasUnownForm(25);
+
+        ow["GetShinyPokemon"] = sav.GetAllPKM().FirstOrDefault(pkm => pkm.IsShiny) != null;
     }
 
     public void Generate_misc()
@@ -144,8 +148,20 @@ internal class CompletionValidator2 : CompletionValidatorX
 
         if (!sav.GetEventFlag(0x0762) && sav.GetEventFlag(0x0044)) // if red not in mt silver and elite four defeated
             ow["DefeatRed"] = true;
-    }
 
+        var pkms = sav.GetAllPKM();
+        var GetInfectedbyPokerus = () =>
+        {
+            return pkms.FirstOrDefault(pkm =>
+            {
+                var pk2 = (PK2)pkm;
+                if (pk2 == null)
+                    return false;
+                return pk2.PKRS_Infected || pk2.PKRS_Cured || pk2.PKRS_Days > 0 || pk2.PKRS_Strain > 0;
+            }) != null;
+        };
+        ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
+    }
 
     public void Generate_inGameGift()
     {
@@ -569,7 +585,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         // After first battle, sets a regular EventFlag
         // If rematch, increments EventWork by 1
         // The rematch can be against the same pokemons as the first battle
-        // In most cases, impossible to know if last battle is done
+        // In most cases, impossible to know if last battle is done. only possible when last battle gives item
 
         var func = (List<string> list, string eventFlag, string eventWork) => {
             var eventFlagAddr = Cnst2.EventNameToAddress.GetValueOrDefault(eventFlag);
@@ -602,7 +618,7 @@ internal class CompletionValidator2 : CompletionValidatorX
 
 
             ow[list[0]] = sav.GetEventFlag(eventFlagAddr);
-            for (var i = 1; i < list.Count - 2; i++)
+            for (var i = 1; i < list.Count - 1; i++)
                 ow[list[i]] = sav.GetWork(eventWorkAddr) >= i + 1;
             
             ow[list[list.Count - 1]] = sav.GetEventFlag(eventFlagAddr2);
@@ -618,7 +634,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         func(new List<string>{"GINA1", "GINA2", "GINA3", "GINA4", "GINA5"}, "EVENT_BEAT_PICNICKER_GINA", "wGinaFightCount");          
         func2(new List<string>{"HUEY1", "HUEY2", "HUEY3", "HUEY4"}, "EVENT_BEAT_SAILOR_HUEY", "wHueyFightCount","EVENT_GOT_PROTEIN_FROM_HUEY");
         func(new List<string>{"JACK1", "JACK2", "JACK3", "JACK4", "JACK5"}, "EVENT_BEAT_SCHOOLBOY_JACK", "wJackFightCount");
-        func2(new List<string>{"JOEY1", "JOEY2", "JOEY3", "JOEY4", "JOEY5"}, "EVENT_BEAT_YOUNGSTER_JOEY", "wJoeyFightCount", "EVENT_JOEY_HP_UP");
+        func2(new List<string>{"JOEY1", "JOEY2", "JOEY3", "JOEY4", "JOEY5"}, "EVENT_BEAT_YOUNGSTER_JOEY", "wJoeyFightCount", "EVENT_GOT_HP_UP_FROM_JOEY");
         func(new List<string>{"LIZ1", "LIZ2", "LIZ3", "LIZ4", "LIZ5"}, "EVENT_BEAT_PICNICKER_LIZ", "wLizFightCount");
         func(new List<string>{"TIFFANY3", "TIFFANY1", "TIFFANY2", "TIFFANY4"}, "EVENT_BEAT_PICNICKER_TIFFANY", "wTiffanyFightCount");
         func(new List<string>{"TODD1", "TODD2", "TODD3", "TODD4", "TODD5"}, "EVENT_BEAT_CAMPER_TODD", "wToddFightCount");
@@ -758,6 +774,36 @@ internal class CompletionValidator2 : CompletionValidatorX
 
         ow["SilverTrophy"] = sav.GetEventFlag(718);
         ow["GoldTrophy"] = sav.GetEventFlag(717);
+
+    }
+    public void Generate_itemInMap()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemInMap"] = ow;
+
+        var list = new List<int> { 1654, 1976, 1978, 141, 1629, 1944, 250, 1655, 1983, 1928, 244, 1683, 1986, 1671, 149, 1925, 1682, 127, 1943, 1650, 1998, 1923, 154, 1704, 1667, 1632, 1668, 1605, 174, 1722, 157, 243, 1918, 1926, 1947, 1955, 1610, 1661, 1669, 1685, 1614, 1691, 1979, 136, 1653, 169, 128, 1636, 1659, 242, 1917, 177, 138, 132, 135, 1647, 1675, 1652, 1695, 159, 1702, 252, 238, 1611, 146, 1994, 181, 1701, 229, 239, 153, 1681, 1686, 126, 1619, 184, 1693, 1952, 1940, 1712, 165, 1626, 1643, 1672, 1622, 1703, 1927, 1991, 1946, 1954, 176, 1633, 180, 133, 171, 144, 1663, 1670, 1641, 1696, 1648, 150, 1992, 1674, 235, 1920, 249, 1984, 162, 1706, 247, 1688, 1618, 1689, 172, 179, 1995, 1717, 1657, 246, 237, 173, 1958, 1664, 183, 148, 1676, 142, 161, 1723, 158, 233, 1924, 125, 1990, 156, 145, 1981, 1662, 147, 1718, 1700, 228, 1687, 1616, 1692, 1953, 1705, 236, 1941, 1948, 1949, 1678, 1980, 170, 1959, 1642, 1720, 1929, 1684, 1617, 1603, 1996, 1673, 175, 253, 1930, 1921, 1613, 1988, 1607, 1624, 139, 1711, 1709, 164, 1710, 1609, 1628, 1694, 248, 234, 1645, 1982, 1931, 1690, 1945, 1604, 167, 1637, 1665, 182, 1708, 254, 151, 1615, 163, 1713, 1942, 1649, 178, 1660, 134, 143, 160, 1721, 1697, 245, 1922, 240, 1651, 1951, 1950, 166, 1634, 137, 168, 1640, 1716, 140, 1638, 1714, 1698, 1635, 1623, 1707, 1699, 1625, 1639, 1658, 1630, 1666, 1606, 1677, 1644, 1919, 1656, 255, 1715, 1993, 1620, 1719, 1621, 1997, 241, 1679, 1680, 152, 1612, 1985, 155, 1987, 1608, 231, 1627, 1977, 1631, 232, 1646, 230, 1724 };
+        foreach (var evtIdx in list)
+            ow[evtIdx.ToString()] = sav.GetEventFlag(evtIdx);
+
+        if (ow["236"] == false) // Mt. Moon Square (Hidden) event every monday
+            ow.Remove("236");
+    }
+
+    public void Generate_itemGift()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemGift"] = ow;
+
+        var list = new List<int> { 10,101,103,105,107,109,11,111,112,114,115,116,117,12,122,124,13,1395,14,15,16,17,18,19,20,200,206,209,21,210,212,216,218,219,220,221,222,223,224,226,227,23,24,25,256,257,258,259,260,35,36,39,53,613,614,615,616,617,62,71,72,75,77,78,8,800,801,802,803,804,82,83,86,87,88,89,9,90,91,92,93,94,95,99};
+        foreach (var evtIdx in list)
+            ow[evtIdx.ToString()] = sav.GetEventFlag(evtIdx);
+
+        ow["custom0"] = sav.GetEventFlag(0x1A) && sav.GetWork(0x15) != 5; // Potion
+        ow["custom2"] = sav.GetEventFlag(0x1F) && sav.GetWork(0x15) != 6; // Pokeball
+        //ow["custom3"] = sav.GetEventFlag(0x1F) && sav.GetWork(0x15) != 6; // Red Scale for Exp.Share
+
+        //var SysFlags = new List<int> { 91 }; // Return/Frustration. Untrackable anyway
+
 
     }
 }
