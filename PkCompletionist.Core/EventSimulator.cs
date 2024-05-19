@@ -8,17 +8,17 @@ namespace PkCompletionist.Core;
 partial class EventSimulator : Command
 {
     [JSExport]
-    public static bool Execute(string evtStr, byte[] savABytes, byte[]? savBBytes)
+    public static bool Execute(string evtStr, byte[] savABytes, string VersionHint, byte[]? savBBytes)
     {
         var simul = new EventSimulator();
-        var savA = simul.SetSavA(savABytes);
+        var savA = simul.SetSavA(savABytes, VersionHint);
         if (savA == null)
             return false;
 
         SaveFile? savB = null;
         if (savBBytes != null)
         {
-            savB = simul.SetSavB(savBBytes);
+            savB = simul.SetSavB(savBBytes, VersionHint);
             if (savB == null)
                 return false;
         }
@@ -44,6 +44,9 @@ partial class EventSimulator : Command
 
         if (savA is SAV3E)
             return new EventSimulator3(this, (savA as SAV3E)!);
+
+        if (savA is SAV3_Pinball)
+            return new EventSimulator3_Pinball(this, (savA as SAV3_Pinball)!);
 
         if (savA is SAV4)
             return new EventSimulator4(this, (savA as SAV4)!, savB);

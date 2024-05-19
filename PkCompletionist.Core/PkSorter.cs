@@ -7,10 +7,10 @@ namespace PkCompletionist.Core;
 partial class PkSorter : Command
 {
     [JSExport]
-    public static bool Execute(byte[] savA)
+    public static bool Execute(byte[] savA, string VersionHint)
     {
         var sorter = new PkSorter();
-        if (sorter.SetSavA(savA) == null)
+        if (sorter.SetSavA(savA, VersionHint) == null)
             return false;
 
         List<PKM> boxes = new(sorter.savA!.BoxData);

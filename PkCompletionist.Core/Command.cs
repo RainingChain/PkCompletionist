@@ -29,17 +29,33 @@ partial class Command
         AddMessage(msg);
         LastError = msg;
     }
-
-    public SaveFile? SetSavA(byte[] data)
+    public static SaveFile? GetVariantSAV(byte[] data, string VersionHint)
     {
-        savA = SaveUtil.GetVariantSAV(data);
+        var pinballRs = SAV3_Pinball.NewIfValid(data);
+        if (pinballRs != null)
+            return pinballRs;
+
+        var pinball = SAV1_Pinball.NewIfValid(data, VersionHint);
+        if (pinball != null)
+            return pinball;
+
+        var pmdRescueTeam = SAV3_PmdRescueTeam.NewIfValid(data, VersionHint);
+        if (pmdRescueTeam != null)
+            return pmdRescueTeam;
+
+        return SaveUtil.GetVariantSAV(data);
+    }
+
+    public SaveFile? SetSavA(byte[] data, string VersionHint)
+    {
+        savA = GetVariantSAV(data, VersionHint);
         if (savA == null)
             Messages.Add("Error: Failed to parse the content of the save file #1.");
         return savA;
     }
-    public SaveFile? SetSavB(byte[] data)
+    public SaveFile? SetSavB(byte[] data, string VersionHint)
     {
-        savB = SaveUtil.GetVariantSAV(data);
+        savB = GetVariantSAV(data, VersionHint);
         if (savB == null)
             Messages.Add("Error: Failed to parse the content of the save file #2.");
         return savB;

@@ -34,7 +34,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         Generate_inGameTrade();
         Generate_decoration();
         Generate_phone();
-        Generate_trainerBattle(); 
+        Generate_battle(); 
         Generate_pokegear();
         Generate_pokemonForm();
     }
@@ -229,10 +229,14 @@ internal class CompletionValidator2 : CompletionValidatorX
     }
 
 
-    public void Generate_trainerBattle()
+    public void Generate_battle()
     {
         var ow = new Dictionary<string, bool>();
-        owned["trainerBattle"] = ow;
+        owned["battle"] = ow;
+
+        var pokemonBattles = new List<int> { 1760, 1761, 1762, 42, 791, 792, 1872, 1873, };
+        foreach (var evtIdx in pokemonBattles)
+            ow[evtIdx.ToString()] = sav.GetEventFlag(evtIdx);
 
         /*
             wVanceFightCount
@@ -457,7 +461,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["itemGift"] = ow;
 
-        var list = new List<int> { 10, 101, 103, 105, 107, 109, 11, 111, 112, 114, 115, 116, 117, 12, 122, 124, 13, 1395, 14, 15, 16, 17, 18, 19, 20, 200, 206, 209, 21, 210, 212, 216, 218, 219, 220, 221, 222, 223, 224, 226, 227, 23, 24, 25, 256, 257, 258, 259, 260, 35, 36, 39, 53, 613, 614, 615, 616, 617, 62, 71, 72, 75, 77, 78, 8, 800, 801, 802, 803, 804, 82, 83, 86, 87, 88, 89, 9, 90, 91, 92, 93, 94, 95, 99 };
+        var list = new List<int> { 10, 101, 103, 105, 107, 109, 11, 111, 112, 113, 114, 115, 116, 117, 12, 122, 124, 13, 1395, 14, 15, 16, 17, 18, 19, 20, 200, 206, 209, 21, 210, 212, 216, 218, 219, 220, 221, 222, 223, 224, 226, 227, 23, 24, 25, 256, 257, 258, 259, 260, 35, 36, 39, 53, 613, 614, 615, 616, 617, 62, 71, 72, 75, 77, 78, 8, 800, 801, 802, 803, 804, 82, 83, 86, 87, 88, 89, 9, 90, 91, 92, 93, 94, 95, 99 };
         var untrackable = new HashSet<int> { 101, 103, 105, 107, 109, 111, 99 };
         foreach (var evtIdx in list)
         {

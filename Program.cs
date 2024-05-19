@@ -12,7 +12,6 @@ namespace PkCompletionist;
 
 internal class Program
 {
-
     public static byte[]? TryReadAllBytes(string path)
     {
         try
@@ -74,65 +73,20 @@ internal class Program
 
     static void Main(string[] args)
     {
-        /* For debug:
-        var file = "";
-        var mySav = (SAV2)SaveUtil.GetVariantSAV(TryReadAllBytes(file));
-        File.WriteAllBytes(file + "2", mySav.Write());
-        */
-        var file = "C:\\Users\\samue\\Game\\DS\\ROM\\Pokemon Platinum";
-
-        /*
         if (args.Length == 0)
         {
-            var str = "";
-            var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes(@"C:\Users\samue\Game\DS\ROM\Pokemon Platinum 003 with ranch.sav"));
-            for (var i = 0x4E5D; i < 0x4E5D + 15; i++)
-                str += $"{sav.General[i]:X2} ";
-            Console.WriteLine(str);
+            Debug.OnStart();
             return;
         }
-        */
 
-        if (args.Length == 0)
-        {
-
-            var sav = (SAV4Pt)SaveUtil.GetVariantSAV(TryReadAllBytes($"{file}.sav"));
-            sav.State.Edited = true;
-                       
-
-            File.WriteAllBytes($"{file}.sav", sav.Write());
-
-            for (int i = 0; i <= 10; i++)
-            {
-                for (int k = 0; k < 8; k++) // for every bit
-                {
-                    for (int j = 0; j <= 10; j++) // clear existing
-                        sav.General[52910 + j] = 0;
-
-                    sav.General[52910 + i] = (byte)(1 << k); // set new byte
-                    File.WriteAllBytes($"{file} 0x{(52910 + i):X} {k}.sav", sav.Write());
-                }
-
-            }
-
-            //for (int j = 0; j <= 5; j++) // clear existing
-            //    sav.General[0x4E5C + j] = (byte)0xff;
-
-            /*for (int i = 0; i <= 255; i++)
-            {
-                sav.State.Edited = true;
-                sav.General[0x4E61] = (byte)i;
-                File.WriteAllBytes($"{file} - {i:X2}.sav", sav.Write());
-            }*/
-
-            return;
-        }
 
         if (!ValidateArgLength(args, 1))
             return;
 
+        var versionHint = "PmdRescueTeam";
+
         /*
-        C:\Users\samue\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0,0,0"
+        C:\Users\samue\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
         if (args[0] == "overwriteFlags")
         {
@@ -147,7 +101,7 @@ internal class Program
             if (sav1 == null || sav2 == null)
                 return;
 
-            if (FlagAnalyzer.Execute(sav1, sav2, args[4]))
+            if (FlagAnalyzer.Execute(sav1, sav2, args[4], versionHint))
                 LastCommandSave(args[3]);
 
             LastCommandPrintMsgs();
@@ -163,9 +117,23 @@ internal class Program
                 return;
 
             bool living = args.Length > 2 && args[2] == "--living";
-            CompletionValidator.Execute(savData, living);
+            CompletionValidator.Execute(savData, versionHint, living);
 
             LastCommandPrintMsgs();
+        }
+
+        if (args[0] == "fixChecksum")
+        {
+            if (!ValidateArgLength(args, 2))
+                return;
+
+            var savData = TryReadAllBytes(args[1]);
+            if (savData == null)
+                return;
+
+            var sav = Command.GetVariantSAV(savData, versionHint)!;
+            File.WriteAllBytes(args[1], sav.Write());
+            return;
         }
 
         if (args[0] == "sortPkms")
@@ -177,7 +145,7 @@ internal class Program
             if (savData == null)
                 return;
 
-            if (PkSorter.Execute(savData))
+            if (PkSorter.Execute(savData, versionHint))
                 LastCommandSave(args[2]);
 
             LastCommandPrintMsgs();                    
@@ -222,7 +190,7 @@ internal class Program
             if (args.Length  >= 6)
                 savBData = TryReadAllBytes(args[4]);
 
-            if (EventSimulator.Execute(args[1], savData, savBData))
+            if (EventSimulator.Execute(args[1], savData, versionHint, savBData))
             {
                 LastCommandSave(args[3]);
                 if (savBData != null)

@@ -19,8 +19,8 @@ internal class MysteryGiftSimulatorCmd2 : Command
     {
         var simulCmd = new MysteryGiftSimulatorCmd2();
 
-        simulCmd.SetSavA(savAData);
-        simulCmd.SetSavB(savBData);
+        simulCmd.SetSavA(savAData, "");
+        simulCmd.SetSavB(savBData, "");
 
         return MysteryGiftSimulator2.ExecuteXCmd(simulCmd, count, onlyPrintDecoOfPlayer1) == null;
     }

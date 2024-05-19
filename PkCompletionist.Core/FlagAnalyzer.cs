@@ -10,7 +10,7 @@ partial class FlagAnalyzer : Command
     List<int> changeRanges = new List<int>();
 
     [JSExport]
-    public static bool Execute(byte[] savA, byte[] savB, string changeRangesStr)
+    public static bool Execute(byte[] savA, byte[] savB, string changeRangesStr, string VersionHint)
     {
         List<int> changeRanges = new List<int>();
         foreach (var val in changeRangesStr.Split(','))
@@ -21,12 +21,13 @@ partial class FlagAnalyzer : Command
         }
 
         var simul = new FlagAnalyzer(changeRanges);
-        if (simul.SetSavA(savA) == null)
+        if (simul.SetSavA(savA, VersionHint) == null)
             return false;
-        if (simul.SetSavB(savB) == null)
+        if (simul.SetSavB(savB, VersionHint) == null)
             return false;
         return simul.Execute();
     }
+
 
     public FlagAnalyzer(List<int> changeRanges) 
     {

@@ -6,10 +6,10 @@ namespace PkCompletionist.Core;
 partial class SavDescriptor : Command
 {
     [JSExport]
-    public static string[] Execute(byte[] savA)
+    public static string[] Execute(byte[] savA, string VersionHint)
     {
         var descriptor = new SavDescriptor();
-        var sav = descriptor.SetSavA(savA);
+        var sav = descriptor.SetSavA(savA, VersionHint);
         if (sav == null)
             return new string[] { "","",""};
 

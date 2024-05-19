@@ -10,10 +10,10 @@ partial class CompletionValidator : Command
     static public CompletionValidatorX? LastValidatorX = null;
 
     [JSExport]
-    static public bool Execute(byte[] savData, bool living)
+    static public bool Execute(byte[] savData, string VersionHint, bool living)
     {
         var validator = new CompletionValidator();
-        var savA = validator.SetSavA(savData);
+        var savA = validator.SetSavA(savData, VersionHint);
         if (savA == null)
             return false;
 
@@ -38,6 +38,15 @@ partial class CompletionValidator : Command
 
         if (savA is SAV4Pt)
             return new CompletionValidator4(this, (savA as SAV4Pt)!, living);
+
+        if (savA is SAV3_Pinball)
+            return new CompletionValidator3_Pinball(this, (savA as SAV3_Pinball)!, living);
+
+        if (savA is SAV1_Pinball)
+            return new CompletionValidator1_Pinball(this, (savA as SAV1_Pinball)!, living);
+
+        if (savA is SAV3_PmdRescueTeam)
+            return new CompletionValidator3_PmdRescueTeam(this, (savA as SAV3_PmdRescueTeam)!, living);
 
         return new CompletionValidatorX(this, savA, living);
     }

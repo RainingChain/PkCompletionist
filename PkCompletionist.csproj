@@ -1,26 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
-	  <!-- can't use net8.0 because they changed the way .js files are fetched, meaning overwriting window.fetch doesn't work.
-	   the .wasm fetched other file by an unknown mean.-->
-    <Nullable>enable</Nullable>
-	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+<Choose>
+	<When Condition="'1' == '1'">
+		<PropertyGroup>
+			<OutputType>Exe</OutputType>
+			<TargetFramework>net7.0</TargetFramework>
+			<!-- can't use net8.0 because they changed the way .js files are fetched, meaning overwriting window.fetch doesn't work.
+		   the .wasm fetched other file by an unknown mean.-->
+			<Nullable>enable</Nullable>
+			<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
-
-
-	  <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-	  <WasmMainJSPath>main.js</WasmMainJSPath>
-	  <InvariantGlobalization>true</InvariantGlobalization>
-	  <WasmEmitSymbolMap>false</WasmEmitSymbolMap>
-
-	  <!-- Comment this block to generate .exe
-	  block end -->
-
-  
-  </PropertyGroup>
-
+			<RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+			<WasmMainJSPath>main.js</WasmMainJSPath>
+			<InvariantGlobalization>true</InvariantGlobalization>
+			<WasmEmitSymbolMap>false</WasmEmitSymbolMap>
+		</PropertyGroup>
+	</When>
+	<When Condition="'1' == '1'">
+		<PropertyGroup>
+			<OutputType>Exe</OutputType>
+			<TargetFramework>net7.0</TargetFramework>
+			<!-- can't use net8.0 because they changed the way .js files are fetched, meaning overwriting window.fetch doesn't work.
+		   the .wasm fetched other file by an unknown mean.-->
+			<Nullable>enable</Nullable>
+			<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		</PropertyGroup>
+	</When>
+	</Choose>
+	
     <ItemGroup>
 		<None Remove="**\Resources\**" />
 		<EmbeddedResource Include="**\Resources\**" />
