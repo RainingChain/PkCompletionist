@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Buffers.Binary;
+using System.Reflection.Emit;
 
 namespace PkCompletionist.Core;
 
@@ -52,10 +53,12 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_battleFrontier();
         Generate_ribbon();
         Generate_phone();
+        // Generate_trainerBattle();
         Generate_trainerStar();
         Generate_eReaderBattles();
         Generate_pokeblock();
         Generate_easyChatSystemWord();
+        Generate_gameStat();
         Generate_misc();
     }
 
@@ -148,6 +151,9 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x0416))
             ow["94"] = true; // Moon Stone
 
+        if (sav.GetEventFlag(0x457)) // FLAG_ITEM_FIERY_PATH_FIRE_STONE
+            ow["95"] = true; // Fire Stone
+
         if (sav.GetEventFlag(0x0403))
             ow["98"] = true; // Leaf Stone
 
@@ -163,6 +169,15 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x009C)) // Skitty for Meowth trade
             ow["132"] = true; // Retro Mail
 
+        if (sav.GetEventFlag(0x114)) // FLAG_RECEIVED_KINGS_ROCK
+            ow["187"] = true; // King's Rock        
+
+        if (HasPkm(367) && sav.GetEventFlag(0x436)) // Huntail, FLAG_ITEM_ABANDONED_SHIP_HIDDEN_FLOOR_ROOM_2_SCANNER
+            ow["192"] = true; // DeepSeaTooth
+
+        if (HasPkm(368) && sav.GetEventFlag(0x436)) // Gorebyss, FLAG_ITEM_ABANDONED_SHIP_HIDDEN_FLOOR_ROOM_2_SCANNER
+            ow["193"] = true; // DeepSeaScale
+                
         if (sav.GetEventFlag(0x0436))
             ow["278"] = true; // Scanner
 
@@ -186,15 +201,6 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         if (sav.GetEventFlag(0x010D))
             ow["334"] = true; // TM46 - Thief
-
-        if (HasPkmWithTID(386)) // Deoxys
-            ow["371"] = true; // AuroraTicket
-
-        if (HasPkmWithTID(249) || HasPkmWithTID(250)) // Lugia or Ho-oh
-            ow["370"] = true; // MysticTicket
-
-        if (HasPkmWithTID(151)) // Mew
-            ow["376"] = true; // Old Sea Map
     }
 
     public bool HasDeco(Decoration3 deco)
@@ -443,92 +449,103 @@ internal class CompletionValidator3 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["phone"] = ow;
 
-        ow["RadNeighborBrendan"] = sav.GetEventFlag(0x00FD) && sav.Gender != 0;
-        ow["RadNeighborMay"] = sav.GetEventFlag(0x00FD) && sav.Gender == 0;
-        ow["TriathleteAbigail"] = sav.GetEventFlag(0x0183);
-        ow["TwinsAmyLiv"] = sav.GetEventFlag(0x018F);
-        ow["RuinManiacAndres"] = sav.GetEventFlag(0x015E);
-        ow["SrandJrAnnaMeg"] = sav.GetEventFlag(0x017A);
-        ow["TriathleteBenjamin"] = sav.GetEventFlag(0x0186);
-        ow["KindlerBernie"] = sav.GetEventFlag(0x0171);
-        ow["ManiacJeffrey"] = sav.GetEventFlag(0x0174);
-        ow["TheBigHitBrawly"] = sav.GetEventFlag(0x019F);
-        ow["CooltrainerBrooke"] = sav.GetEventFlag(0x0164);
-        ow["YoungsterCalvin"] = sav.GetEventFlag(0x017F);
-        ow["PsychicCameron"] = sav.GetEventFlag(0x0175);
-        ow["PKMNRangerCatherine"] = sav.GetEventFlag(0x0196);
-        ow["LadyCindy"] = sav.GetEventFlag(0x0167);
-        ow["SailorCory"] = sav.GetEventFlag(0x0191);
-        ow["CooltrainerCristin"] = sav.GetEventFlag(0x0163);
-        ow["BattleGirlCyndy"] = sav.GetEventFlag(0x018B);
-        ow["GuitaristDalton"] = sav.GetEventFlag(0x0170);
-        ow["PicnickerDiana"] = sav.GetEventFlag(0x018E);
-        ow["EliteFourDrake"] = sav.GetEventFlag(0x01A8);
-        ow["RuinManiacDusty"] = sav.GetEventFlag(0x015F);
-        ow["TriathleteDylan"] = sav.GetEventFlag(0x0184);
-        ow["CollectorEdwin"] = sav.GetEventFlag(0x0192);
-        ow["FishermanElliot"] = sav.GetEventFlag(0x0180);
-        ow["SailorErnest"] = sav.GetEventFlag(0x0190);
-        ow["CamperEthan"] = sav.GetEventFlag(0x0172);
-        ow["GuitaristFernando"] = sav.GetEventFlag(0x016F);
-        ow["PassionBurnFlannery"] = sav.GetEventFlag(0x01A1);
-        ow["PKMNBreederGabrielle"] = sav.GetEventFlag(0x0195);
-        ow["EliteFourGlacia"] = sav.GetEventFlag(0x01A7);
-        ow["LassHaley"] = sav.GetEventFlag(0x0198);
-        ow["PKMNBreederIsaac"] = sav.GetEventFlag(0x0194);
-        ow["PokefanIsabel"] = sav.GetEventFlag(0x017B);
-        ow["TriathleteIsaiah"] = sav.GetEventFlag(0x0181);
-        ow["PsychicJacki"] = sav.GetEventFlag(0x0176);
-        ow["PKMNRangerJackson"] = sav.GetEventFlag(0x0197);
-        ow["BugCatcherJames"] = sav.GetEventFlag(0x0199);
-        ow["SwimmerJenny"] = sav.GetEventFlag(0x018D);
-        ow["SchoolKidJerry"] = sav.GetEventFlag(0x0179);
-        ow["BeautyJessica"] = sav.GetEventFlag(0x0169);
-        ow["OldCoupleJohnJay"] = sav.GetEventFlag(0x0173);
-        ow["DandyCharmJuan"] = sav.GetEventFlag(0x1D9); // special. FLAG_ENABLE_JUAN_MATCH_CALL
-        ow["SchoolKidKaren"] = sav.GetEventFlag(0x178);
-        ow["TriathleteKatelyn"] = sav.GetEventFlag(0x185);
-        ow["BlackBeltKoji"] = sav.GetEventFlag(0x16E);
-        ow["NinjaBoyLao"] = sav.GetEventFlag(0x18A);
-        ow["MysticDuoTateLiza"] = sav.GetEventFlag(0x1A4);
-        ow["YoungCoupleKiraDan"] = sav.GetEventFlag(0x19C);
-        ow["TuberLola"] = sav.GetEventFlag(0x160);
-        ow["PKMNBreederLydia"] = sav.GetEventFlag(0x193);
-        ow["ParasolLadyMadeline"] = sav.GetEventFlag(0x18C);
-        ow["TriathleteMaria"] = sav.GetEventFlag(0x182);
-        ow["PokefanMiguel"] = sav.GetEventFlag(0x17C);
-        ow["CalmKindMom"] = sav.GetEventFlag(0x00D8);
-        ow["DevonPresMrStone"] = sav.GetEventFlag(0x158); // FLAG_ENABLE_MR_STONE_POKENAV
-        ow["DragonTamerNicolas"] = sav.GetEventFlag(0x188);
-        ow["BlackBeltNob"] = sav.GetEventFlag(0x16D);
-        ow["ReliableOneDad"] = sav.GetEventFlag(0x132); // FLAG_ENABLE_NORMAN_MATCH_CALL
-        ow["TriathletePablo"] = sav.GetEventFlag(0x187);
-        ow["EliteFourPhoebe"] = sav.GetEventFlag(0x1A6);
+        ow["PKMNLoverWally"] = sav.GetEventFlag(0x0D6);
+        ow["ElusiveEyesScott"] = sav.GetEventFlag(0x0D7);
+        ow["CalmKindMom"] = sav.GetEventFlag(0x0D8);
+        ow["RadNeighborBrendan"] = sav.GetEventFlag(0x0FD) && sav.Gender != 0;
+        ow["RadNeighborMay"] = sav.GetEventFlag(0x0FD) && sav.Gender == 0;
         ow["PKMNProfProfBirch"] = sav.GetEventFlag(0x119); // FLAG_ENABLE_PROF_BIRCH_MATCH_CALL
-        ow["TuberRicky"] = sav.GetEventFlag(0x161);
-        ow["SisandBroLilaRoy"] = sav.GetEventFlag(0x162);
-        ow["BirdKeeperRobert"] = sav.GetEventFlag(0x189);
-        ow["AromaLadyRose"] = sav.GetEventFlag(0x15D);
-        ow["RockinWhizRoxanne"] = sav.GetEventFlag(0x19E);
-        ow["HikerSawyer"] = sav.GetEventFlag(0x19B);
-        ow["ElusiveEyesScott"] = sav.GetEventFlag(0x00D7);
-        ow["ExpertShelby"] = sav.GetEventFlag(0x17E);
-        ow["EliteFourSidney"] = sav.GetEventFlag(0x1A5);
-        ow["PokeManiacSteve"] = sav.GetEventFlag(0x16B);
         ow["HardasRockSteven"] = sav.GetEventFlag(0x131); // FLAG_REGISTERED_STEVEN_POKENAV
-        ow["BeautyThalia"] = sav.GetEventFlag(0x168);
-        ow["ExpertTimothy"] = sav.GetEventFlag(0x17D);
-        ow["SwimmerTony"] = sav.GetEventFlag(0x16C);
-        ow["HikerTrent"] = sav.GetEventFlag(0x19A);
-        ow["HexManiacValerie"] = sav.GetEventFlag(0x166);
-        ow["ChampionWallace"] = sav.GetEventFlag(0x1A9);
-        ow["PKMNLoverWally"] = sav.GetEventFlag(0x00D6);
-        ow["GentlemanWalter"] = sav.GetEventFlag(0x177);
-        ow["SwellShockWattson"] = sav.GetEventFlag(0x1A0);
-        ow["CooltrainerWilton"] = sav.GetEventFlag(0x165);
-        ow["SkyTamerWinona"] = sav.GetEventFlag(0x1A3);
-        ow["RichBoyWinston"] = sav.GetEventFlag(0x16A);
+        ow["ReliableOneDad"] = sav.GetEventFlag(0x132); // FLAG_ENABLE_NORMAN_MATCH_CALL
+        ow["DevonPresMrStone"] = sav.GetEventFlag(0x158); // FLAG_ENABLE_MR_STONE_POKENAV
+        ow["AromaLadyRose"] = sav.GetEventFlag(0x15D - 1);
+        ow["RuinManiacAndres"] = sav.GetEventFlag(0x15E - 1);
+        ow["RuinManiacDusty"] = sav.GetEventFlag(0x15F - 1);
+        ow["TuberLola"] = sav.GetEventFlag(0x160 - 1);
+        ow["TuberRicky"] = sav.GetEventFlag(0x161 - 1);
+        ow["SisandBroLilaRoy"] = sav.GetEventFlag(0x162 - 1);
+        ow["CooltrainerCristin"] = sav.GetEventFlag(0x163 - 1);
+        ow["CooltrainerBrooke"] = sav.GetEventFlag(0x164 - 1);
+        ow["CooltrainerWilton"] = sav.GetEventFlag(0x165 - 1);
+        ow["HexManiacValerie"] = sav.GetEventFlag(0x166 - 1);
+        ow["LadyCindy"] = sav.GetEventFlag(0x167 - 1);
+        ow["BeautyThalia"] = sav.GetEventFlag(0x168 - 1);
+        ow["BeautyJessica"] = sav.GetEventFlag(0x169 - 1);
+        ow["RichBoyWinston"] = sav.GetEventFlag(0x16A - 1);
+        ow["PokeManiacSteve"] = sav.GetEventFlag(0x16B - 1);
+        ow["SwimmerTony"] = sav.GetEventFlag(0x16C - 1);
+        ow["BlackBeltNob"] = sav.GetEventFlag(0x16D - 1);
+        ow["BlackBeltKoji"] = sav.GetEventFlag(0x16E - 1);
+        ow["GuitaristFernando"] = sav.GetEventFlag(0x16F - 1);
+        ow["GuitaristDalton"] = sav.GetEventFlag(0x170 - 1);
+        ow["KindlerBernie"] = sav.GetEventFlag(0x171 - 1);
+        ow["CamperEthan"] = sav.GetEventFlag(0x172 - 1);
+        ow["OldCoupleJohnJay"] = sav.GetEventFlag(0x173 - 1);
+        ow["ManiacJeffrey"] = sav.GetEventFlag(0x174 - 1);
+        ow["PsychicCameron"] = sav.GetEventFlag(0x175 - 1);
+        ow["PsychicJacki"] = sav.GetEventFlag(0x176 - 1);
+        ow["GentlemanWalter"] = sav.GetEventFlag(0x177 - 1);
+        ow["SchoolKidKaren"] = sav.GetEventFlag(0x178 - 1);
+        ow["SchoolKidJerry"] = sav.GetEventFlag(0x179 - 1);
+        ow["SrandJrAnnaMeg"] = sav.GetEventFlag(0x17A - 1);
+        ow["PokefanIsabel"] = sav.GetEventFlag(0x17B - 1);
+        ow["PokefanMiguel"] = sav.GetEventFlag(0x17C - 1);
+        ow["ExpertTimothy"] = sav.GetEventFlag(0x17D - 1);
+        ow["ExpertShelby"] = sav.GetEventFlag(0x17E - 1);
+        ow["YoungsterCalvin"] = sav.GetEventFlag(0x17F - 1);
+        ow["FishermanElliot"] = sav.GetEventFlag(0x180 - 1);
+        ow["TriathleteIsaiah"] = sav.GetEventFlag(0x181 - 1);
+        ow["TriathleteMaria"] = sav.GetEventFlag(0x182 - 1);
+        ow["TriathleteAbigail"] = sav.GetEventFlag(0x183 - 1);
+        ow["TriathleteDylan"] = sav.GetEventFlag(0x184 - 1);
+        ow["TriathleteKatelyn"] = sav.GetEventFlag(0x185 - 1);
+        ow["TriathleteBenjamin"] = sav.GetEventFlag(0x186 - 1);
+        ow["TriathletePablo"] = sav.GetEventFlag(0x187 - 1);
+        ow["DragonTamerNicolas"] = sav.GetEventFlag(0x188 - 1);
+        ow["BirdKeeperRobert"] = sav.GetEventFlag(0x189 - 1);
+        ow["NinjaBoyLao"] = sav.GetEventFlag(0x18A - 1);
+        ow["BattleGirlCyndy"] = sav.GetEventFlag(0x18B - 1);
+        ow["ParasolLadyMadeline"] = sav.GetEventFlag(0x18C - 1);
+        ow["SwimmerJenny"] = sav.GetEventFlag(0x18D - 1);
+        ow["PicnickerDiana"] = sav.GetEventFlag(0x18E - 1);
+        ow["TwinsAmyLiv"] = sav.GetEventFlag(0x18F - 1);
+        ow["SailorErnest"] = sav.GetEventFlag(0x190 - 1);
+        ow["SailorCory"] = sav.GetEventFlag(0x191 - 1);
+        ow["CollectorEdwin"] = sav.GetEventFlag(0x192 - 1);
+        ow["PKMNBreederLydia"] = sav.GetEventFlag(0x193 - 1);
+        ow["PKMNBreederIsaac"] = sav.GetEventFlag(0x194 - 1);
+        ow["PKMNBreederGabrielle"] = sav.GetEventFlag(0x195 - 1);
+        ow["PKMNRangerCatherine"] = sav.GetEventFlag(0x196 - 1);
+        ow["PKMNRangerJackson"] = sav.GetEventFlag(0x197 - 1);
+        ow["LassHaley"] = sav.GetEventFlag(0x198 - 1);
+        ow["BugCatcherJames"] = sav.GetEventFlag(0x199 - 1);
+        ow["HikerTrent"] = sav.GetEventFlag(0x19A - 1);
+        ow["HikerSawyer"] = sav.GetEventFlag(0x19B - 1);
+        ow["YoungCoupleKiraDan"] = sav.GetEventFlag(0x19C - 1);
+        ow["RockinWhizRoxanne"] = sav.GetEventFlag(0x19E - 1);
+        ow["TheBigHitBrawly"] = sav.GetEventFlag(0x19F - 1);
+        ow["SwellShockWattson"] = sav.GetEventFlag(0x1A0 - 1);
+        ow["PassionBurnFlannery"] = sav.GetEventFlag(0x1A1 - 1);
+        ow["SkyTamerWinona"] = sav.GetEventFlag(0x1A3 - 1);
+        ow["MysticDuoTateLiza"] = sav.GetEventFlag(0x1A4 - 1);
+        ow["EliteFourSidney"] = sav.GetEventFlag(0x1A5 - 1);
+        ow["EliteFourPhoebe"] = sav.GetEventFlag(0x1A6 - 1);
+        ow["EliteFourGlacia"] = sav.GetEventFlag(0x1A7 - 1);
+        ow["EliteFourDrake"] = sav.GetEventFlag(0x1A8 - 1);
+        ow["ChampionWallace"] = sav.GetEventFlag(0x1A9 - 1);
+        ow["DandyCharmJuan"] = sav.GetEventFlag(0x1D9); // special. FLAG_ENABLE_JUAN_MATCH_CALL
     }
+
+    public void Generate_trainerBattle()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["trainerBattle"] = ow;
+
+        var TRAINER_FLAGS_START = 0x500;
+        for (var trainerId = 0; trainerId <= 854; trainerId++)
+            ow[trainerId.ToString()] = sav.GetEventFlag(TRAINER_FLAGS_START + trainerId);
+    }
+
     public void Generate_trainerStar()
     {
         var ow = new Dictionary<string, bool>();
@@ -543,7 +560,7 @@ internal class CompletionValidator3 : CompletionValidatorX
                     return true;
                 if (id == 386)  // Deoxys
                     return true;
-                return HasPkm(id);
+                return sav.GetCaught(id);
              });
         };
         ow["HoennPokedex"] = HoennPokedex();
@@ -586,6 +603,12 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["WhitePokeblock"] = HasPokeblock(PokeBlock3Color.White);
     }
 
+    public bool GetTrendyWordUnlocked(TrendyWord word)
+    {
+        var idx = (byte)word;
+        return FlagUtil.GetFlag(sav.Large, 0x2E20 + idx / 8, idx % 8);
+    }
+
     public void Generate_easyChatSystemWord()
     {
         var ow = new Dictionary<string, bool>();
@@ -619,47 +642,49 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["Move1"] = sav.GetEventFlag(2148); // Hall of Fame
         ow["Move2"] = sav.GetEventFlag(2148); // Hall of Fame
 
-        var IsTrendyUnlocked = (int bitIdx) =>
-        {
-            // 0x2E20 u8 unlockedTrendySayings[NUM_TRENDY_SAYING_BYTES];
-            var byteIdx = bitIdx / 8;
-            var bitoffset = bitIdx % 8;
-            var span = sav.Large.AsSpan(0x2E20, 5);
-            return ((span[byteIdx / 8] >> bitoffset) & 1) != 0;
-        };
-        ow["TrendyKTHXBYE"] = IsTrendyUnlocked(0);
-        ow["TrendyYESSIR"] = IsTrendyUnlocked(1);
-        ow["TrendyAVANTGARDE"] = IsTrendyUnlocked(2);
-        ow["TrendyCOUPLE"] = IsTrendyUnlocked(3);
-        ow["TrendyMUCHOBLIGED"] = IsTrendyUnlocked(4);
-        ow["TrendyYEEHAW"] = IsTrendyUnlocked(5);
-        ow["TrendyMEGA"] = IsTrendyUnlocked(6);
-        ow["Trendy1HITKO"] = IsTrendyUnlocked(7);
-        ow["TrendyDESTINY"] = IsTrendyUnlocked(8);
-        ow["TrendyCANCEL"] = IsTrendyUnlocked(9);
-        ow["TrendyNEW"] = IsTrendyUnlocked(10);
-        ow["TrendyFLATTEN"] = IsTrendyUnlocked(11);
-        ow["TrendyKIDDING"] = IsTrendyUnlocked(12);
-        ow["TrendyLOSER"] = IsTrendyUnlocked(13);
-        ow["TrendyLOSING"] = IsTrendyUnlocked(14);
-        ow["TrendyHAPPENING"] = IsTrendyUnlocked(15);
-        ow["TrendyHIPAND"] = IsTrendyUnlocked(16);
-        ow["TrendySHAKE"] = IsTrendyUnlocked(17);
-        ow["TrendySHADY"] = IsTrendyUnlocked(18);
-        ow["TrendyUPBEAT"] = IsTrendyUnlocked(19);
-        ow["TrendyMODERN"] = IsTrendyUnlocked(20);
-        ow["TrendySMELLYA"] = IsTrendyUnlocked(21);
-        ow["TrendyBANG"] = IsTrendyUnlocked(22);
-        ow["TrendyKNOCKOUT"] = IsTrendyUnlocked(23);
-        ow["TrendyHASSLE"] = IsTrendyUnlocked(24);
-        ow["TrendyWINNER"] = IsTrendyUnlocked(25);
-        ow["TrendyFEVER"] = IsTrendyUnlocked(26);
-        ow["TrendyWANNABE"] = IsTrendyUnlocked(27);
-        ow["TrendyBABY"] = IsTrendyUnlocked(28);
-        ow["TrendyHEART"] = IsTrendyUnlocked(29);
-        ow["TrendyOLD"] = IsTrendyUnlocked(30);
-        ow["TrendyYOUNG"] = IsTrendyUnlocked(31);
-        ow["TrendyUGLY"] = IsTrendyUnlocked(32);
+        ow["TrendyKTHXBYE"] = GetTrendyWordUnlocked(TrendyWord.KTHXBYE);
+        ow["TrendyYESSIR"] = GetTrendyWordUnlocked(TrendyWord.YESSIR);
+        ow["TrendyAVANTGARDE"] = GetTrendyWordUnlocked(TrendyWord.AVANTGARDE);
+        ow["TrendyCOUPLE"] = GetTrendyWordUnlocked(TrendyWord.COUPLE);
+        ow["TrendyMUCHOBLIGED"] = GetTrendyWordUnlocked(TrendyWord.MUCHOBLIGED);
+        ow["TrendyYEEHAW"] = GetTrendyWordUnlocked(TrendyWord.YEEHAW);
+        ow["TrendyMEGA"] = GetTrendyWordUnlocked(TrendyWord.MEGA);
+        ow["Trendy1HITKO"] = GetTrendyWordUnlocked(TrendyWord.ONEHITKO);
+        ow["TrendyDESTINY"] = GetTrendyWordUnlocked(TrendyWord.DESTINY);
+        ow["TrendyCANCEL"] = GetTrendyWordUnlocked(TrendyWord.CANCEL);
+        ow["TrendyNEW"] = GetTrendyWordUnlocked(TrendyWord.NEW);
+        ow["TrendyFLATTEN"] = GetTrendyWordUnlocked(TrendyWord.FLATTEN);
+        ow["TrendyKIDDING"] = GetTrendyWordUnlocked(TrendyWord.KIDDING);
+        ow["TrendyLOSER"] = GetTrendyWordUnlocked(TrendyWord.LOSER);
+        ow["TrendyLOSING"] = GetTrendyWordUnlocked(TrendyWord.LOSING);
+        ow["TrendyHAPPENING"] = GetTrendyWordUnlocked(TrendyWord.HAPPENING);
+        ow["TrendyHIPAND"] = GetTrendyWordUnlocked(TrendyWord.HIPAND);
+        ow["TrendySHAKE"] = GetTrendyWordUnlocked(TrendyWord.SHAKE);
+        ow["TrendySHADY"] = GetTrendyWordUnlocked(TrendyWord.SHADY);
+        ow["TrendyUPBEAT"] = GetTrendyWordUnlocked(TrendyWord.UPBEAT);
+        ow["TrendyMODERN"] = GetTrendyWordUnlocked(TrendyWord.MODERN);
+        ow["TrendySMELLYA"] = GetTrendyWordUnlocked(TrendyWord.SMELLYA);
+        ow["TrendyBANG"] = GetTrendyWordUnlocked(TrendyWord.BANG);
+        ow["TrendyKNOCKOUT"] = GetTrendyWordUnlocked(TrendyWord.KNOCKOUT);
+        ow["TrendyHASSLE"] = GetTrendyWordUnlocked(TrendyWord.HASSLE);
+        ow["TrendyWINNER"] = GetTrendyWordUnlocked(TrendyWord.WINNER);
+        ow["TrendyFEVER"] = GetTrendyWordUnlocked(TrendyWord.FEVER);
+        ow["TrendyWANNABE"] = GetTrendyWordUnlocked(TrendyWord.WANNABE);
+        ow["TrendyBABY"] = GetTrendyWordUnlocked(TrendyWord.BABY);
+        ow["TrendyHEART"] = GetTrendyWordUnlocked(TrendyWord.HEART);
+        ow["TrendyOLD"] = GetTrendyWordUnlocked(TrendyWord.OLD);
+        ow["TrendyYOUNG"] = GetTrendyWordUnlocked(TrendyWord.YOUNG);
+        ow["TrendyUGLY"] = GetTrendyWordUnlocked(TrendyWord.UGLY);
+    }
+
+    public void Generate_gameStat()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["gameStat"] = ow;
+
+        Record3 rec3 = new(this.sav);
+        for (int i = 0; i < (byte)RecID3Emerald.BERRY_CRUSH_WITH_FRIENDS; i++)
+            ow[i.ToString()] = rec3.GetRecord(i) > 0;
     }
 
     public void Generate_misc()
@@ -668,6 +693,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         owned["misc"] = ow;
 
         ow["DefeatSteven"] = sav.GetEventFlag(0x04F8);
+
         // ow["BeatSlateportBattleTent"] = true; // Not trackable
         // ow["BeatVerdanturfBattleTent"] = true; // Not trackable
         // ow["BeatFallarborBattleTent"] = true; // Not trackable
@@ -699,4 +725,41 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["SetBerryPickingRecord"] = sav.JoyfulBerriesScore > 0;
         ow["SetBerryPickingInrowwith5playersRecord"] = sav.JoyfulBerries5InRow > 0;
     }
+}
+
+enum TrendyWord
+{
+    KTHXBYE,
+    YESSIR,
+    AVANTGARDE,
+    COUPLE,
+    MUCHOBLIGED,
+    YEEHAW,
+    MEGA,
+    ONEHITKO,
+    DESTINY,
+    CANCEL,
+    NEW,
+    FLATTEN,
+    KIDDING,
+    LOSER,
+    LOSING,
+    HAPPENING,
+    HIPAND,
+    SHAKE,
+    SHADY,
+    UPBEAT,
+    MODERN,
+    SMELLYA,
+    BANG,
+    KNOCKOUT,
+    HASSLE,
+    WINNER,
+    FEVER,
+    WANNABE,
+    BABY,
+    HEART,
+    OLD,
+    YOUNG,
+    UGLY,
 }

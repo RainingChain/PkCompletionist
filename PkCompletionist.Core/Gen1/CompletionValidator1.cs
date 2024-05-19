@@ -18,6 +18,9 @@ internal class CompletionValidator1 : CompletionValidatorX
         Generate_inGameGift();
         Generate_misc();
         Generate_inGameTrade();
+        Generate_itemGift();
+        Generate_itemInMap();
+        Generate_battle();
     }
 
     public override void Generate_item()
@@ -274,7 +277,7 @@ internal class CompletionValidator1 : CompletionValidatorX
                 ow[key] = false;
             }
         }
-        
+
     }
 
     public void Generate_misc()
@@ -297,7 +300,8 @@ internal class CompletionValidator1 : CompletionValidatorX
         ow["Charmander"] = sav.GetEventFlag(0x54F);
         ow["Squirtle"] = sav.GetEventFlag(0x147);
         ow["Eevee"] = sav.EventSpawnFlags[0x45];
-        ow["HitmonleeorHitmonchan"] = sav.GetEventFlag(0x356) || sav.GetEventFlag(0x357);
+        ow["Hitmonlee"] = sav.GetEventFlag(0x356);
+        ow["Hitmonchan"] = sav.GetEventFlag(0x357);
         ow["Pikachu"] = true;
         ow["Lapras"] = sav.GetFlag(0x29DA, 0);
     }
@@ -314,5 +318,67 @@ internal class CompletionValidator1 : CompletionValidatorX
         ow["GolduckforRhydon"] = sav.GetFlag(0x29E3, 7);
         ow["GrowlitheforDewgong"] = sav.GetFlag(0x29E4, 0);
         ow["CuboneforMachamp"] = sav.GetFlag(0x29E4, 1);
+    }
+    public void Generate_itemGift()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemGift"] = ow;
+
+        var list = new List<int> { 24, 36, 41, 80, 105, 118, 190, 192, 296, 337, 358, 384, 396, 397, 398, 399, 424, 442, 443, 444, 480, 568, 600, 664, 727, 832, 864, 944, 960, 984, 1151, 1152, 1200, 1230, 1344, 1372, 1504, 1791, 1933, 2176 };
+        foreach (var evtIdx in list)
+            ow[evtIdx.ToString()] = sav.GetEventFlag(evtIdx);
+
+        ow["OldRod"] = HasItem(76);
+        ow["GoodRod"] = HasItem(77);
+        ow["SuperRod"] = HasItem(78);
+    }
+    public void Generate_itemInMap()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemInMap"] = ow;
+
+        var fieldAddr = new List<int> { 100, 101, 102, 103, 104, 105, 106, 107, 108, 113, 114, 116, 117, 118, 119, 120, 121, 122, 123, 125, 126, 127, 128, 129, 130, 131, 132, 136, 137, 138, 139, 140, 148, 152, 153, 154, 159, 160, 161, 165, 166, 172, 173, 184, 185, 186, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 216, 217, 218, 219, 220, 221, 26, 27, 28, 29, 31, 32, 33, 38, 39, 50, 53, 54, 55, 56, 58, 59, 60, 61, 62, 63, 64, 71, 72, 73, 86, 87, 88, 89, 90, 92, 93, 94, 95, };
+        var hiddenAddr = new List<int> { 0, 1, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 2, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 3, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 4, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 5, 50, 51, 52, 54, 6, 8, 9, };
+        var hiddenCoinAddr = new List<int> { 0, 1, 10, 2, 3, 4, 5, 6, 7, 8, 9, };
+
+        var EventSpawnFlags = this.sav.EventSpawnFlags;
+        foreach (var evtIdx in fieldAddr)
+            ow[evtIdx.ToString()] = EventSpawnFlags[evtIdx];
+
+
+        var ObtainedHiddenItems = this.sav.Japanese ? 0x2992 : 0x299C;
+        foreach (var evtIdx in hiddenAddr)
+            ow["h" + evtIdx.ToString()] = this.sav.GetFlag(ObtainedHiddenItems + (evtIdx / 8), evtIdx % 8);
+
+        var ObtainedHiddenCoins = this.sav.Japanese ? 0x29A0 : 0x29AA;
+        foreach (var evtIdx in hiddenCoinAddr)
+            ow["hc" + evtIdx.ToString()] = this.sav.GetFlag(ObtainedHiddenCoins + (evtIdx / 8), evtIdx % 8);
+    }
+
+    public void Generate_battle()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["battle"] = ow;
+
+        // Limitation: Assumes fighting Jolteon. in theory, it's wRivalStarter that has the right value.
+        var eevee = new List<int> { 239, 1856, 1318};
+        foreach (var evtIdx in eevee)
+            ow[evtIdx.ToString() + "a"] = this.sav.GetEventFlag(evtIdx);
+
+        var beatGame = this.sav.EventSpawnFlags[0x09];
+        ow["2289"] = beatGame; // Agatha
+        ow["2297"] = beatGame; // Lance
+        ow["2273"] = beatGame; // Lorelei
+        ow["2281"] = beatGame; // Bruno
+        ow["2305a"] = beatGame; // Rival #8
+
+        ow["115"] = this.sav.GetEventFlag(1504); // Rival #4 == HM Cut obtained
+
+        ow["70"] = this.sav.EventSpawnFlags[139]; // Rocket #6 in Game Corner == Silph Scope obtained
+
+        var list = new List<int> { 35, 994, 995, 1394, 1346, 1361, 1362, 1365, 1521, 1137, 1138, 1139, 1140, 1090, 1378, 1379, 1380, 996, 997, 998, 1398, 1399, 1347, 1041, 1042, 1095, 1097, 1381, 999, 1000, 1001, 1010, 1395, 1397, 1348, 1349, 1364, 1366, 1522, 1537, 1073, 1074, 1075, 1076, 426, 427, 1382, 1476, 1477, 1553, 1554, 1555, 1556, 1557, 354, 114, 1363, 1350, 1043, 1091, 1154, 1044, 1351, 186, 1045, 1092, 1089, 1105, 1106, 2481, 2482, 428, 1169, 1170, 1171, 1172, 1281, 1113, 1114, 1115, 1201, 1202, 1203, 1204, 1282, 1046, 1107, 1108, 2483, 2484, 2485, 1340, 1116, 1396, 1401, 1077, 1078, 1079, 666, 667, 668, 669, 1393, 1367, 1368, 1369, 1093, 1094, 1109, 1110, 2486, 2487, 2488, 1117, 1118, 1119, 1096, 1173, 1185, 1205, 1206, 1217, 1218, 1219, 1233, 1234, 1235, 1236, 1237, 1186, 1187, 1188, 670, 671, 672, 2049, 2065, 2081, 1141, 1142, 1538, 1558, 1155, 1156, 1157, 1158, 1297, 1298, 1299, 1300, 1159, 187, 1265, 1266, 1267, 1268, 1269, 1270, 1271, 1283, 1284, 1285, 1301, 1302, 1303, 1304, 1220, 1221, 1222, 1238, 1239, 1240, 1241, 1242, 1305, 1143, 1144, 1145, 1146, 1080, 1081, 429, 430, 431, 1174, 1175, 1286, 1287, 1288, 1207, 1208, 1272, 1273, 1274, 1289, 866, 867, 868, 869, 355, 1160, 1826, 1338, 602, 603, 1341, 604, 605, 606, 607, 82, 83, 1339, 1176, 1177, 1178, 1189, 1190, 1209, 1210, 1249, 1250, 1251, 1290, 1191, 1192, 1193, 1194, 850, 851, 852, 853, 849, 84, 85, 86, 1337, 1317, 152, 1778, 1779, 1794, 1810, 1827, 1846, 1861, 1874, 1890, 1905, 2066, 2082, 649, 1703, 1935, 81, 1403, 1404, 1405, 167, 1345, 1649, 1650, 1651, 1652, 1653, 1665, 1681, 1682, 1700, 1780, 1781, 1795, 1811, 1812, 1828, 1829, 1847, 1848, 1862, 1863, 1864, 1875, 1876, 1891, 1892, 1906, 1925, 273, 1402, 1698, 1924, 87, 1633, 1634, 2321, 88, 89, 432, 1635, 1636, 2322, 119, 191, 359, 425, 601, 665, 865, 1523, 1524, 1539, 1540, 356, 241, 242, 243, 249, 250, 251, 258, 259, 260, 261, 265, 266, 267, 870, 871, 872, 271, 2522, 1129, 1342, 2241, 1121, 1122, 1123, 1124, 1125, 1126, 1127, 1128, 1167, 1225 };
+
+        foreach (var evtIdx in list)
+            ow[evtIdx.ToString()] = this.sav.GetEventFlag(evtIdx);
     }
 }

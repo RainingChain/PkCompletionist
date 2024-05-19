@@ -6,12 +6,14 @@ namespace PkCompletionist.Core;
 partial class EventSimulatorX
 {
     protected SaveFile sav;
-    Command command;
+    protected SaveFile? savB;
+    protected Command command;
 
-    public EventSimulatorX(Command command, SaveFile sav)
+    public EventSimulatorX(Command command, SaveFile sav, SaveFile? savB)
     {
         this.command = command;
         this.sav = sav;
+        this.savB = savB;
     }
 
 

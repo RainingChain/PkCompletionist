@@ -11,9 +11,9 @@ partial class CompletionValidatorX
     protected List<int> unobtainableItems = new ();
     Command command;
 
-    private List<ushort> OwnedPkms = new List<ushort>();
-    private List<ushort> OwnedPkmsTID = new List<ushort>();
-    private List<int> OwnedItems = new List<int>();
+    protected List<ushort> OwnedPkms = new List<ushort>();
+    protected List<ushort> OwnedPkmsTID = new List<ushort>();
+    protected List<int> OwnedItems = new List<int>();
 
     public CompletionValidatorX(Command command, SaveFile sav, bool living) 
     {

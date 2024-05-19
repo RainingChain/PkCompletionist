@@ -66,6 +66,15 @@ internal class SavUtils
         return null;
     }
 
+    public static MysteryGift? LoadMysteryGift(string name)
+    {
+        byte[] data = Util.GetBinaryResource(name);
+        string[] exts = name.Split('.');
+        if (exts.Length != 2)
+            return null;
+        return MysteryGift.GetMysteryGift(data, "." + exts[1]);
+    }
+
     public static PKM? LoadPk(string name)
     {
         byte[] data = Util.GetBinaryResource(name);

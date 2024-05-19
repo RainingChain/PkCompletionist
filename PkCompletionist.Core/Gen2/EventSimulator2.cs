@@ -1,5 +1,5 @@
 ﻿using PKHeX.Core;
-using System.Linq;
+using System.Collections.Generic;
 
 namespace PkCompletionist.Core;
 
@@ -11,14 +11,16 @@ enum PK_EVENT2
     EggTicket,
     BlueskyMail,
     MirageMail,
+    MysteryGift,
+    MysteryGiftx1000,
 }
 
 internal class EventSimulator2 : EventSimulatorX
 {
 
-    public EventSimulator2(Command command, SAV2 sav) : base(command, sav)
+    public EventSimulator2(Command command, SAV2 savA, SaveFile? savB) : base(command, savA, savB)
     {
-        this.sav = sav;
+        this.sav = savA;
     }
 
     new SAV2 sav;
@@ -43,6 +45,7 @@ internal class EventSimulator2 : EventSimulatorX
                 return err;
 
             sav.SetEventFlag(832, true);
+            return null;
         }
 
         if (evt == PK_EVENT2.EggTicket)
@@ -53,6 +56,12 @@ internal class EventSimulator2 : EventSimulatorX
 
         if (evt == PK_EVENT2.MirageMail)
             return AddItem(189 /*Mirage Mail*/);
+
+        if (evt == PK_EVENT2.MysteryGift)
+            return MysteryGiftSimulator2.ExecuteXCmd(command, 1, false);
+
+        if (evt == PK_EVENT2.MysteryGiftx1000)
+            return MysteryGiftSimulator2.ExecuteXCmd(command, 1000, true);
 
         return "Invalid event name.";
     }

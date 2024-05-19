@@ -13,6 +13,7 @@ partial class Command
     public static Command? LastCommand = null;
 
     List<string> Messages = new();
+    public string? LastError = null;
     public SaveFile? savA = null;
     public SaveFile? savB = null;
 
@@ -23,21 +24,40 @@ partial class Command
 
     public void AddError(string msg)
     {
+        if (LastError == msg)
+            return;
         AddMessage(msg);
+        LastError = msg;
+    }
+    public static SaveFile? GetVariantSAV(byte[] data, string VersionHint)
+    {
+        var pinballRs = SAV3_Pinball.NewIfValid(data);
+        if (pinballRs != null)
+            return pinballRs;
+
+        var pinball = SAV1_Pinball.NewIfValid(data, VersionHint);
+        if (pinball != null)
+            return pinball;
+
+        var pmdRescueTeam = SAV3_PmdRescueTeam.NewIfValid(data, VersionHint);
+        if (pmdRescueTeam != null)
+            return pmdRescueTeam;
+
+        return SaveUtil.GetVariantSAV(data);
     }
 
-    public SaveFile? SetSavA(byte[] data)
+    public SaveFile? SetSavA(byte[] data, string VersionHint)
     {
-        savA = SaveUtil.GetVariantSAV(data);
+        savA = GetVariantSAV(data, VersionHint);
         if (savA == null)
-            Messages.Add("Error: Failed to parse the content of the save file.");
+            Messages.Add("Error: Failed to parse the content of the save file #1.");
         return savA;
     }
-    public SaveFile? SetSavB(byte[] data)
+    public SaveFile? SetSavB(byte[] data, string VersionHint)
     {
-        savB = SaveUtil.GetVariantSAV(data);
+        savB = GetVariantSAV(data, VersionHint);
         if (savB == null)
-            Messages.Add("Error: Failed to parse the content of the save file.");
+            Messages.Add("Error: Failed to parse the content of the save file #2.");
         return savB;
     }
 
