@@ -5,7 +5,7 @@ using System.Linq;
 namespace PkCompletionist.Core;
 internal class CompletionValidator2 : CompletionValidatorX
 {
-    public CompletionValidator2(Command command, SAV2 sav, bool living) : base(command, sav, living)
+    public CompletionValidator2(Command command, SAV2 sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
         this.unobtainableItems = new List<int>() { 6, 25, 45, 50, 56, 90, 100, 120, 135, 136, 137, 141, 142, 145, 147, 148, 149, 153, 154, 155, 162, 171, 176, 179, 190, 195, 220, 250, 251, 252, 253, 254, 255 };
@@ -62,8 +62,8 @@ internal class CompletionValidator2 : CompletionValidatorX
         if (HasPkmWithTID(123)) // Only way to get Scyther is with Park Ball
             ow["177"] = true; // Park Ball
 
-        if (this.living)
-            return;
+        if (this.objective == Objective.living)
+            return; 
 
         if (sav.GetEventFlag(718)) // Silver Trophy
             ow["167"] = true; // Normal Box

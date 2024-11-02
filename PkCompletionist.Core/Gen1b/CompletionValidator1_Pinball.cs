@@ -25,7 +25,7 @@ class SAV1_Pinball : SAV_Dummy
 
 internal class CompletionValidator1_Pinball : CompletionValidatorX
 {
-    public CompletionValidator1_Pinball(Command command, SAV1_Pinball sav, bool living) : base(command, sav, living)
+    public CompletionValidator1_Pinball(Command command, SAV1_Pinball sav, Objective objective) : base(command, sav, objective)
     {
     }
 

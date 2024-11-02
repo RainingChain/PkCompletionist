@@ -9,7 +9,7 @@ namespace PkCompletionist.Core;
 
 internal class CompletionValidator3 : CompletionValidatorX
 {
-    public CompletionValidator3(Command command, SAV3E sav, bool living) : base(command, sav, living)
+    public CompletionValidator3(Command command, SAV3E sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
 
@@ -127,7 +127,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x0446)) // FLAG_ITEM_SAFARI_ZONE_NORTH_WEST_TM_22
             ow["259"] = true; // Mach Bike
 
-        if (this.living)
+        if (this.objective != 0)
             return;
 
         if (HasPkmWithTID(241)) // Miltank

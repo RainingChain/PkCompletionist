@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PkCompletionist.Core;
 internal class CompletionValidator1 : CompletionValidatorX
 {
-    public CompletionValidator1(Command command, SAV1 sav, bool living) : base(command, sav, living)
+    public CompletionValidator1(Command command, SAV1 sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
     }
@@ -253,7 +253,7 @@ internal class CompletionValidator1 : CompletionValidatorX
             ow["8"] = true; // Safari Ball
 
         // no warning for not owned item, because there's not enough space in Gen1 for all items
-        if (!this.living)
+        if (this.objective == Objective.normal)
         {
             // remove all false values
             var itemsToRemove = new List<string>();

@@ -6,7 +6,7 @@ using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PkCompletionist;
 
-// dotnet workload install wasm-tools
+// dotnet workload install wasm-tools-net7
 // https://www.meziantou.net/using-dotnet-code-from-javascript-using-webassembly.htm
 // To generate .exe instead of wasm, check PkCompletionist settings (Right-Click -> Properties).
 
@@ -116,9 +116,12 @@ internal class Program
             if (savData == null)
                 return;
 
-            bool living = args.Length > 2 && args[2] == "--living";
-            CompletionValidator.Execute(savData, versionHint, living);
+            Objective objective = args.Length > 2 && args[2] == "--living" ? Objective.living : Objective.normal;
+            CompletionValidator.Execute(savData, versionHint, (int)objective);
 
+            foreach (var msg in CompletionValidator.GetLastObtainedStatus())
+                Console.WriteLine(msg); 
+                
             LastCommandPrintMsgs();
         }
 

@@ -15,7 +15,7 @@ namespace PkCompletionist.Core;
 
 internal class CompletionValidator4 : CompletionValidatorX
 {
-    public CompletionValidator4(Command command, SAV4Pt sav, bool living) : base(command, sav, living)
+    public CompletionValidator4(Command command, SAV4Pt sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
 
@@ -582,7 +582,7 @@ internal class CompletionValidator4 : CompletionValidatorX
 
         var HasWallPaper = (byte id) =>
         {
-            if (!this.living)
+            if (this.objective != Objective.living)
                 return GetWallpaperUnlocked(id);
 
             for (int i = 0; i < this.sav.BoxCount; i++)

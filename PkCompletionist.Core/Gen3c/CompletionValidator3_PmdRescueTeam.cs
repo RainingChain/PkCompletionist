@@ -11,7 +11,7 @@ namespace PkCompletionist.Core;
 
 internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
 {
-    public CompletionValidator3_PmdRescueTeam(Command command, SAV3_PmdRescueTeam sav, bool living) : base(command, sav, living)
+    public CompletionValidator3_PmdRescueTeam(Command command, SAV3_PmdRescueTeam sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
         this.bitBlocks = this.sav.bitBlock_SlowCopy;
@@ -28,10 +28,11 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         Generate_item();
         Generate_friendArea();
         Generate_makuhitaDojo();
+        Generate_rank();
         Generate_dungeon();
         Generate_adventureLog();
+        Generate_progressIcon();
         Generate_teamBaseFigure();
-        Generate_rank();
     }
     public List<int> GetObtainedPokemons()
     {
@@ -42,13 +43,13 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
             int pokeId = bits.GetInt(0, 7, 9);
             if (pokeId == 0)
                 continue;
-               
+
             // Castform
             if (pokeId == 376 || pokeId == 377 || pokeId == 378 || pokeId == 379)
                 ownedList.Add(376);
             else if (pokeId == 414 || pokeId == 417 || pokeId == 418 || pokeId == 419)
                 ownedList.Add(414);
-            else 
+            else
                 ownedList.Add(pokeId);
         }
         return ownedList;
@@ -102,6 +103,21 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         var ownedList = GetObtainedItems();
         for (ushort i = 1; i <= 239; i++)
             ow[i.ToString()] = ownedList.Contains(i);
+
+        if (this.objective == Objective.living)
+            return;
+
+        // if has Milotic, mark Beauty Scarf as obtained
+        if (this.ownedMonList.Contains(375))
+            ow["47"] = true;
+
+        // if has Umbreon, mark Lunar Ribbon as obtained
+        if (this.ownedMonList.Contains(197))
+            ow["49"] = true;
+
+        // mark Used TM as obtained
+        if (HasCompletedStory(8))
+            ow["124"] = true;
     }
 
     public bool HasFriendArea(FriendArea fa)
@@ -181,7 +197,7 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         var bitIdx = (int)dojo % 8;
         return (sav.Data[sav.off.MakuhitaDojoCompletedOffset + byteIdx] & (1 << bitIdx)) != 0;
     }
-    
+
     public void Generate_makuhitaDojo()
     {
         var ow = new Dictionary<string, bool>();

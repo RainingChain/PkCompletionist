@@ -10,14 +10,14 @@ partial class CompletionValidator : Command
     static public CompletionValidatorX? LastValidatorX = null;
 
     [JSExport]
-    static public bool Execute(byte[] savData, string VersionHint, bool living)
+    static public bool Execute(byte[] savData, string VersionHint, int objective)
     {
         var validator = new CompletionValidator();
         var savA = validator.SetSavA(savData, VersionHint);
         if (savA == null)
             return false;
 
-        var validatorX =  validator.CreateValidatorX(savA, living);
+        var validatorX =  validator.CreateValidatorX(savA, (Objective)objective);
         CompletionValidator.LastValidatorX = validatorX;
 
         validatorX.GenerateAll();
@@ -25,30 +25,30 @@ partial class CompletionValidator : Command
         return true;
     }
 
-    CompletionValidatorX CreateValidatorX(SaveFile savA, bool living)
+    CompletionValidatorX CreateValidatorX(SaveFile savA, Objective objective)
     {
         if (savA is SAV1)
-            return new CompletionValidator1(this, (savA as SAV1)!, living);
+            return new CompletionValidator1(this, (savA as SAV1)!, objective);
 
         if (savA is SAV2)
-            return new CompletionValidator2(this, (savA as SAV2)!, living);
+            return new CompletionValidator2(this, (savA as SAV2)!, objective);
 
         if (savA is SAV3E)
-            return new CompletionValidator3(this, (savA as SAV3E)!, living);
+            return new CompletionValidator3(this, (savA as SAV3E)!, objective);
 
         if (savA is SAV4Pt)
-            return new CompletionValidator4(this, (savA as SAV4Pt)!, living);
+            return new CompletionValidator4(this, (savA as SAV4Pt)!, objective);
 
         if (savA is SAV3_Pinball)
-            return new CompletionValidator3_Pinball(this, (savA as SAV3_Pinball)!, living);
+            return new CompletionValidator3_Pinball(this, (savA as SAV3_Pinball)!, objective);
 
         if (savA is SAV1_Pinball)
-            return new CompletionValidator1_Pinball(this, (savA as SAV1_Pinball)!, living);
+            return new CompletionValidator1_Pinball(this, (savA as SAV1_Pinball)!, objective);
 
         if (savA is SAV3_PmdRescueTeam)
-            return new CompletionValidator3_PmdRescueTeam(this, (savA as SAV3_PmdRescueTeam)!, living);
+            return new CompletionValidator3_PmdRescueTeam(this, (savA as SAV3_PmdRescueTeam)!, objective);
 
-        return new CompletionValidatorX(this, savA, living);
+        return new CompletionValidatorX(this, savA, objective);
     }
 
     [JSExport]
