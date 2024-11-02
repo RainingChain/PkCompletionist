@@ -5,6 +5,7 @@ using System.Linq;
 using System.Buffers.Binary;
 using System.Reflection.Emit;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace PkCompletionist.Core;
 
@@ -79,16 +80,22 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         for (int i = 0; i < this.sav.off.StoredItemCount; i++)
         {
             var quantity = block.GetNextInt(10);
-            if (quantity > 0)
-                ownedList.Add(i + 1 /*itemId*/);
+            if (quantity <= 0)
+                continue;
+
+            var itemId = i + 1;
+            ownedList.Add(itemId);
         }
 
         // Inventory items
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 20; i++)
         {
             var bits = this.bitBlocks.GetRange(this.sav.off.HeldItemOffset + (i * 33), 33);
-            if (bits.Bits[0])
-                ownedList.Add(bits.GetInt(0, 15, 8));
+            if (!bits.Bits[0])
+                continue;
+
+            var itemId = bits.GetInt(0, 15, 8);
+            ownedList.Add(itemId);
         }
 
         // TODO: Held item of Pokemon
@@ -293,11 +300,11 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         ow["FarOffSea"] = ownedItemList.Contains(209); // Vacuum-Cut
         ow["PurityForest"] = ownedMonList.Contains(276);  // Celebi
 
-        //untrackable
-        //ow["OddityCave"] 
-        //ow["RemainsIsland"]
-        //ow["MarvelousSea"]
-        //ow["FantasyStrait"]
+        ow["FantasyStrait"] = (this.sav.Data[0xA7] & 0b0010_0000) != 0;
+        ow["OddityCave"] = (this.sav.Data[0xA7] & 0b0000_0100) != 0;
+
+        ow["RemainsIsland"] = (this.sav.Data[0xA7] & 0b0000_1000) != 0;
+        ow["MarvelousSea"] = (this.sav.Data[0xA7] & 0b0001_0000) != 0;
     }
     public bool HasCompletedSkyTower()
     {
