@@ -111,6 +111,9 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         for (ushort i = 1; i <= 239; i++)
             ow[i.ToString()] = ownedList.Contains(i);
 
+        //Poké
+        ow["105"] = true;
+
         if (this.objective == Objective.living)
             return;
 
@@ -122,6 +125,10 @@ internal class CompletionValidator3_PmdRescueTeam : CompletionValidatorX
         if (this.ownedMonList.Contains(197))
             ow["49"] = true;
 
+        // if has Espeon, mark Sun Ribbon as obtained
+        if (this.ownedMonList.Contains(196))
+            ow["48"] = true;
+                
         // mark Used TM as obtained
         if (HasCompletedStory(8))
             ow["124"] = true;
