@@ -45,7 +45,7 @@ internal class CompletionValidator3 : CompletionValidatorX
     public override void GenerateAll()
     {
         base.GenerateAll();
-
+    
         Generate_pokemonForm();
         Generate_itemInMap();
         Generate_itemGift();
@@ -131,6 +131,9 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         if (this.objective != 0)
             return;
+
+        if (sav.GetEventFlag(0x0E5)) // has traded Meteorite for Return
+            ow["280"] = true; // Meteorite
 
         if (HasPkmWithTID(241)) // Miltank
             ow["29"] = true; // Moomoo Milk
@@ -733,10 +736,8 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["SetBerryPickingRecord"] = sav.JoyfulBerriesScore > 0;
         ow["SetBerryPickingInrowwith5playersRecord"] = sav.JoyfulBerries5InRow > 0;
 
-        ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0;
-        ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0;
-            //NO_PROD
-        //oldSize = GetMonSize(species, *sizeRecord);
+        ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0x8000;
+        ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0x8000;
     }
 
     public void Generate_itemInMap()
@@ -758,7 +759,22 @@ internal class CompletionValidator3 : CompletionValidatorX
         owned["itemInMap"] = ow;
 
         foreach (var addr in list)
-            ow[addr.ToString()] = sav.GetEventFlag(addr);        
+            ow[addr.ToString()] = sav.GetEventFlag(addr);     
+
+        var berryIdxList = new List<int>{1,2,4,5,6,7,8,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,55,56,58,59,60,61,62,64,65,66,67,68,69,70,71,72,73,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89};
+        var defaultBerryIdList = new List<int>{2,6,6,0,5,0,0,5,6,2,22,20,17,17,17,15,15,3,2,2,3,19,1,18,18,18,20,9,9,20,20,20,4,4,4,2,2,2,15,17,19,18,7,4,3,1,17,17,16,16,20,20,24,24,5,5,24,1,19,7,21,21,21,24,22,22,0,7,7,22,6,6,35,23,23,9,5,2,9,3};
+        
+        for (var i = 0; i < berryIdxList.Count(); i++){
+            var berryIdx = berryIdxList[i];
+            var defaultBerry = defaultBerryIdList[i];
+            ow["b" + berryIdx.ToString()] = HasPickedBerry(berryIdx, defaultBerry);   
+        }  
+    }
+
+    public void HasPickedBerry(int berryIdx, int defaultBerry)
+    {
+        var berry = sav.Large[0x169C + 6 * berryIdx];
+        return berry != defaultBerry;
     }
 
     public void Generate_itemGift()
