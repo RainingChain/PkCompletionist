@@ -132,6 +132,9 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (this.objective != 0)
             return;
 
+        if (sav.GetEventFlag(0x2CE)) // Battled Mew
+            ow["376"] = true; // Old Sea Map
+
         if (sav.GetEventFlag(0x0E5)) // has traded Meteorite for Return
             ow["280"] = true; // Meteorite
 
@@ -550,11 +553,26 @@ internal class CompletionValidator3 : CompletionValidatorX
         for (var trainerId = 1; trainerId <= 854; trainerId++)
             ow[trainerId.ToString()] = sav.GetEventFlag(TRAINER_FLAGS_START + trainerId);
 
+        ow["734"] = sav.GetEventFlag(2148); // Maxie 3rd battle = Hall of fame. special battle that doesnt set the flag
+        ow["514"] = sav.GetEventFlag(2148); // Tabitha 3rd battle = Hall of fame. special battle that doesnt set the flag
+
+        ow["809"] = sav.GetEventFlag(2252); // Noland, factory
+        ow["808"] = sav.GetEventFlag(2250); // greta, arena
+        ow["806"] = sav.GetEventFlag(2246); // tucker, dome
+        ow["810"] = sav.GetEventFlag(2254); // Lucy, pike
+        ow["807"] = sav.GetEventFlag(2248); // spencer, palace
+        ow["811"] = sav.GetEventFlag(2256); // bradon, pyramid
+        ow["805"] = sav.GetEventFlag(2244); // anabel, tower
+
+        ow["56"] = sav.Large[0x2BAD] >= 6; // Gabby and Ty (6th Battle)
+
         var monBattle = new List<int> { 0x1BB, 0x1BC, 0x1BD, 0x1BE, 0x1BF, 0x1C0, 0x1C9, 0x2CE, 0x2FB, 0x320, 0x321, 0x34A, 0x3CE, 0x3CF, 0x3D0, 0x3D1, 0x3D2, 0x3D9, 0x3DA, 0x3DB, 0x3DC,
                                         0x3DD, 0x3DE, 0x3CA };
 
         foreach (var addr in monBattle)
             ow["p" + addr.ToString()] = sav.GetEventFlag(addr);
+
+        ow["p763"] = sav.GetEventFlag(0x2FC) && sav.GetEventFlag(763); // for Deoxys, the puzzle must also be hidden
     }
 
     public void Generate_trainerStar()
@@ -767,13 +785,13 @@ internal class CompletionValidator3 : CompletionValidatorX
         for (var i = 0; i < berryIdxList.Count(); i++){
             var berryIdx = berryIdxList[i];
             var defaultBerry = defaultBerryIdList[i];
-            ow["b" + berryIdx.ToString()] = HasPickedBerry(berryIdx, defaultBerry);   
+            ow["b" + berryIdx.ToString()] = HasPickedBerry(berryIdx, defaultBerry + 1);   
         }  
     }
 
-    public void HasPickedBerry(int berryIdx, int defaultBerry)
+    public bool HasPickedBerry(int berryIdx, int defaultBerry)
     {
-        var berry = sav.Large[0x169C + 6 * berryIdx];
+        var berry = sav.Large[0x169C + 8 * berryIdx];
         return berry != defaultBerry;
     }
 
