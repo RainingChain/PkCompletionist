@@ -9,7 +9,7 @@ namespace PkCompletionist.Core;
 
 internal class CompletionValidator3_Pinball : CompletionValidatorX
 {
-    public CompletionValidator3_Pinball(Command command, SAV3_Pinball sav, bool living) : base(command, sav, living)
+    public CompletionValidator3_Pinball(Command command, SAV3_Pinball sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
     }

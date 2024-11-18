@@ -2,8 +2,8 @@
   "profiles": {
     "Profile 1": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samue\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\samue\\MyDocuments\\Backup-Game\\Pokemon\\3c PmdRescueTeam\\Pokemon Mystery Dungeon - Red Rescue Team (U).sav\""
+      "executablePath": "C:\\Users\\Samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\Gameboy\\ROMS\\Pokemon Emerald.sav\" \"C:\\Users\\samuel\\MyDocuments\\Backup-Game\\Pokemon\\3c PmdRescueTeam\\Pokemon Mystery Dungeon - Red Rescue Team (U).srm\""
     }
   }
 }

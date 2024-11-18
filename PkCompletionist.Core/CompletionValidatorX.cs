@@ -7,7 +7,7 @@ partial class CompletionValidatorX
 {
     protected SaveFile sav;
     public Dictionary<string, Dictionary<string, bool>> owned = new ();
-    protected bool living = false;
+    protected Objective objective = Objective.normal;
     protected List<int> unobtainableItems = new ();
     Command command;
 
@@ -15,11 +15,11 @@ partial class CompletionValidatorX
     protected List<ushort> OwnedPkmsTID = new List<ushort>();
     protected List<int> OwnedItems = new List<int>();
 
-    public CompletionValidatorX(Command command, SaveFile sav, bool living) 
+    public CompletionValidatorX(Command command, SaveFile sav, Objective objective) 
     {
         this.command = command;
         this.sav = sav;
-        this.living = living;
+        this.objective = objective;
 
         var pkms = sav.GetAllPKM();
         foreach (var pkm in pkms)
@@ -59,7 +59,7 @@ partial class CompletionValidatorX
         owned["pokemon"] = ow;
 
         for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
-            ow[i.ToString()] = this.living ? HasPkm(i) : sav.GetCaught(i);
+            ow[i.ToString()] = this.objective != 0 ? HasPkm(i) : sav.GetCaught(i);
     }
 
     public virtual void Generate_item()

@@ -78,9 +78,13 @@ partial class FlagAnalyzer : Command
             int idx = diffIdx[i];
 
             //if (changeRangeEnd - changeRangeStart < 15)
-                AddMessage($"this.sav1.Data[0x{idx:X}] = 0x{savBData[idx]:X} (old=0x{savAData[idx]:X})");
 
-            savAData[idx] = savBData[idx];
+            var oldBin = Convert.ToString(savAData[idx], 2).PadLeft(8, '0');
+            var newBin = Convert.ToString(savBData[idx], 2).PadLeft(8, '0');
+            var xor = Convert.ToString(savAData[idx] ^ savBData[idx], 2).PadLeft(8, '0');
+            AddMessage($"this.sav1.Data[0x{idx:X}] = 0x{savBData[idx]:X} (old=0x{savAData[idx]:X}) (0b{oldBin} -> 0b{newBin}, xor = 0b{xor})");
+
+            savAData[idx] = 0b0000_0100; // 0b11111111; // savBData[idx]; //NO_PROD
         }
 
        

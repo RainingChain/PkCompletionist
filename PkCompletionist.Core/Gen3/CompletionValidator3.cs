@@ -9,7 +9,7 @@ namespace PkCompletionist.Core;
 
 internal class CompletionValidator3 : CompletionValidatorX
 {
-    public CompletionValidator3(Command command, SAV3E sav, bool living) : base(command, sav, living)
+    public CompletionValidator3(Command command, SAV3E sav, Objective objective) : base(command, sav, objective)
     {
         this.sav = sav;
 
@@ -45,15 +45,17 @@ internal class CompletionValidator3 : CompletionValidatorX
     public override void GenerateAll()
     {
         base.GenerateAll();
-
+    
         Generate_pokemonForm();
+        Generate_itemInMap();
+        Generate_itemGift();
         Generate_decoration();
         Generate_inGameTrade();
         Generate_inGameGift();
         Generate_battleFrontier();
         Generate_ribbon();
         Generate_phone();
-        // Generate_trainerBattle();
+        Generate_battle();
         Generate_trainerStar();
         Generate_eReaderBattles();
         Generate_pokeblock();
@@ -127,8 +129,14 @@ internal class CompletionValidator3 : CompletionValidatorX
         if (sav.GetEventFlag(0x0446)) // FLAG_ITEM_SAFARI_ZONE_NORTH_WEST_TM_22
             ow["259"] = true; // Mach Bike
 
-        if (this.living)
+        if (this.objective != 0)
             return;
+
+        if (sav.GetEventFlag(0x2CE)) // Battled Mew
+            ow["376"] = true; // Old Sea Map
+
+        if (sav.GetEventFlag(0x0E5)) // has traded Meteorite for Return
+            ow["280"] = true; // Meteorite
 
         if (HasPkmWithTID(241)) // Miltank
             ow["29"] = true; // Moomoo Milk
@@ -522,28 +530,49 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["HikerTrent"] = sav.GetEventFlag(0x19A - 1);
         ow["HikerSawyer"] = sav.GetEventFlag(0x19B - 1);
         ow["YoungCoupleKiraDan"] = sav.GetEventFlag(0x19C - 1);
-        ow["RockinWhizRoxanne"] = sav.GetEventFlag(0x19E - 1);
-        ow["TheBigHitBrawly"] = sav.GetEventFlag(0x19F - 1);
-        ow["SwellShockWattson"] = sav.GetEventFlag(0x1A0 - 1);
-        ow["PassionBurnFlannery"] = sav.GetEventFlag(0x1A1 - 1);
-        ow["SkyTamerWinona"] = sav.GetEventFlag(0x1A3 - 1);
-        ow["MysticDuoTateLiza"] = sav.GetEventFlag(0x1A4 - 1);
+        ow["RockinWhizRoxanne"] = sav.GetEventFlag(0x1D3);
+        ow["TheBigHitBrawly"] = sav.GetEventFlag(0x1D4);
+        ow["SwellShockWattson"] = sav.GetEventFlag(0x1D5);
+        ow["PassionBurnFlannery"] = sav.GetEventFlag(0x1D6);
+        ow["SkyTamerWinona"] = sav.GetEventFlag(0x1D7);
+        ow["MysticDuoTateLiza"] = sav.GetEventFlag(0x1D8);
         ow["EliteFourSidney"] = sav.GetEventFlag(0x1A5 - 1);
         ow["EliteFourPhoebe"] = sav.GetEventFlag(0x1A6 - 1);
         ow["EliteFourGlacia"] = sav.GetEventFlag(0x1A7 - 1);
         ow["EliteFourDrake"] = sav.GetEventFlag(0x1A8 - 1);
         ow["ChampionWallace"] = sav.GetEventFlag(0x1A9 - 1);
-        ow["DandyCharmJuan"] = sav.GetEventFlag(0x1D9); // special. FLAG_ENABLE_JUAN_MATCH_CALL
+        ow["DandyCharmJuan"] = sav.GetEventFlag(0x1D9);
     }
 
-    public void Generate_trainerBattle()
+    public void Generate_battle()
     {
         var ow = new Dictionary<string, bool>();
-        owned["trainerBattle"] = ow;
+        owned["battle"] = ow;
 
         var TRAINER_FLAGS_START = 0x500;
-        for (var trainerId = 0; trainerId <= 854; trainerId++)
+        for (var trainerId = 1; trainerId <= 854; trainerId++)
             ow[trainerId.ToString()] = sav.GetEventFlag(TRAINER_FLAGS_START + trainerId);
+
+        ow["734"] = sav.GetEventFlag(2148); // Maxie 3rd battle = Hall of fame. special battle that doesnt set the flag
+        ow["514"] = sav.GetEventFlag(2148); // Tabitha 3rd battle = Hall of fame. special battle that doesnt set the flag
+
+        ow["809"] = sav.GetEventFlag(2252); // Noland, factory
+        ow["808"] = sav.GetEventFlag(2250); // greta, arena
+        ow["806"] = sav.GetEventFlag(2246); // tucker, dome
+        ow["810"] = sav.GetEventFlag(2254); // Lucy, pike
+        ow["807"] = sav.GetEventFlag(2248); // spencer, palace
+        ow["811"] = sav.GetEventFlag(2256); // bradon, pyramid
+        ow["805"] = sav.GetEventFlag(2244); // anabel, tower
+
+        ow["56"] = sav.Large[0x2BAD] >= 6; // Gabby and Ty (6th Battle)
+
+        var monBattle = new List<int> { 0x1BB, 0x1BC, 0x1BD, 0x1BE, 0x1BF, 0x1C0, 0x1C9, 0x2CE, 0x2FB, 0x320, 0x321, 0x34A, 0x3CE, 0x3CF, 0x3D0, 0x3D1, 0x3D2, 0x3D9, 0x3DA, 0x3DB, 0x3DC,
+                                        0x3DD, 0x3DE, 0x3CA };
+
+        foreach (var addr in monBattle)
+            ow["p" + addr.ToString()] = sav.GetEventFlag(addr);
+
+        ow["p763"] = sav.GetEventFlag(0x2FC) && sav.GetEventFlag(763); // for Deoxys, the puzzle must also be hidden
     }
 
     public void Generate_trainerStar()
@@ -724,6 +753,65 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["SetPokemonJumpExcellentsinaRowRecord"] = sav.JoyfulJump5InRow > 0;
         ow["SetBerryPickingRecord"] = sav.JoyfulBerriesScore > 0;
         ow["SetBerryPickingInrowwith5playersRecord"] = sav.JoyfulBerries5InRow > 0;
+
+        ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0x8000;
+        ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0x8000;
+    }
+
+    public void Generate_itemInMap()
+    {
+        var list = new List<int>{0x1F4, 0x1F5, 0x1F6, 0x1F7, 0x1F8, 0x1F9, 0x1FA, 0x1FB, 0x1FC, 0x1FD, 0x1FE, 0x1FF, 0x200, 0x201, 0x202, 0x203, 0x204, 0x205, 0x206, 0x207, 0x208, 0x209, 
+            0x20A, 0x20B, 0x20C, 0x20D, 0x20E, 0x20F, 0x210, 0x211, 0x212, 0x213, 0x214, 0x215, 0x216, 0x217, 0x218, 0x219, 0x21A, 0x21B, 0x21C, 0x21D, 0x21E, 0x21F, 0x220, 0x221, 0x222, 
+            0x223, 0x224, 0x225, 0x226, 0x227, 0x228, 0x229, 0x22A, 0x22B, 0x22C, 0x22D, 0x22E, 0x22F, 0x230, 0x231, 0x232, 0x233, 0x234, 0x235, 0x236, 0x237, 0x238, 0x239, 0x23A, 0x23B, 
+            0x23C, 0x23D, 0x23E, 0x23F, 0x240, 0x241, 0x242, 0x243, 0x244, 0x245, 0x246, 0x247, 0x248, 0x249, 0x24A, 0x24B, 0x24C, 0x24D, 0x24E, 0x24F, 0x250, 0x251, 0x252, 0x253, 0x254, 
+            0x255, 0x256, 0x257, 0x258, 0x259, 0x25A, 0x25B, 0x25C, 0x25D, 0x25E, 0x25F, 0x260, 0x261, 0x262, 0x263, 0x3E8, 0x3E9, 0x3EA, 0x3EB, 0x3EC, 0x3ED, 0x3EE, 0x3EF, 0x3F0, 0x3F1, 
+            0x3F2, 0x3F3, 0x3F4, 0x3F5, 0x3F6, 0x3F7, 0x3F8, 0x3F9, 0x3FA, 0x3FB, 0x3FC, 0x3FD, 0x3FE, 0x3FF, 0x400, 0x401, 0x402, 0x403, 0x404, 0x405, 0x406, 0x407, 0x408, 0x40A, 0x40B, 
+            0x40C, 0x40D, 0x40E, 0x40F, 0x410, 0x411, 0x412, 0x413, 0x414, 0x415, 0x416, 0x417, 0x418, 0x419, 0x41A, 0x41B, 0x41C, 0x41D, 0x41E, 0x41F, 0x420, 0x421, 0x422, 0x423, 0x424, 
+            0x425, 0x426, 0x427, 0x428, 0x429, 0x42A, 0x42B, 0x42C, 0x42D, 0x42E, 0x42F, 0x430, 0x431, 0x432, 0x433, 0x434, 0x435, 0x436, 0x437, 0x438, 0x439, 0x43A, 0x43B, 0x43C, 0x43D, 
+            0x43E, 0x43F, 0x440, 0x441, 0x442, 0x443, 0x444, 0x445, 0x446, 0x447, 0x448, 0x449, 0x44A, 0x44B, 0x44C, 0x44D, 0x44E, 0x44F, 0x450, 0x451, 0x452, 0x453, 0x454, 0x455, 0x456, 
+            0x457, 0x458, 0x459, 0x45A, 0x45B, 0x45C, 0x45D, 0x45E, 0x45F, 0x460, 0x461, 0x462, 0x463, 0x464, 0x469, 0x46A, 0x46B, 0x46C, 0x46E, 0x46F, 0x471, 0x473, 0x474, 0x475, 0x476, 
+            0x477, 0x478, 0x47A, 0x47B, 0x47C, 0x47D, 0x47E, 0x47F, 0x480, 0x481, 0x482, 0x483, 0x484, 0x485, 0x486, 0x487, 0x488, 0x489, 0x48A, 0x48B, 0x48C, 0x48D, 0x48E, 0x48F, 0x490, 
+            0x491, 0x492};
+
+        var ow = new Dictionary<string, bool>();
+        owned["itemInMap"] = ow;
+
+        foreach (var addr in list)
+            ow[addr.ToString()] = sav.GetEventFlag(addr);     
+
+        var berryIdxList = new List<int>{1,2,4,5,6,7,8,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,52,53,55,56,58,59,60,61,62,64,65,66,67,68,69,70,71,72,73,74,76,77,78,79,80,81,82,83,84,85,86,87,88,89};
+        var defaultBerryIdList = new List<int>{2,6,6,0,5,0,0,5,6,2,22,20,17,17,17,15,15,3,2,2,3,19,1,18,18,18,20,9,9,20,20,20,4,4,4,2,2,2,15,17,19,18,7,4,3,1,17,17,16,16,20,20,24,24,5,5,24,1,19,7,21,21,21,24,22,22,0,7,7,22,6,6,35,23,23,9,5,2,9,3};
+        
+        for (var i = 0; i < berryIdxList.Count(); i++){
+            var berryIdx = berryIdxList[i];
+            var defaultBerry = defaultBerryIdList[i];
+            ow["b" + berryIdx.ToString()] = HasPickedBerry(berryIdx, defaultBerry + 1);   
+        }  
+    }
+
+    public bool HasPickedBerry(int berryIdx, int defaultBerry)
+    {
+        var berry = sav.Large[0x169C + 8 * berryIdx];
+        return berry != defaultBerry;
+    }
+
+    public void Generate_itemGift()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemGift"] = ow;
+
+        var list = new List<int> { 0x05A, 0x05E, 0x05F, 0x060, 0x06A, 0x06B, 0x06D, 0x06E, 0x073, 0x079, 0x07A, 0x07B, 0x083, 0x084, 0x085, 0x089, 0x08C, 0x098, 0x0A5, 0x0A6, 0x0A7, 0x0A8, 
+            0x0A9, 0x0AA, 0x0AB, 0x0AC, 0x0C0, 0x0C8, 0x0C9, 0x0CA, 0x0CB, 0x0CC, 0x0D0, 0x0D1, 0x0D4, 0x0D5, 0x0DD, 0x0DF, 0x0E1, 0x0E2, 0x0E3, 0x0E5, 0x0E6, 0x0E7, 0x0E8, 0x0EA, 
+            0x0EB, 0x0EC, 0x0ED, 0x0EE, 0x0F5, 0x0F6, 0x0F8, 0x0F9, 0x0FA, 0x0FB, 0x0FC, 0x0FE, 0x100, 0x101, 0x102, 0x104, 0x105, 0x106, 0x108, 0x109, 0x10B, 0x10D, 0x110, 0x113,
+            0x114, 0x115, 0x116, 0x117, 0x118, 0x11A, 0x11B, 0x11D, 0x121, 0x123, 0x129, 0x138, 0x151, 0x1D1 };
+        var untrackable = new HashSet<int> { };
+        foreach (var evtIdx in list)
+        {
+            var val = sav.GetEventFlag(evtIdx);
+            if (!val && untrackable.Contains(evtIdx))
+                continue;
+            ow[evtIdx.ToString()] = val;
+        }
     }
 }
 

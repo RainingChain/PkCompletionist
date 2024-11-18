@@ -1,6 +1,6 @@
 ## Pokemon Completionist Utilities
 
-Utilities for the Pokemon 100% Checklist Challenge that can be embedded in a website.
+Utilities for the Pokemon 100% Checklist Challenge that can be embedded in a website or ran as standalone .exe.
 
 ### Features
 - Extract obtained elements from .sav
@@ -15,7 +15,12 @@ Utilities for the Pokemon 100% Checklist Challenge that can be embedded in a web
 - FabioAttard for [event flag research](https://github.com/fattard/MissingEventFlagsCheckerPlugin)
 
 ### Contributing
-- Install Visual Studio 2022 with dotnet support
-- dotnet workload install wasm-tools
-- Include the content of [PKHeX.Core](https://github.com/kwsch/PKHeX) in the project
-- dotnet publish --configuration Release
+- Install Visual Studio 2022 
+- Add Visual Studio support for .NET (C#) projects
+- To compile browser version (wasm):
+	- dotnet workload install wasm-tools-net7
+	- dotnet publish --configuration Release
+- To compile desktop version (exe):
+	- Install .NET 7.0 Runtime (v7.0.20)
+	- Modify PkCompletionist.csproj <When Condition="'1' == '0'">
+	- dotnet publish --configuration Release
