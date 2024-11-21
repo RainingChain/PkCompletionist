@@ -926,6 +926,62 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["ToughWordsTwoStep"] = GetThoughWordUnlocked(ThoughWord.TwoStep);
         ow["ToughWordsUbiquitous"] = GetThoughWordUnlocked(ThoughWord.Ubiquitous);
         ow["ToughWordsVector"] = GetThoughWordUnlocked(ThoughWord.Vector);
+
+        var HasSeenMonList = () =>
+        {
+            var list = new List<ushort> { 16, 17, 18, 19, 20, 21, 22, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60, 61, 62, 63, 64, 66, 67, 69, 70, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 201, 202, 203, 206, 207, 208, 209, 210, 211, 214, 215, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 231, 232, 234, 235, 236, 237, 238, 239, 240, 241, 242, 246, 247, 248, 261, 262, 263, 264, 265, 266, 267, 268, 269, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 331, 332, 333, 334, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 369, 370, 371, 372, 373, 374, 375, 376, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 433, 436, 437, 438, 439, 440, 441, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 465, 468, 469, 470, 471, 472, 473, 475, 476, 478, 479, 480, 481, 482, 483, 484, 485, 487, 488 };
+            foreach (var mon in list)
+                if (!this.sav.Dex.GetSeen(mon))
+                    return false;
+            return true;
+        };
+
+        var HasSeenMon = (ushort mon) =>
+        {
+            return this.sav.Dex.GetSeen(mon);
+        };
+
+        var HasSeenMonAll = () =>
+        {
+            for (ushort mon = 1; mon <= 493; mon++)
+                if (!this.sav.Dex.GetSeen(mon))
+                    return false;
+            return true;
+        };
+
+        ow["PokemonAllCatchableNoTrade"] = HasSeenMonList();
+        ow["PokemonButterfree"] = HasSeenMon(12);
+        ow["PokemonArbok"] = HasSeenMon(24);
+        ow["PokemonSandslash"] = HasSeenMon(28);
+        ow["PokemonNinetales"] = HasSeenMon(38);
+        ow["PokemonArcanine"] = HasSeenMon(59);
+        ow["PokemonAlakazam"] = HasSeenMon(65);
+        ow["PokemonMachamp"] = HasSeenMon(68);
+        ow["PokemonGolem"] = HasSeenMon(76);
+        ow["PokemonGengar"] = HasSeenMon(94);
+        ow["PokemonPolitoed"] = HasSeenMon(186);
+        ow["PokemonMurkrow"] = HasSeenMon(198);
+        ow["PokemonSlowking"] = HasSeenMon(199);
+        ow["PokemonMisdreavus"] = HasSeenMon(200);
+        ow["PokemonForretress"] = HasSeenMon(205);
+        ow["PokemonScizor"] = HasSeenMon(212);
+        ow["PokemonShuckle"] = HasSeenMon(213);
+        ow["PokemonUrsaring"] = HasSeenMon(217);
+        ow["PokemonKingdra"] = HasSeenMon(230);
+        ow["PokemonPorygon2"] = HasSeenMon(233);
+        ow["PokemonLombre"] = HasSeenMon(271);
+        ow["PokemonLudicolo"] = HasSeenMon(272);
+        ow["PokemonNuzleaf"] = HasSeenMon(274);
+        ow["PokemonShiftry"] = HasSeenMon(275);
+        ow["PokemonTrapinch"] = HasSeenMon(328);
+        ow["PokemonVibrava"] = HasSeenMon(329);
+        ow["PokemonFlygon"] = HasSeenMon(330);
+        ow["PokemonZangoose"] = HasSeenMon(335);
+        ow["PokemonSeviper"] = HasSeenMon(336);
+        ow["PokemonLunatone"] = HasSeenMon(337);
+        ow["PokemonSolrock"] = HasSeenMon(338);
+        ow["PokemonOthers"] = HasSeenMonAll();
+        ow["Move"] = sav.GetEventFlag(0x08B5); // DefeatEliteFourAfterNationalDex
     }
 
     public void Generate_geonet()
