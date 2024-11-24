@@ -55,7 +55,6 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_phone();
         // Generate_trainerBattle();
         Generate_trainerStar();
-        Generate_eReaderBattles();
         Generate_pokeblock();
         Generate_easyChatSystemWord();
         Generate_gameStat();
@@ -570,13 +569,6 @@ internal class CompletionValidator3 : CompletionValidatorX
     }
 
     
-    public void Generate_eReaderBattles()
-    {
-        var ow = new Dictionary<string, bool>();
-        owned["eReaderBattles"] = ow;
-
-        // None for US version
-    }
     public bool HasPokeblock(PokeBlock3Color color)
     {
         return sav.PokeBlocks.Blocks.Any(b => b.Color == color);

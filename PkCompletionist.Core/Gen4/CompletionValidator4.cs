@@ -48,7 +48,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         Generate_villaFurniture();
         Generate_trainerStar();
         Generate_easyChatSystemWord();
-        Generate_geonet();
+        // Generate_geonet();
         Generate_misc();
     }
 
