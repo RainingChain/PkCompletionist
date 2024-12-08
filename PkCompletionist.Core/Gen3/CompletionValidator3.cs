@@ -375,7 +375,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         ow["Castform"] = sav.GetEventFlag(0x0097);
         ow["Beldum"] = sav.GetEventFlag(0x012A);
-        ow["ChikoritaorCyndaquilorTotodile"] = sav.GetEventFlag(2148) && (sav.GetEventFlag(0x0346) || sav.GetEventFlag(0x032C) || sav.GetEventFlag(0x032B)); //HallOfFame && (picked Chiko or Cynd or Toto)
+        ow["ChikoritaorCyndaquilorTotodile"] = sav.GetEventFlag(2148) && sav.GetWork(0xD3) >= 6; ; //HallOfFame && (picked starter)
     }
     public void Generate_battleFrontier()
     {

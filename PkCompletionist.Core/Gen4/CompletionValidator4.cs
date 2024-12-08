@@ -49,6 +49,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         Generate_trainerStar();
         Generate_easyChatSystemWord();
         //Generate_geonet();
+        Generate_battle();
         Generate_misc();
     }
 
@@ -1001,6 +1002,21 @@ internal class CompletionValidator4 : CompletionValidatorX
                     ow[$"{country}-{i}"] = geonet.GetCountrySubregion(country, i) != Geonet4.Point.None;
             }
         }
+    }
+
+    public void Generate_battle()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["battle"] = ow;
+        Geonet4 geonet = new(sav);
+
+        for (var i = 1; i < 928; i++)
+            ow[i.ToString()] = sav.GetEventFlag(0x550 + i);
+
+        var list = new List<int> { 208, 209, 288, 291, 329, 344, 479, 480, 481, 579, 591, 592 };
+
+        foreach (var id in list)
+            ow["p" + id.ToString()] = sav.GetEventFlag(id);
     }
 
     public void Generate_misc()
