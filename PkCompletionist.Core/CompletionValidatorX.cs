@@ -59,7 +59,7 @@ partial class CompletionValidatorX
         owned["pokemon"] = ow;
 
         for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
-            ow[i.ToString()] = this.objective != 0 ? HasPkm(i) : sav.GetCaught(i);
+            ow[i.ToString()] = HasOrSeenPkmBasedOnObjective(i);
     }
 
     public virtual void Generate_item()
@@ -86,6 +86,12 @@ partial class CompletionValidatorX
                 return false;
             return pkm.Form == form;
         }) != null;
+    }
+
+
+    public bool HasOrSeenPkmBasedOnObjective(ushort speciesId)
+    {
+        return this.objective != 0 ? HasPkm(speciesId) : sav.GetCaught(speciesId);
     }
 
     public bool HasPkm(ushort speciesId)

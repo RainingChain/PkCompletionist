@@ -30,6 +30,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         base.GenerateAll();
 
         Generate_pokemonForm();
+        Generate_itemInMap();
+        Generate_itemGift();
         Generate_poketch();
         Generate_inGameTrade();
         Generate_inGameGift();
@@ -48,6 +50,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         Generate_villaFurniture();
         Generate_trainerStar();
         Generate_easyChatSystemWord();
+        Generate_jubilifeTvRankings();
+
         //Generate_geonet();
         Generate_battle();
         Generate_misc();
@@ -58,66 +62,66 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["pokemonForm"] = ow;
 
-        ow["UnownA"] = HasPkmForm(201, 0);
-        ow["UnownB"] = HasPkmForm(201, 1);
-        ow["UnownC"] = HasPkmForm(201, 2);
-        ow["UnownD"] = HasPkmForm(201, 3);
-        ow["UnownE"] = HasPkmForm(201, 4);
-        ow["UnownF"] = HasPkmForm(201, 5);
-        ow["UnownG"] = HasPkmForm(201, 6);
-        ow["UnownH"] = HasPkmForm(201, 7);
-        ow["UnownI"] = HasPkmForm(201, 8);
-        ow["UnownJ"] = HasPkmForm(201, 9);
-        ow["UnownK"] = HasPkmForm(201, 10);
-        ow["UnownL"] = HasPkmForm(201, 11);
-        ow["UnownM"] = HasPkmForm(201, 12);
-        ow["UnownN"] = HasPkmForm(201, 13);
-        ow["UnownO"] = HasPkmForm(201, 14);
-        ow["UnownP"] = HasPkmForm(201, 15);
-        ow["UnownQ"] = HasPkmForm(201, 16);
-        ow["UnownR"] = HasPkmForm(201, 17);
-        ow["UnownS"] = HasPkmForm(201, 18);
-        ow["UnownT"] = HasPkmForm(201, 19);
-        ow["UnownU"] = HasPkmForm(201, 20);
-        ow["UnownV"] = HasPkmForm(201, 21);
-        ow["UnownW"] = HasPkmForm(201, 22);
-        ow["UnownX"] = HasPkmForm(201, 23);
-        ow["UnownY"] = HasPkmForm(201, 24);
-        ow["UnownZ"] = HasPkmForm(201, 25);
-        ow["UnownExclamationMark"] = HasPkmForm(201, 26);
-        ow["UnownQuestionMark"] = HasPkmForm(201, 27);
+        ow["UnownA"] = HasPkmForm2(201, 0);
+        ow["UnownB"] = HasPkmForm2(201, 1);
+        ow["UnownC"] = HasPkmForm2(201, 2);
+        ow["UnownD"] = HasPkmForm2(201, 3);
+        ow["UnownE"] = HasPkmForm2(201, 4);
+        ow["UnownF"] = HasPkmForm2(201, 5);
+        ow["UnownG"] = HasPkmForm2(201, 6);
+        ow["UnownH"] = HasPkmForm2(201, 7);
+        ow["UnownI"] = HasPkmForm2(201, 8);
+        ow["UnownJ"] = HasPkmForm2(201, 9);
+        ow["UnownK"] = HasPkmForm2(201, 10);
+        ow["UnownL"] = HasPkmForm2(201, 11);
+        ow["UnownM"] = HasPkmForm2(201, 12);
+        ow["UnownN"] = HasPkmForm2(201, 13);
+        ow["UnownO"] = HasPkmForm2(201, 14);
+        ow["UnownP"] = HasPkmForm2(201, 15);
+        ow["UnownQ"] = HasPkmForm2(201, 16);
+        ow["UnownR"] = HasPkmForm2(201, 17);
+        ow["UnownS"] = HasPkmForm2(201, 18);
+        ow["UnownT"] = HasPkmForm2(201, 19);
+        ow["UnownU"] = HasPkmForm2(201, 20);
+        ow["UnownV"] = HasPkmForm2(201, 21);
+        ow["UnownW"] = HasPkmForm2(201, 22);
+        ow["UnownX"] = HasPkmForm2(201, 23);
+        ow["UnownY"] = HasPkmForm2(201, 24);
+        ow["UnownZ"] = HasPkmForm2(201, 25);
+        ow["UnownExclamationMark"] = HasPkmForm2(201, 26);
+        ow["UnownQuestionMark"] = HasPkmForm2(201, 27);
 
-        ow["CastformNormal"] = HasPkm(351);
-        ow["CastformFire"] = HasPkm(351);
-        ow["CastformWater"] = HasPkm(351);
-        ow["CastformIce"] = HasPkm(351);
+        ow["CastformNormal"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformFire"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformWater"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformIce"] = HasOrSeenPkmBasedOnObjective(351);
 
-        ow["DeoxysNormal"] = HasPkmForm(386, 0);
-        ow["DeoxysAttack"] = HasPkmForm(386, 1);
-        ow["DeoxysDefense"] = HasPkmForm(386, 2);
-        ow["DeoxysSpeed"] = HasPkmForm(386, 3);
-        ow["BurmyPlantCloak"] = HasPkmForm(412, 0);
-        ow["BurmySandyCloak"] = HasPkmForm(412, 1);
-        ow["BurmyTrashCloak"] = HasPkmForm(412, 2);
-        ow["WormadamPlantCloak"] = HasPkmForm(413, 0);
-        ow["WormadamSandyCloak"] = HasPkmForm(413, 1);
-        ow["WormadamTrashCloak"] = HasPkmForm(413, 2);
-        ow["CherrimOvercast"] = HasPkm(421);
-        ow["CherrimSunshine"] = HasPkm(421);
-        ow["ShellosWestSea"] = HasPkmForm(422, 0);
-        ow["ShellosEastSea"] = HasPkmForm(422, 1);
-        ow["GastrodonWestSea"] = HasPkmForm(423, 0);
-        ow["GastrodonEastSea"] = HasPkmForm(423, 1);
-        ow["RotomGhost"] = HasPkmForm(479, 0);
-        ow["RotomHeat"] = HasPkmForm(479, 1);
-        ow["RotomWash"] = HasPkmForm(479, 2);
-        ow["RotomFrost"] = HasPkmForm(479, 3);
-        ow["RotomFan"] =  HasPkmForm(479, 4);
-        ow["RotomMow"] = HasPkmForm(479, 5);
-        ow["GiratinaAltered"] = HasPkmForm(487, 0);
-        ow["GiratinaOrigin"] = HasPkmForm(488, 1);
-        ow["ShayminLand"] = HasPkmForm(492, 0);
-        ow["ShayminSky"] = HasPkmForm(492, 1);
+        ow["DeoxysNormal"] = HasPkmForm2(386, 0);
+        ow["DeoxysAttack"] = HasPkmForm2(386, 1);
+        ow["DeoxysDefense"] = HasPkmForm2(386, 2);
+        ow["DeoxysSpeed"] = HasPkmForm2(386, 3);
+        ow["BurmyPlantCloak"] = HasPkmForm2(412, 0);
+        ow["BurmySandyCloak"] = HasPkmForm2(412, 1);
+        ow["BurmyTrashCloak"] = HasPkmForm2(412, 2);
+        ow["WormadamPlantCloak"] = HasPkmForm2(413, 0);
+        ow["WormadamSandyCloak"] = HasPkmForm2(413, 1);
+        ow["WormadamTrashCloak"] = HasPkmForm2(413, 2);
+        ow["CherrimOvercast"] = HasOrSeenPkmBasedOnObjective(421);
+        ow["CherrimSunshine"] = HasOrSeenPkmBasedOnObjective(421);
+        ow["ShellosWestSea"] = HasPkmForm2(422, 0);
+        ow["ShellosEastSea"] = HasPkmForm2(422, 1);
+        ow["GastrodonWestSea"] = HasPkmForm2(423, 0);
+        ow["GastrodonEastSea"] = HasPkmForm2(423, 1);
+        ow["RotomGhost"] = HasPkmForm2(479, 0);
+        ow["RotomHeat"] = HasPkmForm2(479, 1);
+        ow["RotomWash"] = HasPkmForm2(479, 2);
+        ow["RotomFrost"] = HasPkmForm2(479, 3);
+        ow["RotomFan"] = HasPkmForm2(479, 4);
+        ow["RotomMow"] = HasPkmForm2(479, 5);
+        ow["GiratinaAltered"] = HasPkmForm2(487, 0);
+        ow["GiratinaOrigin"] = HasPkmForm2(488, 1);
+        ow["ShayminLand"] = HasPkmForm2(492, 0);
+        ow["ShayminSky"] = HasPkmForm2(492, 1);
 
         ow["AllMaleFemaleForms"] = new Func<bool>(() =>
         {
@@ -145,14 +149,90 @@ internal class CompletionValidator4 : CompletionValidatorX
             return true;
         })();
     }
+    public bool HasPkmForm2(ushort species, byte form)
+    {
+        if (HasPkmForm(species, form))
+            return true;
+
+        return this.sav.Dex.GetForms(species).Contains(form);
+    }
 
     public override void Generate_item()
     {
         base.Generate_item();
 
         var ow = this.owned["item"];
+
+        //TODO: add exception if not living
+        /*
+         * 
+        impossible to keep:
+        Yes	5	Safari Ball		Great Marsh
+        Yes	439	Old Charm		Route 210 (from Cynthia after curing the Psyduck)
+        Yes	451	Suite Key		Route 213 (immediately northwest of the northern reception entrance of Hotel Grand Lake)
+        Yes	453	Lunar Wing		Fullmoon Island (left behind by Cresselia when it leaves)
+        Yes	459	Parcel		Twinleaf Town (from Barry's mother after returning from Sandgem Town)
+        Yes	460	Coupon 1		Jubilife City
+        Yes	461	Coupon 2		Jubilife City
+        Yes	462	Coupon 3		Jubilife City
+        Yes	500	Park Ball		Pal Park
+        */
     }
 
+    public void Generate_itemInMap()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemInMap"] = ow;
+
+        var list = new List<int> { 1051, 1264, 1032, 1138, 1268, 746, 750, 764, 772, 779, 864, 885, 903, 910, 944, 993, 759, 778, 857, 915, 948, 1183, 1282, 1126, 798, 819, 939, 1082, 1279, 1289, 1295,
+    1307, 1323, 1047, 771, 790, 872, 1102, 1136, 1237, 1256, 1328, 773, 841, 921, 1062, 1141, 1189, 1221, 1331, 1222, 756, 1061, 1217, 1210, 1274, 1193, 732, 1334, 1261, 1216, 1312, 1154, 740,
+    1125, 1206, 1020, 1333, 808, 1070, 1152, 1290, 792, 1001, 999, 1000, 1021, 1050, 1150, 1163, 1187, 1227, 734, 1064, 1099, 1283, 766, 998, 1137, 1118, 869, 755, 769, 824, 929, 955, 1073, 1121,
+    1173, 1226, 1257, 1123, 816, 832, 839, 846, 874, 909, 1168, 1190, 1201, 1205, 1229, 1245, 1311, 1251, 733, 739, 762, 881, 918, 1063, 1084, 1086, 1100, 797, 835, 838, 892, 1035, 1085, 1288, 1297,
+    1313, 1321, 1056, 1336, 1037, 1250, 1112, 1175, 760, 787, 852, 1024, 1157, 1214, 1260, 1285, 1339, 1030, 828, 834, 842, 848, 853, 856, 865, 914, 916, 987, 995, 996, 997, 788, 789, 897, 917,
+    949, 950, 951, 952, 754, 780, 882, 919, 943, 953, 1077, 1101, 1117, 1119, 1147, 1276, 731, 802, 871, 913, 1059, 1176, 1239, 1287, 1330, 1231, 786, 1003, 1220, 1215, 933, 942, 1248, 1211, 1225,
+    1166, 1026, 1106, 1053, 1072, 1332, 1303, 730, 830, 849, 1169, 1182, 1200, 1224, 1232, 749, 1054, 1120, 806, 820, 837, 928, 1155, 1305, 753, 813, 867, 925, 936, 945, 1114, 1128, 1142, 1151,
+    1186, 1196, 803, 825, 845, 896, 904, 905, 922, 957, 1092, 1181, 1184, 1236, 774, 1172, 1337, 1109, 1160, 818, 958, 1088, 1116, 1034, 1338, 793, 809, 843, 876, 930, 1004, 1005, 1006, 1111, 1207,
+    1233, 1246, 1110, 931, 1036, 1105, 863, 937, 1319, 737, 770, 801, 804, 861, 956, 1045, 1094, 1228, 1284, 1315, 1033, 1096, 747, 758, 817, 855, 894, 895, 900, 988, 994, 1044, 821, 1016, 1057,
+    1081, 1083, 1249, 805, 1014, 1022, 1263, 1265, 1266, 1272, 1149, 1238, 776, 893, 927, 1060, 1095, 1144, 1244, 1310, 1115, 1314, 742, 751, 799, 807, 831, 836, 847, 854, 859, 860, 884, 889, 908,
+    935, 940, 1055, 1124, 1129, 1146, 1164, 1197, 1209, 1213, 1234, 1247, 1281, 1291, 1300, 1309, 1316, 1329, 810, 1199, 1208, 898, 1212, 1243, 1324, 738, 795, 811, 1087, 1127, 1293, 1296, 1301,
+    1326, 1318, 1015, 1140, 924, 990, 992, 765, 911, 954, 986, 1002, 1049, 1058, 1079, 1107, 1170, 1218, 1292, 1304, 1306, 1135, 1069, 1023, 1241, 775, 1158, 1240, 1043, 850, 1131, 1165, 1139,
+    1067, 744, 777, 781, 782, 783, 784, 785, 796, 800, 812, 814, 822, 866, 868, 873, 906, 989, 1286, 741, 743, 763, 794, 815, 826, 833, 870, 891, 947, 829, 946, 761, 823, 880, 938, 1040, 1159,
+    1267, 883, 1046, 1113, 1017, 1188, 1027, 1089, 1078, 1174, 1028, 1068, 1041, 1171, 1255, 1194, 1104, 1180, 1153, 1029, 1254, 1052, 1108, 1130, 1161, 1133, 1018, 1048, 1122, 1134, 1178, 1242,
+    1253, 1025, 1090, 1195, 1066, 1065, 1038, 1103, 1179, 1230, 1219, 1204, 1075, 1162, 1019, 1203, 1202, 1185, 1145, 1042, 1074, 1097, 1071, 1148, 1262, 768, 875, 1191, 1335, 735, 745, 862, 887,
+    890, 941, 748, 752, 844, 851, 858, 877, 879, 886, 888, 902, 907, 912, 920, 923, 926, 932, 934, 991, 1098, 1143, 1156, 1167, 1177, 1192, 1235, 1299, 1308, 1320, 1325, 1327, 1280, 1317, 767,
+    878, 1093, 1132, 1271, 1273, 1270, 1278, 1031, 1277, 736, 791, 827, 1080, 1091, 1275, 1298, 1302, 1322, 840, 757, 899, 901, 1076, 1198, 1223, 1258, 1294, };
+
+        foreach (var id in list)
+            ow[id.ToString()] = sav.GetEventFlag(id);
+
+        var defaultBerryIdList = new List<int> { 7, 1, 2, 3, 7, 3, 16, 17, 1, 7, 10, 19, 19, 22, 1, 3, 7, 7, 4, 4, 16, 16, 1, 7, 7, 17, 18, 16, 17, 20, 6, 2, 16, 16, 8, 18, 18, 11, 5, 5, 16, 20, 10, 2,
+    12, 14, 3, 5, 15, 25, 10, 5, 26, 9, 3, 20, 20, 20, 8, 8, 18, 18, 14, 15, 4, 4, 1, 10, 2, 21, 3, 17, 12, 13, 4, 8, 11, 20, 6, 3, 13, 24, 12, 13, 14, 23, 10, 17, 18, 19, 21, 21, 24, 24, 22, 22,
+    26, 26, 23, 23, 21, 21, 24, 24, 26, 26, 25, 25, 23, 23, 9, 6, 23, 25, 22, 22, 25, 25 };
+
+        for (var i = 0; i < defaultBerryIdList.Count(); i++)
+        {
+            var berryIdx = i;
+            var defaultBerry = defaultBerryIdList[i];
+            ow["b" + berryIdx.ToString()] = HasPickedBerry(berryIdx, defaultBerry + 1);
+        }
+    }
+
+    public bool HasPickedBerry(int berryIdx, int defaultBerry)
+    {
+        var berry = sav.General[0x20c4 + 14 * berryIdx];
+        return berry != defaultBerry;
+    }
+
+    public void Generate_itemGift()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["itemGift"] = ow;
+        var list = new List<int> { 108, 116, 117, 124, 125, 131, 140, 146, 152, 156, 157, 158, 160, 161, 182, 193, 194, 197, 198, 199, 201, 202, 203, 204, 205, 206, 213, 217, 218, 261, 265, 266,
+    267, 278, 281, 284, 285, 302, 303, 308, 309, 310, 312, 313, 314, 315, 319, 320, 321, 322, 323, 324, 352, 2721, };
+
+        foreach (var id in list)
+            ow[id.ToString()] = sav.GetEventFlag(id);
+    }
 
     public void Generate_poketch()
     {
@@ -408,7 +488,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["StarterPokemon"] = true;
         ow["TogepiEgg"] = sav.GetWork(0x007A) >= 5;
         ow["Eevee"] = sav.GetEventFlag(305);
-        ow["Porygon"] = sav.GetEventFlag(151); 
+        ow["Porygon"] = sav.GetEventFlag(151);
         ow["RioluEgg"] = sav.GetEventFlag(0x220);
     }
     public bool HasAccessory(Accessory accessory)
@@ -884,7 +964,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["BattleTower"] = IsBattleFrontierPrintObtained(0, 2);
 
     }
-    
+
     public bool GetThoughWordUnlocked(ThoughWord word)
     {
         var idx = (byte)word;
@@ -989,19 +1069,59 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["geonet"] = ow;
-        Geonet4 geonet = new (sav);
+        Geonet4 geonet = new(sav);
 
         foreach (var country in Geonet4.LegalCountries)
         {
             var subRegionCount = Geonet4.GetSubregionCount(country);
             if (subRegionCount == 0)
                 ow[$"{country}-0"] = geonet.GetCountrySubregion(country, 0) != Geonet4.Point.None;
-            else 
-            { 
+            else
+            {
                 for (byte i = 1; i <= subRegionCount; i++)
                     ow[$"{country}-{i}"] = geonet.GetCountrySubregion(country, i) != Geonet4.Point.None;
             }
         }
+    }
+    public void Generate_jubilifeTvRankings()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["jubilifeTvRankings"] = ow;
+
+        ow["PokemonDefeated"] = true;
+        ow["PokemonCaught"] = true;
+        ow["PokemonEggs"] = sav.GetEventFlag(2404); // HallOfFame, kinda bad
+        ow["EncounteredwhileFishing"] = true;
+
+        ow["SingleBattles"] = sav.General[0x68e0] > 0;
+        ow["DoubleBattles"] = sav.General[0x68e4] > 0;
+        ow["MultiBattles"] = sav.General[0x68e8] > 0;
+        ow["LinkMultiBattles"] = sav.General[0x68ec] > 0;
+        ow["WiFiBattles"] = sav.General[0x68f0] > 0;
+        ow["AvgWinStreak"] = sav.General[0x68e0] > 0;
+
+        var HasBeatenContest = HasRibbon(pk4 =>
+        {
+            return pk4.RibbonG4Cool || pk4.RibbonG4CoolGreat || pk4.RibbonG4CoolUltra || pk4.RibbonG4CoolMaster || pk4.RibbonG4Beauty || pk4.RibbonG4BeautyGreat || pk4.RibbonG4BeautyUltra
+                || pk4.RibbonG4BeautyMaster || pk4.RibbonG4Cute || pk4.RibbonG4CuteGreat || pk4.RibbonG4CuteUltra || pk4.RibbonG4CuteMaster || pk4.RibbonG4Smart || pk4.RibbonG4SmartGreat ||
+                pk4.RibbonG4SmartUltra || pk4.RibbonG4SmartMaster || pk4.RibbonG4Tough || pk4.RibbonG4ToughGreat || pk4.RibbonG4ToughUltra || pk4.RibbonG4ToughMaster;
+        });
+
+        ow["ContestWins"] = HasBeatenContest;
+        ow["ContestWinsPct"] = HasBeatenContest;
+        ow["Ribbons"] = HasRibbon(pk4 =>
+        {
+            return pk4.RibbonChampionG3 || pk4.RibbonChampionSinnoh || pk4.RibbonG3Cool || pk4.RibbonG3CoolSuper || pk4.RibbonG3CoolHyper || pk4.RibbonG3CoolMaster || pk4.RibbonG3Beauty ||
+            pk4.RibbonG3BeautySuper || pk4.RibbonG3BeautyHyper || pk4.RibbonG3BeautyMaster || pk4.RibbonG3Cute || pk4.RibbonG3CuteSuper || pk4.RibbonG3CuteHyper || pk4.RibbonG3CuteMaster ||
+            pk4.RibbonG3Smart || pk4.RibbonG3SmartSuper || pk4.RibbonG3SmartHyper || pk4.RibbonG3SmartMaster || pk4.RibbonG3Tough || pk4.RibbonG3ToughSuper || pk4.RibbonG3ToughHyper ||
+            pk4.RibbonG3ToughMaster || pk4.RibbonG4Cool || pk4.RibbonG4CoolGreat || pk4.RibbonG4CoolUltra || pk4.RibbonG4CoolMaster || pk4.RibbonG4Beauty || pk4.RibbonG4BeautyGreat ||
+            pk4.RibbonG4BeautyUltra || pk4.RibbonG4BeautyMaster || pk4.RibbonG4Cute || pk4.RibbonG4CuteGreat || pk4.RibbonG4CuteUltra || pk4.RibbonG4CuteMaster || pk4.RibbonG4Smart ||
+            pk4.RibbonG4SmartGreat || pk4.RibbonG4SmartUltra || pk4.RibbonG4SmartMaster || pk4.RibbonG4Tough || pk4.RibbonG4ToughGreat || pk4.RibbonG4ToughUltra || pk4.RibbonG4ToughMaster
+            || pk4.RibbonWinning || pk4.RibbonVictory || pk4.RibbonAbility || pk4.RibbonAbilityGreat || pk4.RibbonAbilityDouble || pk4.RibbonAbilityMulti || pk4.RibbonAbilityPair ||
+            pk4.RibbonAbilityWorld || pk4.RibbonArtist || pk4.RibbonEffort || pk4.RibbonAlert || pk4.RibbonShock || pk4.RibbonDowncast || pk4.RibbonCareless || pk4.RibbonRelax || pk4.RibbonSnooze
+            || pk4.RibbonSmile || pk4.RibbonGorgeous || pk4.RibbonRoyal || pk4.RibbonGorgeousRoyal || pk4.RibbonFootprint || pk4.RibbonRecord || pk4.RibbonCountry || pk4.RibbonNational ||
+            pk4.RibbonEarth || pk4.RibbonWorld || pk4.RibbonClassic;
+        });
     }
 
     public void Generate_battle()

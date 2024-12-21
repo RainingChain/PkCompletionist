@@ -110,7 +110,7 @@ class SAV3_PmdRescueTeam : SAV_Dummy
         this.bitBlock_SlowCopy = bits;
     }
 
-    public static uint Calculate32BitChecksum(BitBlock bits, int startIndex, int endIndex)
+    private static uint Calculate32BitChecksum(BitBlock bits, int startIndex, int endIndex)
     {
         ulong sum = 0;
         for (int i = startIndex; i <= endIndex; i += 4)
