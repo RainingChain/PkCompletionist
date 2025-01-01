@@ -139,7 +139,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         ow["UnownY"] = HasUnownForm(24);
         ow["UnownZ"] = HasUnownForm(25);
 
-        ow["GetShinyPokemon"] = sav.GetAllPKM().FirstOrDefault(pkm => pkm.IsShiny) != null;
+        ow["GetShinyPokemon"] = HasShinyMon();
     }
 
     public void Generate_misc()
@@ -159,17 +159,6 @@ internal class CompletionValidator2 : CompletionValidatorX
         if (!sav.GetEventFlag(0x0762) && sav.GetEventFlag(0x0044)) // if red not in mt silver and elite four defeated
             ow["DefeatRed"] = true;
 
-        var pkms = sav.GetAllPKM();
-        var GetInfectedbyPokerus = () =>
-        {
-            return pkms.FirstOrDefault(pkm =>
-            {
-                var pk2 = (PK2)pkm;
-                if (pk2 == null)
-                    return false;
-                return pk2.PKRS_Infected || pk2.PKRS_Cured || pk2.PKRS_Days > 0 || pk2.PKRS_Strain > 0;
-            }) != null;
-        };
         ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
     }
 
@@ -461,7 +450,7 @@ internal class CompletionValidator2 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["itemGift"] = ow;
 
-        var list = new List<int> { 10, 101, 103, 105, 107, 109, 11, 111, 112, 113, 114, 115, 116, 117, 12, 122, 124, 13, 1395, 14, 15, 16, 17, 18, 19, 20, 200, 206, 209, 21, 210, 212, 216, 218, 219, 220, 221, 222, 223, 224, 226, 227, 23, 24, 25, 256, 257, 258, 259, 260, 35, 36, 39, 53, 613, 614, 615, 616, 617, 62, 71, 72, 75, 77, 78, 8, 800, 801, 802, 803, 804, 82, 83, 86, 87, 88, 89, 9, 90, 91, 92, 93, 94, 95, 99 };
+        var list = new List<int> { 10, 101, 103, 105, 107, 109, 11, 111, 112, 113, 114, 115, 116, 117, 12, 122, 124, 13, 14, 15, 200, 206, 212, 216, 218, 219, 220, 221, 222, 223, 224, 226, 227, 23, 24, 25, 256, 257, 258, 259, 260, 39, 53, 613, 614, 615, 616, 617, 62, 71, 72, 75, 77, 78, 8, 800, 801, 802, 803, 804, 82, 83, 86, 87, 88, 89, 9, 93, 94, 95, 99 };
         var untrackable = new HashSet<int> { 101, 103, 105, 107, 109, 111, 99 };
         foreach (var evtIdx in list)
         {

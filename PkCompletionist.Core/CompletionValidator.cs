@@ -48,6 +48,9 @@ partial class CompletionValidator : Command
         if (savA is SAV3_PmdRescueTeam)
             return new CompletionValidator3_PmdRescueTeam(this, (savA as SAV3_PmdRescueTeam)!, objective);
 
+        if (savA is SAV4_PmdSky)
+            return new CompletionValidator4_PmdSky(this, (savA as SAV4_PmdSky)!, objective);
+
         return new CompletionValidatorX(this, savA, objective);
     }
 

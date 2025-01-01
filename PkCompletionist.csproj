@@ -36,4 +36,8 @@
 		<None Remove="index.html" />
 		<Content Include="index.html" />
     </ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="PkCompletionist.Core\Gen4b\" />
+	</ItemGroup>
 </Project>

@@ -43,6 +43,10 @@ partial class Command
         if (pmdRescueTeam != null)
             return pmdRescueTeam;
 
+        var pmdSky = SAV4_PmdSky.NewIfValid(data, VersionHint);
+        if (pmdSky != null)
+            return pmdSky;
+
         return SaveUtil.GetVariantSAV(data);
     }
 

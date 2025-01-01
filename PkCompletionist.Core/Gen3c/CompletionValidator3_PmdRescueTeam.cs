@@ -6,6 +6,7 @@ using System.Buffers.Binary;
 using System.Reflection.Emit;
 using System.IO;
 using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace PkCompletionist.Core;
 
