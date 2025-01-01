@@ -53,6 +53,18 @@ partial class CompletionValidatorX
         Generate_item();
     }
 
+    public bool GetInfectedbyPokerus()
+    {
+        var pkms = sav.GetAllPKM();
+        return pkms.FirstOrDefault(pkm =>
+        {
+            var pk2 = (PK2)pkm;
+            if (pk2 == null)
+                return false;
+            return pk2.PKRS_Infected || pk2.PKRS_Cured || pk2.PKRS_Days > 0 || pk2.PKRS_Strain > 0;
+        }) != null;
+    }
+
     public virtual void Generate_pokemon()
     {
         var ow = new Dictionary<string, bool>();

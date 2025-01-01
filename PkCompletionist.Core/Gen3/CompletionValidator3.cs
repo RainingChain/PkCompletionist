@@ -747,6 +747,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0x8000;
         ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0x8000;
+        ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
     }
 
     public void Generate_itemInMap()

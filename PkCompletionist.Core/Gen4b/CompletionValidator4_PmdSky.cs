@@ -34,9 +34,22 @@ internal class CompletionValidator4_PmdSky : CompletionValidatorX
         this.sav = sav;
         this.ownedMonList = sav.GetStoredPokemon(0);
         this.ownedItemList = sav.GetOwnedItems(0);
+
+        this.unobtainableItems = new List<int> { 11, 12, 98, 113, 114, 138, 166, 175, 176, 177, 181, 184, 185, 194, 198, 205, 219, 224, 226, 236, 258, 259, 293, 294, 295, 296, 
+            297, 298, 299, 300, 324, 339, 345, 349, 353, 360, 361, 363, 769, 825, 1352, 1353, 1354, 1355, 1356, 1357, 1358, 1359, 1360, 1361, 1362, 1363, 1364, 1365, 1366, 1367,
+            1368, 1369, 1370, 1371, 1372, 1373, 1374, 1375, 1376, 1377, 1378, 1379, 1380, 1381, 1382, 1383, 1384, 1385, 1386, 1387, 1388, 1389, 1390, 1391, 1392, 1393, 1394,
+            1395, 1396, 1397, 1398, 1399, };
+
+        foreach(var box in boxList)
+        {
+            this.unobtainableItems.Add(box + 1);
+            this.unobtainableItems.Add(box + 2);
+        }
+
     }
     new SAV4_PmdSky sav;
 
+    private List<int> boxList = new List<int> { 364, 367,370,373,376,379,382,385,388,391,394,397 };
     private List<int> ownedMonList = new();
     private List<int> ownedItemList = new();
 
@@ -118,8 +131,15 @@ internal class CompletionValidator4_PmdSky : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["item"] = ow;
 
-        for(var i = 1; i <= 1399; i++)
-            ow[i.ToString()] = this.ownedItemList.Contains(i);
+        for (var i = 1; i <= 1399; i++)
+        {
+            if (this.unobtainableItems.Contains(i))
+                continue;
+            if (this.boxList.Contains(i))
+                ow[i.ToString()] = this.ownedItemList.Contains(i) || this.ownedItemList.Contains(i + 1) || this.ownedItemList.Contains(i + 2);
+            else
+                ow[i.ToString()] = this.ownedItemList.Contains(i);
+        }
     }
 
     public bool HasCompletedMarowakDojo(MarowakDojo dojo)

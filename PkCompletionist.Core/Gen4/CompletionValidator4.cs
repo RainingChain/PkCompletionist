@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using static System.Buffers.Binary.BinaryPrimitives;
 using static System.Formats.Asn1.AsnWriter;
@@ -19,9 +20,18 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         this.sav = sav;
 
-        this.unobtainableItems = new List<int>() { };
+        this.unobtainableItems = new List<int>() {16,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,147,429,430,432,436,441,455,456,457,458,463,468,469,470,471,472,473,474,475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,501,502,503,504,532,533,534,535,536 };
+
+
+        var GotNationalDex = () =>
+        {
+            var list = new List<ushort> { 108, 111, 112, 113, 114, 118, 119, 122, 123, 125, 126, 129, 130, 133, 134, 135, 136, 137, 143, 163, 164, 169, 172, 173, 175, 176, 183, 184, 185, 190, 193, 194, 195, 196, 197, 198, 200, 201, 203, 207, 208, 212, 214, 215, 220, 221, 223, 224, 226, 228, 229, 233, 239, 240, 242, 25, 26, 265, 266, 267, 268, 269, 278, 279, 280, 281, 282, 298, 299, 307, 308, 315, 333, 334, 339, 340, 349, 35, 350, 355, 356, 357, 358, 359, 36, 361, 362, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 41, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 42, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 487, 490, 54, 55, 63, 64, 65, 66, 67, 68, 72, 73, 74, 75, 76, 77, 78, 81, 82, 92, 93, 94, 95 };
+            return list.All(i => sav.Dex.GetSeen(i));
+        };
+        this.GotNationalDex = GotNationalDex();
 
     }
+    bool GotNationalDex = false;
 
     new SAV4Pt sav;
 
@@ -163,20 +173,38 @@ internal class CompletionValidator4 : CompletionValidatorX
 
         var ow = this.owned["item"];
 
-        //TODO: add exception if not living
-        /*
-         * 
-        impossible to keep:
-        Yes	5	Safari Ball		Great Marsh
-        Yes	439	Old Charm		Route 210 (from Cynthia after curing the Psyduck)
-        Yes	451	Suite Key		Route 213 (immediately northwest of the northern reception entrance of Hotel Grand Lake)
-        Yes	453	Lunar Wing		Fullmoon Island (left behind by Cresselia when it leaves)
-        Yes	459	Parcel		Twinleaf Town (from Barry's mother after returning from Sandgem Town)
-        Yes	460	Coupon 1		Jubilife City
-        Yes	461	Coupon 2		Jubilife City
-        Yes	462	Coupon 3		Jubilife City
-        Yes	500	Park Ball		Pal Park
-        */
+        if (HasPkmWithTID(46 /*Paras*/) || HasPkmWithTID(47 /*Parasect*/) || HasPkmWithTID(102 /*Exeggcute*/) || HasPkmWithTID(103 /*Exeggutor*/))
+            ow["5"] = true; // Safari Ball
+
+        if (EnteredHallOfFame())
+            ow["439"] = true; // Old Charm
+
+        ow["451"] = sav.GetEventFlag(946); // Suite Key
+        ow["453"] = sav.GetEventFlag(1106); // Lunar Wing
+
+        if (sav.Badges > 0)
+        {
+            ow["459"] = true; // Parcel
+            ow["460"] = true; // Coupon 1
+            ow["461"] = true; // Coupon 2
+            ow["462"] = true; // Coupon 3
+        }
+        ow["500"] = sav.GetWork(224) > 0; // Pal Park = Catching show score > 0
+
+        if (this.objective != 0)
+            return;
+
+        if (EnteredHallOfFame())
+            ow["1"] = true; // Master Ball
+
+        if (sav.GetEventFlag(775) || sav.GetEventFlag(1158) || sav.GetEventFlag(1240))
+            ow["107"] = true; // Shiny Stone
+
+        if (sav.GetEventFlag(1108))
+            ow["354"] = true; // TM27 Return
+
+        if (sav.GetEventFlag(198))
+            ow["404"] = true; // TM77 Psych Up 
     }
 
     public void Generate_itemInMap()
@@ -243,12 +271,12 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["Calculator"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Calculator);
         ow["MemoPad"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Memo_Pad);
         ow["Pedometer"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Pedometer);
-        ow["Party"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Party);
+        ow["PokemonList"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Party);
         ow["FriendshipChecker"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Friendship_Checker);
         ow["DowsingMachine"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Dowsing_Machine);
         ow["BerrySearcher"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Berry_Searcher);
-        ow["Daycare"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Daycare);
-        ow["History"] = this.sav.GetPoketchAppUnlocked(PoketchApp.History);
+        ow["DayCareChecker"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Daycare);
+        ow["PokemonHistory"] = this.sav.GetPoketchAppUnlocked(PoketchApp.History);
         ow["Counter"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Counter);
         ow["AnalogWatch"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Analog_Watch);
         ow["MarkingMap"] = this.sav.GetPoketchAppUnlocked(PoketchApp.Marking_Map);
@@ -489,7 +517,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["TogepiEgg"] = sav.GetWork(0x007A) >= 5;
         ow["Eevee"] = sav.GetEventFlag(305);
         ow["Porygon"] = sav.GetEventFlag(151);
-        ow["RioluEgg"] = sav.GetEventFlag(0x220);
+        ow["RioluEgg"] = HasPkmWithTID(447) || HasPkmWithTID(448); //bad
     }
     public bool HasAccessory(Accessory accessory)
     {
@@ -952,17 +980,22 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["WorldRibbon"] = HasRibbon(pk4 => pk4.RibbonWorld);
         ow["ClassicRibbon"] = HasRibbon(pk4 => pk4.RibbonClassic);
     }
+    public bool EnteredHallOfFame()
+    {
+        return sav.GetEventFlag(2404);
+    }
+
 
     public void Generate_trainerStar()
     {
         var ow = new Dictionary<string, bool>();
         owned["trainerStar"] = ow;
 
-        ow["HallofFame"] = sav.GetEventFlag(2404);
+        ow["HallofFame"] = EnteredHallOfFame();
+        ow["NationalPokedex"] = GotNationalDex;
         ow["PokemonContest"] = sav.GetEventFlag(2408) && sav.GetEventFlag(2409) && sav.GetEventFlag(2410) && sav.GetEventFlag(2411) && sav.GetEventFlag(2412);
         ow["Underground"] = sav.UG_Flags >= 50;
         ow["BattleTower"] = IsBattleFrontierPrintObtained(0, 2);
-
     }
 
     public bool GetThoughWordUnlocked(ThoughWord word)
@@ -1008,13 +1041,10 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["ToughWordsUbiquitous"] = GetThoughWordUnlocked(ThoughWord.Ubiquitous);
         ow["ToughWordsVector"] = GetThoughWordUnlocked(ThoughWord.Vector);
 
-        var HasSeenMonList = () =>
+        var HasSeenAllCatchableNoTrade = () =>
         {
             var list = new List<ushort> { 16, 17, 18, 19, 20, 21, 22, 25, 26, 29, 30, 31, 32, 33, 34, 35, 36, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 60, 61, 62, 63, 64, 66, 67, 69, 70, 71, 72, 73, 74, 75, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 201, 202, 203, 206, 207, 208, 209, 210, 211, 214, 215, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 231, 232, 234, 235, 236, 237, 238, 239, 240, 241, 242, 246, 247, 248, 261, 262, 263, 264, 265, 266, 267, 268, 269, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 331, 332, 333, 334, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 369, 370, 371, 372, 373, 374, 375, 376, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 433, 436, 437, 438, 439, 440, 441, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 465, 468, 469, 470, 471, 472, 473, 475, 476, 478, 479, 480, 481, 482, 483, 484, 485, 487, 488 };
-            foreach (var mon in list)
-                if (!this.sav.Dex.GetSeen(mon))
-                    return false;
-            return true;
+            return list.All(mon => this.sav.Dex.GetSeen(mon));
         };
 
         var HasSeenMon = (ushort mon) =>
@@ -1030,7 +1060,7 @@ internal class CompletionValidator4 : CompletionValidatorX
             return true;
         };
 
-        ow["PokemonAllCatchableNoTrade"] = HasSeenMonList();
+        ow["PokemonAllCatchableNoTrade"] = HasSeenAllCatchableNoTrade();
         ow["PokemonButterfree"] = HasSeenMon(12);
         ow["PokemonArbok"] = HasSeenMon(24);
         ow["PokemonSandslash"] = HasSeenMon(28);
@@ -1062,7 +1092,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["PokemonLunatone"] = HasSeenMon(337);
         ow["PokemonSolrock"] = HasSeenMon(338);
         ow["PokemonOthers"] = HasSeenMonAll();
-        ow["Move"] = sav.GetEventFlag(0x08B5); // DefeatEliteFourAfterNationalDex
+        ow["Moves"] = GotNationalDex;
     }
 
     public void Generate_geonet()
@@ -1090,7 +1120,7 @@ internal class CompletionValidator4 : CompletionValidatorX
 
         ow["PokemonDefeated"] = true;
         ow["PokemonCaught"] = true;
-        ow["PokemonEggs"] = sav.GetEventFlag(2404); // HallOfFame, kinda bad
+        ow["PokemonEggs"] = EnteredHallOfFame(); // kinda bad
         ow["EncounteredwhileFishing"] = true;
 
         ow["SingleBattles"] = sav.General[0x68e0] > 0;
@@ -1128,14 +1158,31 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["battle"] = ow;
-        Geonet4 geonet = new(sav);
 
         for (var i = 1; i < 928; i++)
             ow[i.ToString()] = sav.GetEventFlag(0x550 + i);
 
-        var list = new List<int> { 208, 209, 288, 291, 329, 344, 479, 480, 481, 579, 591, 592 };
+        if (EnteredHallOfFame())
+        {
+            ow["261"] = true; // Aaron Elite Four
+            ow["262"] = true; // Bertha (Elite Four)
+            ow["263"] = true; // Flint (Elite Four)
+            ow["264"] = true; // Lucian (Elite Four)
+            ow["267"] = true; // Cynthia (Champion)
+        }
+        if (GotNationalDex)
+        {
+            ow["866"] = true; // Aaron Elite Four
+            ow["867"] = true; // Bertha (Elite Four)
+            ow["868"] = true; // Flint (Elite Four)
+            ow["869"] = true; // Lucian (Elite Four)
+            ow["870"] = true; // Cynthia (Champion)            
+        }
 
-        foreach (var id in list)
+
+        var monList = new List<int> { 208, 209, 288, 291, 329, 344, 479, 480, 481, 579, 591, 592 };
+
+        foreach (var id in monList)
             ow["p" + id.ToString()] = sav.GetEventFlag(id);
     }
 
@@ -1143,13 +1190,13 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
-
         ow["RegisteredaGeonetlocation"] = sav.GeonetGlobalFlag;
-        ow["DefeatEliteFourAfterNationalDex"] = sav.GetEventFlag(0x08B5); // TR_CHAMPION_02
-        ow["DefeatRivalLevel85Rematch"] = sav.GetEventFlag(0x08EA) || sav.GetEventFlag(0x08EB) || sav.GetEventFlag(0x08EC); // TR_RIVAL_31-33
-        ow["3500ScoreinCatchingShow"] = sav.GetWork(0224) >= 3500;
+        ow["DefeatEliteFourAfterNationalDex"] = GotNationalDex; //bad...
+        // ow["DefeatRivalLevel85Rematch"] = false; //untrackable 
+        ow["3500ScoreinCatchingShow"] = sav.GetWork(224) >= 3500;
         ow["UnlockPokedexForeignEntries"] = sav.GetAllPKM().Any(pk => pk.Language != this.sav.Language);
-        ow["UnlockMysteryGift"] = (sav.General[72] & 1) == 1;
         ow["SignyourTrainerCard"] = sav.General[0x61A7] != 0; // not really accurate
+        ow["UnlockMysteryGift"] = (sav.General[72] & 1) == 1;
+        ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
     }
 }

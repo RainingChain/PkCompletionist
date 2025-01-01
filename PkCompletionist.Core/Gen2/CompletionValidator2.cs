@@ -159,17 +159,6 @@ internal class CompletionValidator2 : CompletionValidatorX
         if (!sav.GetEventFlag(0x0762) && sav.GetEventFlag(0x0044)) // if red not in mt silver and elite four defeated
             ow["DefeatRed"] = true;
 
-        var pkms = sav.GetAllPKM();
-        var GetInfectedbyPokerus = () =>
-        {
-            return pkms.FirstOrDefault(pkm =>
-            {
-                var pk2 = (PK2)pkm;
-                if (pk2 == null)
-                    return false;
-                return pk2.PKRS_Infected || pk2.PKRS_Cured || pk2.PKRS_Days > 0 || pk2.PKRS_Strain > 0;
-            }) != null;
-        };
         ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
     }
 
