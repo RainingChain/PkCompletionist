@@ -324,13 +324,9 @@ internal class CompletionValidator1 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["itemGift"] = ow;
 
-        var list = new List<int> { 24, 36, 41, 80, 105, 118, 190, 192, 296, 337, 358, 384, 396, 397, 398, 399, 424, 442, 443, 444, 480, 568, 600, 664, 727, 832, 864, 944, 960, 984, 1151, 1152, 1200, 1230, 1344, 1372, 1504, 1791, 1933, 2176 };
+        var list = new List<int> { 36, 442, 443, 444, 960, 1344 };
         foreach (var evtIdx in list)
             ow[evtIdx.ToString()] = sav.GetEventFlag(evtIdx);
-
-        ow["OldRod"] = HasItem(76);
-        ow["GoodRod"] = HasItem(77);
-        ow["SuperRod"] = HasItem(78);
     }
     public void Generate_itemInMap()
     {

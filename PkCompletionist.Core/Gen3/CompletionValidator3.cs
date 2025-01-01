@@ -101,6 +101,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["CastformFire"] = HasPkm(351);
         ow["CastformWater"] = HasPkm(351);
         ow["CastformIce"] = HasPkm(351);
+        ow["GetShinyPokemon"] = HasShinyMon();
     }
 
     public override void Generate_item()

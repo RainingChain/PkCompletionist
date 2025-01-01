@@ -23,15 +23,15 @@ internal class CompletionValidator4 : CompletionValidatorX
         this.unobtainableItems = new List<int>() {16,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,147,429,430,432,436,441,455,456,457,458,463,468,469,470,471,472,473,474,475,476,477,478,479,480,481,482,483,484,485,486,487,488,489,490,491,492,493,494,495,496,497,498,499,501,502,503,504,532,533,534,535,536 };
 
 
-        var GotNationalDex = () =>
+        var UnlockedNationalDex = () =>
         {
             var list = new List<ushort> { 108, 111, 112, 113, 114, 118, 119, 122, 123, 125, 126, 129, 130, 133, 134, 135, 136, 137, 143, 163, 164, 169, 172, 173, 175, 176, 183, 184, 185, 190, 193, 194, 195, 196, 197, 198, 200, 201, 203, 207, 208, 212, 214, 215, 220, 221, 223, 224, 226, 228, 229, 233, 239, 240, 242, 25, 26, 265, 266, 267, 268, 269, 278, 279, 280, 281, 282, 298, 299, 307, 308, 315, 333, 334, 339, 340, 349, 35, 350, 355, 356, 357, 358, 359, 36, 361, 362, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 41, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 42, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 487, 490, 54, 55, 63, 64, 65, 66, 67, 68, 72, 73, 74, 75, 76, 77, 78, 81, 82, 92, 93, 94, 95 };
             return list.All(i => sav.Dex.GetSeen(i));
         };
-        this.GotNationalDex = GotNationalDex();
+        this.UnlockedNationalDex = UnlockedNationalDex();
 
     }
-    bool GotNationalDex = false;
+    bool UnlockedNationalDex = false;
 
     new SAV4Pt sav;
 
@@ -132,6 +132,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["GiratinaOrigin"] = HasPkmForm2(488, 1);
         ow["ShayminLand"] = HasPkmForm2(492, 0);
         ow["ShayminSky"] = HasPkmForm2(492, 1);
+        ow["GetShinyPokemon"] = HasShinyMon();
 
         ow["AllMaleFemaleForms"] = new Func<bool>(() =>
         {
@@ -992,7 +993,19 @@ internal class CompletionValidator4 : CompletionValidatorX
         owned["trainerStar"] = ow;
 
         ow["HallofFame"] = EnteredHallOfFame();
-        ow["NationalPokedex"] = GotNationalDex;
+
+        var NationalPokedex = () =>
+        {
+            for(ushort i = 0; i <= 493; i++)
+            {
+                if (i == 151 || i == 249 || i == 250 || i == 251 || i == 385 || i == 386 || i == 489 || i == 490 || i == 491 || i == 492 || i == 493)
+                    continue;
+                if (!sav.Dex.GetSeen(i))
+                    return false;
+            }
+            return true;
+        };
+        ow["NationalPokedex"] = NationalPokedex();
         ow["PokemonContest"] = sav.GetEventFlag(2408) && sav.GetEventFlag(2409) && sav.GetEventFlag(2410) && sav.GetEventFlag(2411) && sav.GetEventFlag(2412);
         ow["Underground"] = sav.UG_Flags >= 50;
         ow["BattleTower"] = IsBattleFrontierPrintObtained(0, 2);
@@ -1092,7 +1105,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["PokemonLunatone"] = HasSeenMon(337);
         ow["PokemonSolrock"] = HasSeenMon(338);
         ow["PokemonOthers"] = HasSeenMonAll();
-        ow["Moves"] = GotNationalDex;
+        ow["Moves"] = UnlockedNationalDex;
     }
 
     public void Generate_geonet()
@@ -1170,7 +1183,7 @@ internal class CompletionValidator4 : CompletionValidatorX
             ow["264"] = true; // Lucian (Elite Four)
             ow["267"] = true; // Cynthia (Champion)
         }
-        if (GotNationalDex)
+        if (UnlockedNationalDex)
         {
             ow["866"] = true; // Aaron Elite Four
             ow["867"] = true; // Bertha (Elite Four)
@@ -1191,7 +1204,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
         ow["RegisteredaGeonetlocation"] = sav.GeonetGlobalFlag;
-        ow["DefeatEliteFourAfterNationalDex"] = GotNationalDex; //bad...
+        ow["DefeatEliteFourAfterNationalDex"] = UnlockedNationalDex; //bad...
         // ow["DefeatRivalLevel85Rematch"] = false; //untrackable 
         ow["3500ScoreinCatchingShow"] = sav.GetWork(224) >= 3500;
         ow["UnlockPokedexForeignEntries"] = sav.GetAllPKM().Any(pk => pk.Language != this.sav.Language);

@@ -8,7 +8,7 @@
     "Profile 2": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum - most recent.sav\""
+      "commandLineArgs": "validate \"C:\\rc\\rainingchain\\src\\pokemonCompletion\\data\\tmp\\Pokemon Platinum.sav\""
     }
   }
 }
