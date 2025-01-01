@@ -4,7 +4,6 @@
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
 Info.txt
-publish.cmd
 
 # User-specific files
 *.rsuser

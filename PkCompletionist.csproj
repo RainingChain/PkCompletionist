@@ -2,7 +2,7 @@
 
 <Choose>
 	<!-- Change to Condition="'1' == '0' to generate a regular .exe instead of wasm"-->
-	<When Condition="'1' == '0'">
+	<When Condition="'1' == '1'">
 		<PropertyGroup>
 			<OutputType>Exe</OutputType>
 			<TargetFramework>net7.0</TargetFramework>
@@ -36,4 +36,8 @@
 		<None Remove="index.html" />
 		<Content Include="index.html" />
     </ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="PkCompletionist.Core\Gen4b\" />
+	</ItemGroup>
 </Project>

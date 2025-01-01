@@ -46,7 +46,10 @@ internal class CompletionValidator3 : CompletionValidatorX
     {
         base.GenerateAll();
     
+    
         Generate_pokemonForm();
+        Generate_itemInMap();
+        Generate_itemGift();
         Generate_itemInMap();
         Generate_itemGift();
         Generate_decoration();
@@ -56,8 +59,8 @@ internal class CompletionValidator3 : CompletionValidatorX
         Generate_ribbon();
         Generate_phone();
         Generate_battle();
+        Generate_battle();
         Generate_trainerStar();
-        Generate_eReaderBattles();
         Generate_pokeblock();
         Generate_easyChatSystemWord();
         Generate_gameStat();
@@ -102,6 +105,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["CastformFire"] = HasPkm(351);
         ow["CastformWater"] = HasPkm(351);
         ow["CastformIce"] = HasPkm(351);
+        ow["GetShinyPokemon"] = HasShinyMon();
     }
 
     public override void Generate_item()
@@ -376,7 +380,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         ow["Castform"] = sav.GetEventFlag(0x0097);
         ow["Beldum"] = sav.GetEventFlag(0x012A);
-        ow["ChikoritaorCyndaquilorTotodile"] = sav.GetEventFlag(2148) && (sav.GetEventFlag(0x0346) || sav.GetEventFlag(0x032C) || sav.GetEventFlag(0x032B)); //HallOfFame && (picked Chiko or Cynd or Toto)
+        ow["ChikoritaorCyndaquilorTotodile"] = sav.GetEventFlag(2148) && sav.GetWork(0xD3) >= 6; ; //HallOfFame && (picked starter)
     }
     public void Generate_battleFrontier()
     {
@@ -598,14 +602,6 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["BattleTower"] = sav.GetEventFlag(0x01D2);
     }
 
-    
-    public void Generate_eReaderBattles()
-    {
-        var ow = new Dictionary<string, bool>();
-        owned["eReaderBattles"] = ow;
-
-        // None for US version
-    }
     public bool HasPokeblock(PokeBlock3Color color)
     {
         return sav.PokeBlocks.Blocks.Any(b => b.Color == color);
@@ -756,6 +752,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0x8000;
         ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0x8000;
+        ow["GetInfectedbyPokerus"] = GetInfectedbyPokerus();
     }
 
     public void Generate_itemInMap()

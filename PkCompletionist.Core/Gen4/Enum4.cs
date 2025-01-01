@@ -109,7 +109,7 @@ public enum Accessory
     BlueBalloons,
     YellowBalloon,
     GreenBalloons,
-    LaceHeadress,
+    LaceHeaddress,
     TopHat,
     SilkVeil,
     HeroicHeadband,

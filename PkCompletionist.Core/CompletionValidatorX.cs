@@ -53,13 +53,27 @@ partial class CompletionValidatorX
         Generate_item();
     }
 
+    public bool GetInfectedbyPokerus()
+    {
+        var pkms = sav.GetAllPKM();
+        return pkms.FirstOrDefault(pkm =>
+        {
+            return pkm.PKRS_Infected || pkm.PKRS_Cured || pkm.PKRS_Days > 0 || pkm.PKRS_Strain > 0;
+        }) != null;
+    }
+
+    public bool HasShinyMon()
+    {
+        return sav.GetAllPKM().FirstOrDefault(pkm => pkm.IsShiny) != null;
+    }
+
     public virtual void Generate_pokemon()
     {
         var ow = new Dictionary<string, bool>();
         owned["pokemon"] = ow;
 
         for (ushort i = 1; i <= sav.MaxSpeciesID; i++)
-            ow[i.ToString()] = this.objective != 0 ? HasPkm(i) : sav.GetCaught(i);
+            ow[i.ToString()] = HasOrSeenPkmBasedOnObjective(i);
     }
 
     public virtual void Generate_item()
@@ -86,6 +100,12 @@ partial class CompletionValidatorX
                 return false;
             return pkm.Form == form;
         }) != null;
+    }
+
+
+    public bool HasOrSeenPkmBasedOnObjective(ushort speciesId)
+    {
+        return this.objective != 0 ? HasPkm(speciesId) : sav.GetCaught(speciesId);
     }
 
     public bool HasPkm(ushort speciesId)
