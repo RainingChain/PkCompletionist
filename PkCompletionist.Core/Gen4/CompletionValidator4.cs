@@ -227,7 +227,7 @@ internal class CompletionValidator4 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["itemGift"] = ow;
-        var list = new List<int> { 108, 116, 117, 124, 125, 131, 140, 146, 152, 156, 157, 158, 160, 161, 182, 193, 194, 197, 198, 199, 201, 202, 203, 204, 205, 206, 213, 217, 218, 261, 265, 266,
+        var list = new List<int> { 108, 116, 117, 124, 125, 131, 140, 146, 156, 157, 158, 160, 161, 182, 191, 193, 194, 197, 198, 199, 201, 202, 203, 204, 205, 206, 213, 217, 218, 222, 261, 265, 266,
     267, 278, 281, 284, 285, 302, 303, 308, 309, 310, 312, 313, 314, 315, 319, 320, 321, 322, 323, 324, 352, 2721, };
 
         foreach (var id in list)
@@ -593,7 +593,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["BlueBalloons"] = HasAccessory(Accessory.BlueBalloons);
         ow["YellowBalloon"] = HasAccessory(Accessory.YellowBalloon);
         ow["GreenBalloons"] = HasAccessory(Accessory.GreenBalloons);
-        ow["LaceHeadress"] = HasAccessory(Accessory.LaceHeadress);
+        ow["LaceHeaddress"] = HasAccessory(Accessory.LaceHeaddress);
         ow["TopHat"] = HasAccessory(Accessory.TopHat);
         ow["SilkVeil"] = HasAccessory(Accessory.SilkVeil);
         ow["HeroicHeadband"] = HasAccessory(Accessory.HeroicHeadband);
