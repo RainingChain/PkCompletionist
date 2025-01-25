@@ -107,6 +107,7 @@ internal class Program
             LastCommandPrintMsgs();
         }
 
+        //validate input.sav --living
         if (args[0] == "validate")
         {
             if (!ValidateArgLength(args, 2))
@@ -139,6 +140,7 @@ internal class Program
             return;
         }
 
+        //sortPkms input.sav output.sav
         if (args[0] == "sortPkms")
         {
             if (!ValidateArgLength(args, 3))
@@ -179,7 +181,7 @@ internal class Program
             LastCommandPrintMsgs();
         }
 
-
+        //event EVT input.sav output.sav inputB.sav outputB.sav
         if (args[0] == "event")
         {
             if (!ValidateArgLength(args, 3))
@@ -190,7 +192,7 @@ internal class Program
                 return;
 
             byte[]? savBData = null;
-            if (args.Length  >= 6)
+            if (args.Length >= 6)
                 savBData = TryReadAllBytes(args[4]);
 
             if (EventSimulator.Execute(args[1], savData, versionHint, savBData))

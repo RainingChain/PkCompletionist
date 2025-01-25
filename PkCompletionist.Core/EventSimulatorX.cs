@@ -30,6 +30,7 @@ partial class EventSimulatorX
     {
         return SavUtils.AddItem(this.sav, item, OnlyIfNotOwned);
     }
+
     public T? ParseEvtName<T>(string evtName) where T : struct
     {
         if (!System.Enum.TryParse<T>(evtName, out var evt))

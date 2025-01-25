@@ -17,7 +17,7 @@ partial class CompletionValidator : Command
         if (savA == null)
             return false;
 
-        var validatorX =  validator.CreateValidatorX(savA, (Objective)objective);
+        var validatorX = validator.CreateValidatorX(savA, (Objective)objective);
         CompletionValidator.LastValidatorX = validatorX;
 
         validatorX.GenerateAll();
@@ -82,4 +82,13 @@ partial class CompletionValidator : Command
         }
         return Res;
     }
+
+    [JSExport]
+    static public string[] GetLastCompletionHints()
+    {
+        if (LastValidatorX == null)
+            return System.Array.Empty<string>();
+        return LastValidatorX.incompleteHints.ToArray();
+    }
+
 }

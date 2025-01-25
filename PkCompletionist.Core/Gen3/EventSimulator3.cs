@@ -60,20 +60,8 @@ internal class EventSimulator3 : EventSimulatorX
         }
 
         if (evt == PK_EVENT3.AuroraTicket)
-        {
-            var FLAG_RECEIVED_AURORA_TICKET = 0x13A;
-            var FLAG_BATTLED_DEOXYS = 0x1AD;
-            var FLAG_ENABLE_SHIP_BIRTH_ISLAND = SYSTEM_FLAGS + 0x75;
-
-            if (sav.GetEventFlag(FLAG_RECEIVED_AURORA_TICKET) 
-                 || sav.GetEventFlag(FLAG_BATTLED_DEOXYS))
-                return "You already obtained AuroraTicket.";
-
-            sav.SetEventFlag(FLAG_ENABLE_SHIP_BIRTH_ISLAND, true);
-            sav.SetEventFlag(FLAG_RECEIVED_AURORA_TICKET, true);
-
-            return AddItem(371);
-        }
+            return AuroraTicketEvent(this.sav);
+        
 
         if (evt == PK_EVENT3.OldSeaMap)
         {
@@ -108,6 +96,23 @@ internal class EventSimulator3 : EventSimulatorX
             return AddPkm("Deoxys.pk3");
         
         return "Invalid event name.";
+    }
+
+    public static string? AuroraTicketEvent(SAV3E sav)
+    {
+        var SYSTEM_FLAGS = 0x860;
+        var FLAG_RECEIVED_AURORA_TICKET = 0x13A;
+        var FLAG_BATTLED_DEOXYS = 0x1AD;
+        var FLAG_ENABLE_SHIP_BIRTH_ISLAND = SYSTEM_FLAGS + 0x75;
+
+        if (sav.GetEventFlag(FLAG_RECEIVED_AURORA_TICKET)
+             || sav.GetEventFlag(FLAG_BATTLED_DEOXYS))
+            return "You already obtained AuroraTicket.";
+
+        sav.SetEventFlag(FLAG_ENABLE_SHIP_BIRTH_ISLAND, true);
+        sav.SetEventFlag(FLAG_RECEIVED_AURORA_TICKET, true);
+
+        return SavUtils.AddItem(sav, 371, true /*OnlyIfNotOwned*/);
     }
 
     public static string? PokemonFestaRibbons(SAV3 sav)

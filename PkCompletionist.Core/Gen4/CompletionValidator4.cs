@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Security.Cryptography;
 using static System.Buffers.Binary.BinaryPrimitives;
 using static System.Formats.Asn1.AsnWriter;
 
@@ -34,6 +35,12 @@ internal class CompletionValidator4 : CompletionValidatorX
     bool UnlockedNationalDex = false;
 
     new SAV4Pt sav;
+    static public int NumberOfSetBits(int i)
+    {
+        i = i - ((i >> 1) & 0x55555555);
+        i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+        return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+    }
 
     public override void GenerateAll()
     {
@@ -72,100 +79,144 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["pokemonForm"] = ow;
 
-        ow["UnownA"] = HasPkmForm2(201, 0);
-        ow["UnownB"] = HasPkmForm2(201, 1);
-        ow["UnownC"] = HasPkmForm2(201, 2);
-        ow["UnownD"] = HasPkmForm2(201, 3);
-        ow["UnownE"] = HasPkmForm2(201, 4);
-        ow["UnownF"] = HasPkmForm2(201, 5);
-        ow["UnownG"] = HasPkmForm2(201, 6);
-        ow["UnownH"] = HasPkmForm2(201, 7);
-        ow["UnownI"] = HasPkmForm2(201, 8);
-        ow["UnownJ"] = HasPkmForm2(201, 9);
-        ow["UnownK"] = HasPkmForm2(201, 10);
-        ow["UnownL"] = HasPkmForm2(201, 11);
-        ow["UnownM"] = HasPkmForm2(201, 12);
-        ow["UnownN"] = HasPkmForm2(201, 13);
-        ow["UnownO"] = HasPkmForm2(201, 14);
-        ow["UnownP"] = HasPkmForm2(201, 15);
-        ow["UnownQ"] = HasPkmForm2(201, 16);
-        ow["UnownR"] = HasPkmForm2(201, 17);
-        ow["UnownS"] = HasPkmForm2(201, 18);
-        ow["UnownT"] = HasPkmForm2(201, 19);
-        ow["UnownU"] = HasPkmForm2(201, 20);
-        ow["UnownV"] = HasPkmForm2(201, 21);
-        ow["UnownW"] = HasPkmForm2(201, 22);
-        ow["UnownX"] = HasPkmForm2(201, 23);
-        ow["UnownY"] = HasPkmForm2(201, 24);
-        ow["UnownZ"] = HasPkmForm2(201, 25);
-        ow["UnownExclamationMark"] = HasPkmForm2(201, 26);
-        ow["UnownQuestionMark"] = HasPkmForm2(201, 27);
+        ow["UnownA"] = HasOrSeenPkmBasedOnObjective2(201, 0);
+        ow["UnownB"] = HasOrSeenPkmBasedOnObjective2(201, 1);
+        ow["UnownC"] = HasOrSeenPkmBasedOnObjective2(201, 2);
+        ow["UnownD"] = HasOrSeenPkmBasedOnObjective2(201, 3);
+        ow["UnownE"] = HasOrSeenPkmBasedOnObjective2(201, 4);
+        ow["UnownF"] = HasOrSeenPkmBasedOnObjective2(201, 5);
+        ow["UnownG"] = HasOrSeenPkmBasedOnObjective2(201, 6);
+        ow["UnownH"] = HasOrSeenPkmBasedOnObjective2(201, 7);
+        ow["UnownI"] = HasOrSeenPkmBasedOnObjective2(201, 8);
+        ow["UnownJ"] = HasOrSeenPkmBasedOnObjective2(201, 9);
+        ow["UnownK"] = HasOrSeenPkmBasedOnObjective2(201, 10);
+        ow["UnownL"] = HasOrSeenPkmBasedOnObjective2(201, 11);
+        ow["UnownM"] = HasOrSeenPkmBasedOnObjective2(201, 12);
+        ow["UnownN"] = HasOrSeenPkmBasedOnObjective2(201, 13);
+        ow["UnownO"] = HasOrSeenPkmBasedOnObjective2(201, 14);
+        ow["UnownP"] = HasOrSeenPkmBasedOnObjective2(201, 15);
+        ow["UnownQ"] = HasOrSeenPkmBasedOnObjective2(201, 16);
+        ow["UnownR"] = HasOrSeenPkmBasedOnObjective2(201, 17);
+        ow["UnownS"] = HasOrSeenPkmBasedOnObjective2(201, 18);
+        ow["UnownT"] = HasOrSeenPkmBasedOnObjective2(201, 19);
+        ow["UnownU"] = HasOrSeenPkmBasedOnObjective2(201, 20);
+        ow["UnownV"] = HasOrSeenPkmBasedOnObjective2(201, 21);
+        ow["UnownW"] = HasOrSeenPkmBasedOnObjective2(201, 22);
+        ow["UnownX"] = HasOrSeenPkmBasedOnObjective2(201, 23);
+        ow["UnownY"] = HasOrSeenPkmBasedOnObjective2(201, 24);
+        ow["UnownZ"] = HasOrSeenPkmBasedOnObjective2(201, 25);
+        ow["UnownExclamationMark"] = HasOrSeenPkmBasedOnObjective2(201, 26);
+        ow["UnownQuestionMark"] = HasOrSeenPkmBasedOnObjective2(201, 27);
 
         ow["CastformNormal"] = HasOrSeenPkmBasedOnObjective(351);
         ow["CastformFire"] = HasOrSeenPkmBasedOnObjective(351);
         ow["CastformWater"] = HasOrSeenPkmBasedOnObjective(351);
         ow["CastformIce"] = HasOrSeenPkmBasedOnObjective(351);
 
-        ow["DeoxysNormal"] = HasPkmForm2(386, 0);
-        ow["DeoxysAttack"] = HasPkmForm2(386, 1);
-        ow["DeoxysDefense"] = HasPkmForm2(386, 2);
-        ow["DeoxysSpeed"] = HasPkmForm2(386, 3);
-        ow["BurmyPlantCloak"] = HasPkmForm2(412, 0);
-        ow["BurmySandyCloak"] = HasPkmForm2(412, 1);
-        ow["BurmyTrashCloak"] = HasPkmForm2(412, 2);
-        ow["WormadamPlantCloak"] = HasPkmForm2(413, 0);
-        ow["WormadamSandyCloak"] = HasPkmForm2(413, 1);
-        ow["WormadamTrashCloak"] = HasPkmForm2(413, 2);
+        ow["DeoxysNormal"] = HasOrSeenPkmBasedOnObjective2(386, 0);
+        ow["DeoxysAttack"] = HasOrSeenPkmBasedOnObjective2(386, 1);
+        ow["DeoxysDefense"] = HasOrSeenPkmBasedOnObjective2(386, 2);
+        ow["DeoxysSpeed"] = HasOrSeenPkmBasedOnObjective2(386, 3);
+        ow["BurmyPlantCloak"] = HasOrSeenPkmBasedOnObjective2(412, 0);
+        ow["BurmySandyCloak"] = HasOrSeenPkmBasedOnObjective2(412, 1);
+        ow["BurmyTrashCloak"] = HasOrSeenPkmBasedOnObjective2(412, 2);
+        ow["WormadamPlantCloak"] = HasOrSeenPkmBasedOnObjective2(413, 0);
+        ow["WormadamSandyCloak"] = HasOrSeenPkmBasedOnObjective2(413, 1);
+        ow["WormadamTrashCloak"] = HasOrSeenPkmBasedOnObjective2(413, 2);
         ow["CherrimOvercast"] = HasOrSeenPkmBasedOnObjective(421);
-        ow["CherrimSunshine"] = HasOrSeenPkmBasedOnObjective(421);
-        ow["ShellosWestSea"] = HasPkmForm2(422, 0);
-        ow["ShellosEastSea"] = HasPkmForm2(422, 1);
-        ow["GastrodonWestSea"] = HasPkmForm2(423, 0);
-        ow["GastrodonEastSea"] = HasPkmForm2(423, 1);
-        ow["RotomGhost"] = HasPkmForm2(479, 0);
-        ow["RotomHeat"] = HasPkmForm2(479, 1);
-        ow["RotomWash"] = HasPkmForm2(479, 2);
-        ow["RotomFrost"] = HasPkmForm2(479, 3);
-        ow["RotomFan"] = HasPkmForm2(479, 4);
-        ow["RotomMow"] = HasPkmForm2(479, 5);
-        ow["GiratinaAltered"] = HasPkmForm2(487, 0);
-        ow["GiratinaOrigin"] = HasPkmForm2(488, 1);
-        ow["ShayminLand"] = HasPkmForm2(492, 0);
-        ow["ShayminSky"] = HasPkmForm2(492, 1);
+        ow["CherrimSunshine"] = HasOrSeenPkmBasedOnObjective(421); //kinda bad
+        ow["ShellosWestSea"] = HasOrSeenPkmBasedOnObjective2(422, 0);
+        ow["ShellosEastSea"] = HasOrSeenPkmBasedOnObjective2(422, 1);
+        ow["GastrodonWestSea"] = HasOrSeenPkmBasedOnObjective2(423, 0);
+        ow["GastrodonEastSea"] = HasOrSeenPkmBasedOnObjective2(423, 1);
+        ow["RotomGhost"] = HasOrSeenPkmBasedOnObjective2(479, 0);
+        ow["RotomHeat"] = HasOrSeenPkmBasedOnObjective2(479, 1);
+        ow["RotomWash"] = HasOrSeenPkmBasedOnObjective2(479, 2);
+        ow["RotomFrost"] = HasOrSeenPkmBasedOnObjective2(479, 3);
+        ow["RotomFan"] = HasOrSeenPkmBasedOnObjective2(479, 4);
+        ow["RotomMow"] = HasOrSeenPkmBasedOnObjective2(479, 5);
+        ow["GiratinaAltered"] = HasOrSeenPkmBasedOnObjective2(487, 0);
+        ow["GiratinaOrigin"] = HasSeenPkmForm(487, 1);
+        ow["ShayminLand"] = HasOrSeenPkmBasedOnObjective2(492, 0);
+        ow["ShayminSky"] = HasOrSeenPkmBasedOnObjective2(492, 1);
         ow["GetShinyPokemon"] = HasShinyMon();
+
+        var HasArceus = this.OwnedPkms.Contains(493);
+        ow["ArceusNormal"] = HasArceus;
+        ow["ArceusFire"] = HasArceus;
+        ow["ArceusWater"] = HasArceus;
+        ow["ArceusElectric"] = HasArceus;
+        ow["ArceusGrass"] = HasArceus;
+        ow["ArceusIce"] = HasArceus;
+        ow["ArceusFighting"] = HasArceus;
+        ow["ArceusPoison"] = HasArceus;
+        ow["ArceusGround"] = HasArceus;
+        ow["ArceusFly"] = HasArceus;
+        ow["ArceusPsychic"] = HasArceus;
+        ow["ArceusBug"] = HasArceus;
+        ow["ArceusRock"] = HasArceus;
+        ow["ArceusGhost"] = HasArceus;
+        ow["ArceusDragon"] = HasArceus;
+        ow["ArceusDark"] = HasArceus;
+        ow["ArceusSteel"] = HasArceus;
 
         ow["AllMaleFemaleForms"] = new Func<bool>(() =>
         {
+            var retStr = new List<string>();
+            var ret = true;
             var genderLess = new HashSet<ushort> { 81, 82, 100, 101, 120, 121, 137, 233, 292, 337, 338, 343, 344, 374, 375, 376, 436, 437, 462, 474, 479, 479, 479, 479, 479, 479, 489, 490, 132, 144, 144, 145, 145, 146, 146, 150, 151, 201, 243, 244, 245, 249, 250, 251, 377, 378, 379, 382, 383, 384, 385, 386, 386, 386, 386, 480, 481, 482, 483, 484, 486, 487, 487, 491, 492, 492, 493 };
             for (ushort i = 0; i <= 493; i++)
             {
                 if (!this.sav.Dex.GetSeen(i))
-                    return false;
+                {
+                    ret = false;
+                    retStr.Add("#" + i.ToString());
+                    continue;
+                }
                 if (genderLess.Contains(i))
                     continue;
                 if (this.sav.Dex.GetSeenGenderFirst(i) == this.sav.Dex.GetSeenGenderSecond(i)) // 01 and 10 is when both genders are seen. 00 and 11 are when 1 is seen.
-                    return false;
+                {
+                    ret = false;
+                    retStr.Add("#" + i.ToString());
+                    continue;
+                }
             }
-            return true;
+
+            if (!ret)
+                this.incompleteHints.Add("Missing Male & Female Forms: Pokemon " + String.Join(", ", retStr.ToArray()));
+            return ret;
         })();
 
         ow["AllForeignPokedexEntries"] = new Func<bool>(() =>
         {
-            for (ushort i = 0; i <= 493; i++)
+            var languages = new List<string>{"JP","EN","FR","IT","GE","SP"};
+            var retStr = new List<string>();
+            var ret = true;
+            for (ushort i = 1; i <= 493; i++)
             {
                 for (int j = 0; j < 6; j++)
                     if (!this.sav.Dex.GetLanguageBitIndex(i, j))
-                        return false;
+                    {
+                        retStr.Add("#" + i.ToString() + " (" + languages[j] + ")");
+                        ret = false;
+                    }
             }
-            return true;
+
+            if (!ret)
+                this.incompleteHints.Add("Missing Foreign Pokedex Entries: Pokemon " + String.Join(", ", retStr.ToArray()));
+            return ret;
         })();
     }
-    public bool HasPkmForm2(ushort species, byte form)
-    {
-        if (HasPkmForm(species, form))
-            return true;
 
+    public bool HasSeenPkmForm(ushort species, byte form)
+    {
         return this.sav.Dex.GetForms(species).Contains(form);
+    }
+
+    public bool HasOrSeenPkmBasedOnObjective2(ushort species, byte form)
+    {
+        return this.objective != 0 ? HasPkmForm(species, form) : HasSeenPkmForm(species, form);
     }
 
     public override void Generate_item()
@@ -206,6 +257,12 @@ internal class CompletionValidator4 : CompletionValidatorX
 
         if (sav.GetEventFlag(198))
             ow["404"] = true; // TM77 Psych Up 
+
+        if (sav.GetEventFlag(0x534))
+            ow["323"] = true; // Magmarizer
+
+        if (sav.GetEventFlag(0x535))
+            ow["322"] = true; // Electirizer
     }
 
     public void Generate_itemInMap()
@@ -231,8 +288,15 @@ internal class CompletionValidator4 : CompletionValidatorX
     890, 941, 748, 752, 844, 851, 858, 877, 879, 886, 888, 902, 907, 912, 920, 923, 926, 932, 934, 991, 1098, 1143, 1156, 1167, 1177, 1192, 1235, 1299, 1308, 1320, 1325, 1327, 1280, 1317, 767,
     878, 1093, 1132, 1271, 1273, 1270, 1278, 1031, 1277, 736, 791, 827, 1080, 1091, 1275, 1298, 1302, 1322, 840, 757, 899, 901, 1076, 1198, 1223, 1258, 1294, };
 
-        foreach (var id in list)
-            ow[id.ToString()] = sav.GetEventFlag(id);
+        var untrackable = new HashSet<int> {788,789,781,782,783,784,785,949,950,951,952,};
+
+        foreach (var id in list)    
+        { 
+            var val = sav.GetEventFlag(id);
+            if (!val && untrackable.Contains(id))
+                continue;
+            ow[id.ToString()] = val;
+        }
 
         var defaultBerryIdList = new List<int> { 7, 1, 2, 3, 7, 3, 16, 17, 1, 7, 10, 19, 19, 22, 1, 3, 7, 7, 4, 4, 16, 16, 1, 7, 7, 17, 18, 16, 17, 20, 6, 2, 16, 16, 8, 18, 18, 11, 5, 5, 16, 20, 10, 2,
     12, 14, 3, 5, 15, 25, 10, 5, 26, 9, 3, 20, 20, 20, 8, 8, 18, 18, 14, 15, 4, 4, 1, 10, 2, 21, 3, 17, 12, 13, 4, 8, 11, 20, 6, 3, 13, 24, 12, 13, 14, 23, 10, 17, 18, 19, 21, 21, 24, 24, 22, 22,
@@ -254,10 +318,14 @@ internal class CompletionValidator4 : CompletionValidatorX
 
     public void Generate_itemGift()
     {
+        //EventFlag => 0xFEC;
+
         var ow = new Dictionary<string, bool>();
         owned["itemGift"] = ow;
-        var list = new List<int> { 108, 116, 117, 124, 125, 131, 140, 146, 156, 157, 158, 160, 161, 182, 191, 193, 194, 197, 198, 199, 201, 202, 203, 204, 205, 206, 213, 217, 218, 222, 261, 265, 266,
-    267, 278, 281, 284, 285, 302, 303, 308, 309, 310, 312, 313, 314, 315, 319, 320, 321, 322, 323, 324, 352, 2721, };
+        var list = new List<int> { 108, 116, 117, 125, 131, 140, 146, 156, 157, 158, 160, 161, 182, 191, 192, 193, 194, 197, 198, 199, 201, 202, 203, 204, 205, 206, 213, 217, 218, 222, 261, 265, 266,
+    267, 274, 278, 281, 284, 285, 302, 303, 308, 309, 310, 312, 313, 314, 315, 319, 320, 321, 322, 323, 324, 352, };
+
+        // 2721 Great Ball in Celestic Town is recurring
 
         foreach (var id in list)
             ow[id.ToString()] = sav.GetEventFlag(id);
@@ -305,6 +373,14 @@ internal class CompletionValidator4 : CompletionValidatorX
         var ownedGoods = new HashSet<DECO4>();
         foreach (var good in this.sav.GetUGI_Goods())
             ownedGoods.Add((DECO4)good);
+
+        for(var i = 0x4470; i < 0x4538; i++)
+        {
+            if (this.sav.Data[i] == 0)
+                break;
+            ownedGoods.Add((DECO4)this.sav.Data[i]);
+        }
+
 
         ow["BlueCushion"] = ownedGoods.Contains(DECO4.BlueCushion);
         ow["TrashCan"] = ownedGoods.Contains(DECO4.TrashCan);
@@ -451,16 +527,16 @@ internal class CompletionValidator4 : CompletionValidatorX
         foreach (var good in this.sav.GetUGI_Traps())
             ownedTraps.Add((TRAP4)good);
 
-        ow["PrismSphereS"] = ownedSpheres.Contains(SPHERE4.PrismSphereS);
-        ow["PaleSphereS"] = ownedSpheres.Contains(SPHERE4.PaleSphereS);
-        ow["RedSphereS"] = ownedSpheres.Contains(SPHERE4.RedSphereS);
-        ow["BlueSphereS"] = ownedSpheres.Contains(SPHERE4.BlueSphereS);
-        ow["GreenSphereS"] = ownedSpheres.Contains(SPHERE4.GreenSphereS);
-        ow["PrismSphereL"] = ownedSpheres.Contains(SPHERE4.PrismSphereL);
+        ow["PrismSphere"] = ownedSpheres.Contains(SPHERE4.PrismSphereS);
+        ow["PaleSphere"] = ownedSpheres.Contains(SPHERE4.PaleSphereS);
+        ow["RedSphere"] = ownedSpheres.Contains(SPHERE4.RedSphereS);
+        ow["BlueSphere"] = ownedSpheres.Contains(SPHERE4.BlueSphereS);
+        ow["GreenSphere"] = ownedSpheres.Contains(SPHERE4.GreenSphereS);
+        /*ow["PrismSphereL"] = ownedSpheres.Contains(SPHERE4.PrismSphereL);
         ow["PaleSphereL"] = ownedSpheres.Contains(SPHERE4.PaleSphereL);
         ow["RedSphereL"] = ownedSpheres.Contains(SPHERE4.RedSphereL);
         ow["BlueSphereL"] = ownedSpheres.Contains(SPHERE4.BlueSphereL);
-        ow["GreenSphereL"] = ownedSpheres.Contains(SPHERE4.GreenSphereL);
+        ow["GreenSphereL"] = ownedSpheres.Contains(SPHERE4.GreenSphereL);*/
 
         ow["MoveTrapUp"] = ownedTraps.Contains(TRAP4.MoveTrapUp);
         ow["MoveTrapRight"] = ownedTraps.Contains(TRAP4.MoveTrapRight);
@@ -1000,7 +1076,7 @@ internal class CompletionValidator4 : CompletionValidatorX
             {
                 if (i == 151 || i == 249 || i == 250 || i == 251 || i == 385 || i == 386 || i == 489 || i == 490 || i == 491 || i == 492 || i == 493)
                     continue;
-                if (!sav.Dex.GetSeen(i))
+                if (!sav.Dex.GetCaught(i))
                     return false;
             }
             return true;
@@ -1139,7 +1215,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["SingleBattles"] = sav.General[0x68e0] > 0;
         ow["DoubleBattles"] = sav.General[0x68e4] > 0;
         ow["MultiBattles"] = sav.General[0x68e8] > 0;
-        ow["LinkMultiBattles"] = sav.General[0x68ec] > 0;
+        ow["LinkMultiBattles"] = sav.General[0x68ec] > 0; // bugged
         ow["WiFiBattles"] = sav.General[0x68f0] > 0;
         ow["AvgWinStreak"] = sav.General[0x68e0] > 0;
 
@@ -1167,13 +1243,32 @@ internal class CompletionValidator4 : CompletionValidatorX
         });
     }
 
+    int GetStarterBattleOffset()
+    {
+        if (HasPkmWithTID(387) || HasPkmWithTID(388) || HasPkmWithTID(388))
+            return 1; // Turtwig
+        if (HasPkmWithTID(389) || HasPkmWithTID(390) || HasPkmWithTID(391))
+            return 2; // Chimchar
+        return 0; // Piplup
+    }
+   
     public void Generate_battle()
     {
         var ow = new Dictionary<string, bool>();
         owned["battle"] = ow;
 
+        var untrackable = new HashSet<int> { 535, 889, 890, 891, 911, 919, 877, 878, 879, 907, 915, 897, 544, 837, 838, 839, 871, 872, 873, 893, 538, 900, 
+            552, 549, 899, 548, 539, 550, 880, 881, 882, 908, 916, 551, 536, 537, 541, 894, 895, 896, 912, 920, 546, 886, 887, 888, 910, 918, 542, 892, 540,
+            543, 545, 883, 884, 885, 909, 917, 898, 874, 875, 876, 906, 914, 547,
+            901, 862,856,853,865,345,901,860,857,342,863,854,864,861,858,855,859,};
+
         for (var i = 1; i < 928; i++)
-            ow[i.ToString()] = sav.GetEventFlag(0x550 + i);
+        {
+            var got = sav.GetEventFlag(0x550 + i);
+            if (!got && untrackable.Contains(i))
+                continue;
+            ow[i.ToString()] = got;
+        }
 
         if (EnteredHallOfFame())
         {
@@ -1192,7 +1287,102 @@ internal class CompletionValidator4 : CompletionValidatorX
             ow["870"] = true; // Cynthia (Champion)            
         }
 
+        ow["345"] = sav.GetEventFlag(0x112); // Christine (School Kid) == Potion #2
+        ow["342"] = sav.GetEventFlag(0x112); // Harrison (School Kid) == Potion #2
 
+        var badgeCount = NumberOfSetBits(this.sav.Badges);
+        var starterOffset = this.GetStarterBattleOffset();
+        var updateRivalBattle = (int b) =>
+        {
+            ow[b.ToString()] = false;
+            ow[(b + 1).ToString()] = false;
+            ow[(b + 2).ToString()] = false;
+            ow[(b + starterOffset).ToString()] = true;
+        };
+
+        if (badgeCount >= 1)
+            updateRivalBattle(850); // 1st
+        if (badgeCount >= 1)
+            updateRivalBattle(247); // Route 203
+        if (badgeCount >= 2)
+            updateRivalBattle(470); // Route 209
+        if (badgeCount >= 4)
+            updateRivalBattle(473); // Pastoria
+        if (badgeCount >= 6)
+            updateRivalBattle(476); // Canalave
+        if (EnteredHallOfFame())
+            updateRivalBattle(479); // Pokemon League
+
+        if (EnteredHallOfFame())
+        {
+            var mandatoryBattles = new List<int> {
+                295, 405, 528, // Mars
+                408, 409, // Saturn
+                416, // Grunt (Galactic) #11 Celestic Town
+                296, 297, // Grunt (Galactic), #2 in Floaroma Meadow
+                414, 415, // Grunt (Galactic) #9, #10 in Jubilife City
+                521, 527, // Grunt (Galactic) #40, #46 in Spear Pillar
+                843, // Grunt (Galactic) #51 in Valley Windworks
+                847, // Grunt (Galactic) #52 before Lake Valor
+                848,849, // Grunt (Galactic) #53, #54 in Veilstone
+                406, 407, // Jupiter
+                403, 404, 913, // Cyrus
+            };
+            foreach (int b in mandatoryBattles)
+                ow[b.ToString()] = true;
+        }
+        if (HasPkmWithTID(485)) //Heatran
+        {
+            ow["927"] = true; // Jupiter, Mars in Stark Mountain
+            ow["926"] = true;
+        }
+
+        if (IsBattleFrontierPrintObtained(0, 1)) // battle tower
+        {
+            ow["921"] = true; //Volkner (Leader) #3 before entering Battle frontier
+        }
+
+        if (sav.GetEventFlag(0x075))
+            ow["246"] = true; // Roark Gym Leader
+
+        if (sav.GetEventFlag(0x092))
+            ow["250"] = true; // Byron Gym Leader
+
+        if (sav.GetEventFlag(0x07D))
+            ow["318"] = true; // Fantina Gym Leader
+
+        if (sav.GetEventFlag(0x074))
+            ow["315"] = true; // Gardenia Gym Leader
+
+        if (sav.GetEventFlag(0x09E))
+            ow["319"] = true; // Candice Gym Leader
+
+        if (sav.GetEventFlag(0x09D))
+            ow["317"] = true; // Maylene Gym Leader
+
+        if (sav.GetEventFlag(0x09C))
+            ow["316"] = true; // Wake Gym Leader
+
+        if (sav.GetEventFlag(0x0B6))
+            ow["320"] = true; // Volkner Gym Leader
+
+        if (IsBattleFrontierPrintObtained(0, 1)) // BattleTowerSilver
+            ow["826"] = true; // Palmer (Tower Tycoon)
+        if (IsBattleFrontierPrintObtained(1, 1)) // BattleFactorySilver
+            ow["903"] = true;
+        if (IsBattleFrontierPrintObtained(2, 1)) // BattleHallSilver
+            ow["902"] = true;
+        if (IsBattleFrontierPrintObtained(3, 1)) // BattleCastleSilver
+            ow["905"] = true;
+        if (IsBattleFrontierPrintObtained(4, 1)) // BattleArcadeSilver
+            ow["904"] = true;
+
+        // unused trainers in gym that are marked as completed even if impossible to battle
+        ow.Remove("266"); // Drew
+        ow.Remove("330"); // Cheyenne
+        ow.Remove("348"); // Lindsay
+
+        // Pokemon battles
         var monList = new List<int> { 208, 209, 288, 291, 329, 344, 479, 480, 481, 579, 591, 592 };
 
         foreach (var id in monList)
@@ -1206,6 +1396,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["RegisteredaGeonetlocation"] = sav.GeonetGlobalFlag;
         ow["DefeatEliteFourAfterNationalDex"] = UnlockedNationalDex; //bad...
         // ow["DefeatRivalLevel85Rematch"] = false; //untrackable 
+        ow["SaveMirafromWaywardCave"] = sav.GetEventFlag(484); //spanA[0x1028] 0b00010000
+
         ow["3500ScoreinCatchingShow"] = sav.GetWork(224) >= 3500;
         ow["UnlockPokedexForeignEntries"] = sav.GetAllPKM().Any(pk => pk.Language != this.sav.Language);
         ow["SignyourTrainerCard"] = sav.General[0x61A7] != 0; // not really accurate

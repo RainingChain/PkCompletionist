@@ -1,14 +1,19 @@
 {
   "profiles": {
-    "Profile 1": {
+    "Overwrite flags /cmp": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "overwriteFlags \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\before.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\after.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Mystery Dungeon - Explorers of Sky (US).sav\" \"0,1071\""
+      "commandLineArgs": "overwriteFlags \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\before.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\after.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\" \"0,0,0,0\""
     },
-    "Profile 2": {
+    "Validate": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\rc\\rainingchain\\src\\pokemonCompletion\\data\\tmp\\Pokemon Platinum.sav\""
+      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\""
+    },
+    "Event": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "event ArceusRowap_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum - Copy (4).sav\"   \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum2.sav\""
     }
   }
 }

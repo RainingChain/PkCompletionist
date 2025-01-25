@@ -101,10 +101,10 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["UnownExclamationMark"] = HasPkmForm(201, 26);
         ow["UnownQuestionMark"] = HasPkmForm(201, 27);
 
-        ow["CastformNormal"] = HasPkm(351);
-        ow["CastformFire"] = HasPkm(351);
-        ow["CastformWater"] = HasPkm(351);
-        ow["CastformIce"] = HasPkm(351);
+        ow["CastformNormal"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformFire"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformWater"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformIce"] = HasOrSeenPkmBasedOnObjective(351);
         ow["GetShinyPokemon"] = HasShinyMon();
     }
 
@@ -409,10 +409,9 @@ internal class CompletionValidator3 : CompletionValidatorX
         var pkms = sav.GetAllPKM();
         return pkms.Any(pk =>
         {
-            var pk3 = (PK3?)pk;
-            if (pk3 == null)
+            if (pk is not PK3)
                 return false;
-            return func(pk3);
+            return func((PK3)pk);
         });
     }
     public bool HasContestRibbon(Func<PK3, byte> func, byte wantedVal)
@@ -424,6 +423,27 @@ internal class CompletionValidator3 : CompletionValidatorX
     {
         var ow = new Dictionary<string, bool>();
         owned["ribbon"] = ow;
+
+        var pkms = sav.GetAllPKM();
+        pkms.Any(pk =>
+        {
+            if (pk is not PK3)
+                return false;
+
+            if (((PK3)pk).RibbonCountG3Cool >= 4)
+                Console.WriteLine(pk.Species.ToString());
+
+            if (((PK3)pk).RibbonCountG3Beauty >= 4)
+                Console.WriteLine(pk.Species.ToString());
+            if (((PK3)pk).RibbonCountG3Cute >= 4)
+                Console.WriteLine(pk.Species.ToString());
+            if (((PK3)pk).RibbonCountG3Smart >= 4)
+                Console.WriteLine(pk.Species.ToString());
+            if (((PK3)pk).RibbonCountG3Tough >= 4)
+                Console.WriteLine(pk.Species.ToString());
+            return false;
+        });
+
 
         ow["ChampionRibbon"] = HasRibbon(p => p.RibbonChampionG3);
         ow["CoolRibbon"] = HasContestRibbon(p => p.RibbonCountG3Cool, 1);
