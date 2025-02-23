@@ -8,7 +8,7 @@
     "Validate": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\""
+      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\encrypted\\before.sav\""
     },
     "Event": {
       "commandName": "Executable",

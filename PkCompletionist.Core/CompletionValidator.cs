@@ -51,6 +51,9 @@ partial class CompletionValidator : Command
         if (savA is SAV4_PmdSky)
             return new CompletionValidator4_PmdSky(this, (savA as SAV4_PmdSky)!, objective);
 
+        if (savA is SAV4_Ranger)
+            return new CompletionValidator4_Ranger(this, (savA as SAV4_Ranger)!, objective);
+
         return new CompletionValidatorX(this, savA, objective);
     }
 
