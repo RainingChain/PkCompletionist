@@ -82,9 +82,9 @@ partial class FlagAnalyzer : Command
             var oldBin = Convert.ToString(savAData[idx], 2).PadLeft(8, '0');
             var newBin = Convert.ToString(savBData[idx], 2).PadLeft(8, '0');
             var xor = Convert.ToString(savAData[idx] ^ savBData[idx], 2).PadLeft(8, '0');
-            AddMessage($"this.sav1.Data[0x{idx:X}] = 0x{savBData[idx]:X} (old=0x{savAData[idx]:X}) (0b{oldBin} -> 0b{newBin}, xor = 0b{xor})");
+            AddMessage($"this.sav1.Data[0x{idx:X}] = 0x{savBData[idx]:X} (old=0x{savAData[idx]:X}) (0b{oldBin} -> 0b{newBin}, xor = 0b{xor}) #{i}");
 
-            savAData[idx] = 0b0000_0100; // 0b11111111; // savBData[idx]; //NO_PROD
+            savAData[idx] = savBData[idx];
         }
 
        
@@ -115,8 +115,11 @@ partial class FlagAnalyzer : Command
         {
             int idx = diffIdx[i];
 
-            //if (changeRangeEnd - changeRangeStart < 15)
-            AddMessage($"spanA[0x{idx:X}] = 0x{spanB[idx]:X2} (old=0x{spanA[idx]:X2})");
+            var oldBin = Convert.ToString(spanA[idx], 2).PadLeft(8, '0');
+            var newBin = Convert.ToString(spanB[idx], 2).PadLeft(8, '0');
+            var xor = Convert.ToString(spanA[idx] ^ spanB[idx], 2).PadLeft(8, '0');
+
+            AddMessage($"spanA[0x{idx:X}] = 0x{spanB[idx]:X} (old=0x{spanA[idx]:X}) (0b{oldBin} -> 0b{newBin}, xor = 0b{xor}) #{i}");
 
             spanA[idx] = spanB[idx];
         }

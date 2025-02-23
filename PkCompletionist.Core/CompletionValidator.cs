@@ -17,7 +17,7 @@ partial class CompletionValidator : Command
         if (savA == null)
             return false;
 
-        var validatorX =  validator.CreateValidatorX(savA, (Objective)objective);
+        var validatorX = validator.CreateValidatorX(savA, (Objective)objective);
         CompletionValidator.LastValidatorX = validatorX;
 
         validatorX.GenerateAll();
@@ -51,6 +51,9 @@ partial class CompletionValidator : Command
         if (savA is SAV4_PmdSky)
             return new CompletionValidator4_PmdSky(this, (savA as SAV4_PmdSky)!, objective);
 
+        if (savA is SAV4_Ranger)
+            return new CompletionValidator4_Ranger(this, (savA as SAV4_Ranger)!, objective);
+
         return new CompletionValidatorX(this, savA, objective);
     }
 
@@ -82,4 +85,13 @@ partial class CompletionValidator : Command
         }
         return Res;
     }
+
+    [JSExport]
+    static public string[] GetLastCompletionHints()
+    {
+        if (LastValidatorX == null)
+            return System.Array.Empty<string>();
+        return LastValidatorX.incompleteHints.ToArray();
+    }
+
 }

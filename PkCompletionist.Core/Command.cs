@@ -31,6 +31,10 @@ partial class Command
     }
     public static SaveFile? GetVariantSAV(byte[] data, string VersionHint)
     {
+        var pmdRanger = SAV4_Ranger.NewIfValid(data, VersionHint);
+        if (pmdRanger != null)
+            return pmdRanger;
+
         var pinballRs = SAV3_Pinball.NewIfValid(data);
         if (pinballRs != null)
             return pinballRs;

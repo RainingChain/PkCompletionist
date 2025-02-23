@@ -71,6 +71,74 @@ internal class Program
     }
 
 
+    static bool TmpDebug()
+    {
+        var a = TryReadAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\after.sav")!;
+        var b = TryReadAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before.sav")!;
+        var b2 = TryReadAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before2.sav")!;
+        var b3 = TryReadAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before3.sav")!;
+
+        for (int i = 0; i < a.Length; i++)
+        {
+            if (b[i] != b2[i])
+                continue;
+            if (b[i] != b3[i])
+                continue;
+            if (b2[i] != b3[i])
+                continue;
+            if (a[i] == b[i])
+                continue;
+            Console.WriteLine("Hex: {0:X}", i);
+        }
+        return true;
+    }
+
+    static bool TmpDebug2()
+    {
+        var savData_ranger = TryReadAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\encrypted\\before.sav");
+        if (savData_ranger == null)
+            return true;
+        var sav_r = (SAV4_Ranger)Command.GetVariantSAV(savData_ranger, "")!;
+
+        sav_r.Decrypt();
+        File.WriteAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before_csharp.sav", sav_r.Write());
+        return true;
+    }
+
+    /*
+    var savData8 = TryReadAllBytes("C:\\Users\\Samuel\\source\\repos\\pk_battle_facilities_rng\\utils\\search\\save_found_online.sav");
+    //var savData8 = TryReadAllBytes("C:\\Users\\Samuel\\Downloads\\Pokemon Platinum_online.sav");
+    if (savData8 == null)
+        return;
+    var sav8 = (SAV4Pt)Command.GetVariantSAV(savData8, "")!;
+
+    sav8.Data[7310 * 4 + 0] = 0x17;
+    sav8.Data[7310 * 4 + 1] = 0x14;
+    sav8.Data[7310 * 4 + 2] = 0x14;
+    sav8.Data[7310 * 4 + 3] = 0x14;
+    File.WriteAllBytes("C:\\Users\\Samuel\\source\\repos\\pk_battle_facilities_rng\\utils\\search\\edited.sav", sav8.Write());
+    //File.WriteAllBytes("C:\\Users\\Samuel\\Downloads\\Pokemon Platinum_online_mod.sav", sav8.Write());
+    var a = 0;
+    if (a != 0 || a == 0)
+        return;
+    */
+    /*var bytes = sav8.Data;
+    var size = bytes.Length / sizeof(int);
+    var ints = new UInt32[size];
+    for (var index = 0; index < size; index++)
+    {
+        ints[index] = BitConverter.ToUInt32(bytes, index * sizeof(int));
+
+        if (ints[index] == 0xE6F6591A || ints[index] == 0x1A59F6E6)
+        {
+            ints[index] = 0x1256477;
+            //File.WriteAllBytes("C:\\Users\\Samuel\\Downloads\\plat_play_wk_7051E4B1.sav", sav8.Write());
+            return;
+        }
+    }*/
+
+
+
     static void Main(string[] args)
     {
         if (args.Length == 0)
@@ -78,6 +146,10 @@ internal class Program
             Debug.OnStart();
             return;
         }
+
+        //if (TmpDebug2())
+        //    return;
+
 
 
         if (!ValidateArgLength(args, 1))
@@ -107,6 +179,7 @@ internal class Program
             LastCommandPrintMsgs();
         }
 
+        //validate input.sav --living
         if (args[0] == "validate")
         {
             if (!ValidateArgLength(args, 2))
@@ -139,6 +212,7 @@ internal class Program
             return;
         }
 
+        //sortPkms input.sav output.sav
         if (args[0] == "sortPkms")
         {
             if (!ValidateArgLength(args, 3))
@@ -179,7 +253,7 @@ internal class Program
             LastCommandPrintMsgs();
         }
 
-
+        //event EVT input.sav output.sav inputB.sav outputB.sav
         if (args[0] == "event")
         {
             if (!ValidateArgLength(args, 3))
@@ -190,7 +264,7 @@ internal class Program
                 return;
 
             byte[]? savBData = null;
-            if (args.Length  >= 6)
+            if (args.Length >= 6)
                 savBData = TryReadAllBytes(args[4]);
 
             if (EventSimulator.Execute(args[1], savData, versionHint, savBData))

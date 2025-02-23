@@ -86,8 +86,8 @@ internal class MysteryGiftSimulator2 : Command
         {
             savA.SetEventFlag(1809, true);
             savB.SetEventFlag(1809, true);
-            // Assumes international version
-            //NO_PROD
+
+            // Limitation: Assumes international version
             savA.Data[0xBE4] = 0;
             savB.Data[0xBE4] = 0;
         }

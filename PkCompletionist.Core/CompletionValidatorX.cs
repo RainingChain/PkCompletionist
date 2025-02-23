@@ -7,6 +7,7 @@ partial class CompletionValidatorX
 {
     protected SaveFile sav;
     public Dictionary<string, Dictionary<string, bool>> owned = new ();
+    public List<string> incompleteHints = new();
     protected Objective objective = Objective.normal;
     protected List<int> unobtainableItems = new ();
     Command command;
