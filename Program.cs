@@ -106,17 +106,6 @@ internal class Program
     }
 
     /*
-    var savData8 = TryReadAllBytes("C:\\Users\\Samuel\\source\\repos\\pk_battle_facilities_rng\\utils\\search\\save_found_online.sav");
-    //var savData8 = TryReadAllBytes("C:\\Users\\Samuel\\Downloads\\Pokemon Platinum_online.sav");
-    if (savData8 == null)
-        return;
-    var sav8 = (SAV4Pt)Command.GetVariantSAV(savData8, "")!;
-
-    sav8.Data[7310 * 4 + 0] = 0x17;
-    sav8.Data[7310 * 4 + 1] = 0x14;
-    sav8.Data[7310 * 4 + 2] = 0x14;
-    sav8.Data[7310 * 4 + 3] = 0x14;
-    File.WriteAllBytes("C:\\Users\\Samuel\\source\\repos\\pk_battle_facilities_rng\\utils\\search\\edited.sav", sav8.Write());
     //File.WriteAllBytes("C:\\Users\\Samuel\\Downloads\\Pokemon Platinum_online_mod.sav", sav8.Write());
     var a = 0;
     if (a != 0 || a == 0)
@@ -137,6 +126,53 @@ internal class Program
         }
     }*/
 
+    static bool TmpDebug3()
+    {
+        var file_name = "C:\\Users\\Samuel\\source\\repos\\pk_battle_facilities_rng_pt\\utils\\search\\video.sav";
+        var savData = TryReadAllBytes(file_name);
+        if (savData == null)
+           return true;
+        var sav = (SAV4Pt)Command.GetVariantSAV(savData, "")!;
+
+        var wantedSameDaySeed = 0x7a7aad82;
+        sav.Data[0x7238 + 0] = (byte)((wantedSameDaySeed >> 0) & 0xFF);
+        sav.Data[0x7238 + 1] = (byte)((wantedSameDaySeed >> 8) & 0xFF);
+        sav.Data[0x7238 + 2] = (byte)((wantedSameDaySeed >> 16) & 0xFF); 
+        sav.Data[0x7238 + 3] = (byte)((wantedSameDaySeed >> 24) & 0xFF);
+        File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write());
+        return true;
+        /*
+        // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
+        // usage: use it once, load savefile, game says it's corrupted. save in-game. run the .exe again. load savefile => works
+        if (args[0] == "platinum_setBattleTowerSeeds")
+        {
+            if (!ValidateArgLength(args, 5))
+                return;
+
+            var savData = TryReadAllBytes(args[1]);
+            if (savData == null)
+                return;
+            var sav = (SAV4Pt)Command.GetVariantSAV(savData, "")!;
+
+            var wantedSameDaySeed = Convert.ToUInt32(args[3], 16);
+            sav.Data[0x7238 + 0] = (byte)((wantedSameDaySeed >> 0) & 0xFF);
+            sav.Data[0x7238 + 1] = (byte)((wantedSameDaySeed >> 8) & 0xFF);
+            sav.Data[0x7238 + 2] = (byte)((wantedSameDaySeed >> 16) & 0xFF);
+            sav.Data[0x7238 + 3] = (byte)((wantedSameDaySeed >> 24) & 0xFF);
+
+            var wantedDiffDaySeed = Convert.ToUInt32(args[4], 16);
+            if (wantedDiffDaySeed != 0)
+            {
+                sav.Data[0x5664 + 0] = (byte)((wantedDiffDaySeed >> 0) & 0xFF);
+                sav.Data[0x5664 + 1] = (byte)((wantedDiffDaySeed >> 8) & 0xFF);
+                sav.Data[0x5664 + 2] = (byte)((wantedDiffDaySeed >> 16) & 0xFF);
+                sav.Data[0x5664 + 3] = (byte)((wantedDiffDaySeed >> 24) & 0xFF);
+            }
+            File.WriteAllBytes(args[2], sav.Write());
+            return;
+        }
+        */
+    }
 
 
     static void Main(string[] args)
@@ -147,18 +183,13 @@ internal class Program
             return;
         }
 
-        //if (TmpDebug2())
-        //    return;
-
-
-
         if (!ValidateArgLength(args, 1))
             return;
 
         var versionHint = "PmdRescueTeam";
 
         /*
-        C:\Users\samue\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
+        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
         if (args[0] == "overwriteFlags")
         {

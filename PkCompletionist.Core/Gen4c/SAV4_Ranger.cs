@@ -9,9 +9,7 @@ namespace PkCompletionist.Core;
  * - the order is the national dex (bul, ivy, venu, charmander), even if in ranger, charmander is R-140
  * 
  
- TODO:
-    rewrite rangercrypt in c#
-    assocaited R-XXX with national dex (internal id)
+ Current state: It seems to work. It only supports detecting caught Pokemon, which covers all collectable but 2.
  
  */
 
@@ -55,7 +53,6 @@ class SAV4_Ranger : SAV_Dummy
         else
         {
             throw new Exception("else");
-            //NO_PROD
             /*
             var saveinfo2 = new ArraySegment<uint>(ints, 0xC, 0x1F4);
             saveinfo[1] = CRC16((char*)tmp+8, 0x1EC);

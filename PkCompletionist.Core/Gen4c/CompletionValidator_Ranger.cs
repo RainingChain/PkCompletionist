@@ -6,10 +6,6 @@ using System.Collections.Generic;
 
 namespace PkCompletionist.Core;
 
-/* TODO:
-analyze
-*/
-
 internal class CompletionValidator4_Ranger : CompletionValidatorX
 {
     public CompletionValidator4_Ranger(Command command, SAV4_Ranger sav, Objective objective) : base(command, sav, objective)
@@ -67,7 +63,7 @@ internal class CompletionValidator4_Ranger : CompletionValidatorX
         ow["SpecialMissionSearchtheSafraSea"] = HasMon("R-208"); // Gyogre
         ow["SpecialMissionSummerlandRescueDuo"] = HasMon("R-209"); // Groudon
         ow["SpecialMissionTheTemplesSinisterShadows"] = HasMon("R-210"); // Rayquaza
-        ow["RangerNetMissionRecoverthePreciousEgg"] = false;
+        //ow["RangerNetMissionRecoverthePreciousEgg"] = false; //TODO
         ow["RangerNetMissionGainDeoxyssTrust"] = HasMon("R-211"); //Deoxys
         ow["RangerNetMissionRescueCelebi"] = HasMon("R-212"); // Celebi
         ow["RangerNetMissionFindMewTheMirage"] = HasMon("R-213"); // Mew
