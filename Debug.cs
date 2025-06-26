@@ -12,6 +12,21 @@ internal class Debug
 {
     public static void OnStart()
     {
+        var vanilla = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_vanilla.bin")!;
+        var modded = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_modded.bin")!;
+        var pixel = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_pixel.bin")!;
+        var dest = @"C:\Users\Samuel\AppData\Roaming\Azahar\sdmc\Nintendo 3DS\00000000000000000000000000000000\00000000000000000000000000000000\title\00040000\00141000\data\00000001\savedata.bin";
+
+
+        for (int i = 0; i < pixel.Length; i++)
+        {
+            if (vanilla[i] != modded[i])
+                pixel[i] = modded[i];
+        }
+        File.WriteAllBytes(dest, pixel);
+    }
+    public static void OnStart_old()
+    {
         var file = "C:\\Users\\samue\\Game\\Gameboy\\ROMS\\pmdTest2\\Pokemon Mystery Dungeon - Red Rescue Team (U)";
         var versionHint = "PmdRescueTeam";
         var bytes = Program.TryReadAllBytes($"{file}.sav");

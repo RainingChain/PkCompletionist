@@ -54,6 +54,9 @@ partial class CompletionValidator : Command
         if (savA is SAV4_Ranger)
             return new CompletionValidator4_Ranger(this, (savA as SAV4_Ranger)!, objective);
 
+        if (savA is SAV7_Shuffle)
+            return new CompletionValidator7_Shuffle(this, (savA as SAV7_Shuffle)!, objective);
+
         return new CompletionValidatorX(this, savA, objective);
     }
 

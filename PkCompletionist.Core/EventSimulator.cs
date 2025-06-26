@@ -51,6 +51,9 @@ partial class EventSimulator : Command
         if (savA is SAV4)
             return new EventSimulator4(this, (savA as SAV4)!, savB);
 
+        if (savA is SAV7_Shuffle)
+            return new EventSimulator7_Shuffle(this, (savA as SAV7_Shuffle)!, savB);
+
         return new EventSimulatorX(this, savA, savB);
     }
 }

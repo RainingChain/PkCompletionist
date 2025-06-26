@@ -8,12 +8,16 @@
     "Validate": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\encrypted\\before.sav\""
+      "commandLineArgs": "validate \"C:\\Users\\Samuel\\AppData\\Roaming\\Azahar\\sdmc\\Nintendo 3DS\\00000000000000000000000000000000\\00000000000000000000000000000000\\title\\00040000\\00141000\\data\\00000001\\savedata.bin\""
     },
     "Event": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
       "commandLineArgs": "event ArceusRowap_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum - Copy (4).sav\"   \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum2.sav\""
+    },
+    "Debug.OnStart()": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe"
     }
   }
 }

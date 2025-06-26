@@ -31,6 +31,10 @@ partial class Command
     }
     public static SaveFile? GetVariantSAV(byte[] data, string VersionHint)
     {
+        var shuffle = SAV7_Shuffle.NewIfValid(data);
+        if (shuffle != null)
+            return shuffle;
+
         var pmdRanger = SAV4_Ranger.NewIfValid(data, VersionHint);
         if (pmdRanger != null)
             return pmdRanger;
