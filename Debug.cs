@@ -21,9 +21,12 @@ internal class Debug
         for (int i = 0; i < pixel.Length; i++)
         {
             if (vanilla[i] != modded[i])
+            {
+                Console.WriteLine("" + i + ", " + modded[i]);
                 pixel[i] = modded[i];
+            }
         }
-        File.WriteAllBytes(dest, pixel);
+        //File.WriteAllBytes(dest, pixel);
     }
     public static void OnStart_old()
     {

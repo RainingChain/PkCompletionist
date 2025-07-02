@@ -10,6 +10,7 @@ enum PK_EVENT7_Shuffle
     AddHearts,
     AddJewels,
     AddCoins,
+    ResetLimitedShop,
 }
 
 internal class EventSimulator7_Shuffle : EventSimulatorX
@@ -50,6 +51,13 @@ internal class EventSimulator7_Shuffle : EventSimulatorX
             this.sav.Data[0x6A] |= 0x0C;
             return null;
         }
+        if (evt == PK_EVENT7_Shuffle.ResetLimitedShop)
+        {
+            for (int i = 0; i < 10; i++)
+                this.sav.Data[0x2EC7 + i] = 0x00;
+            return null;
+        }
+
         if (evt == PK_EVENT7_Shuffle.PikachuCelebration)
         {
             var list = new List<int> { 888, 889, 890, 879, 880, 881, 882, 883, 884, 885, 886, 887 };

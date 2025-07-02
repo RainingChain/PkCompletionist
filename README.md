@@ -13,7 +13,10 @@ Utilities for the Pokemon 100% Checklist Challenge that can be embedded in a web
 - RainingChain
 - Kurt for [PKHeX](https://github.com/kwsch/PKHeX)
 - FabioAttard for [event flag research](https://github.com/fattard/MissingEventFlagsCheckerPlugin)
-
+- supercarotte for [Pokemon Shuffle Save Editor](https://github.com/supercarotte/PSSE)
+- Bl4ckSh4rk for [rangercrypt](https://github.com/Bl4ckSh4rk/rangercrypt)
+- evandixon for [SkyEditor.SaveEditor](https://github.com/evandixon/SkyEditor.SaveEditor)
+ 
 ### Contributing
 - Install Visual Studio 2022 
 - Add Visual Studio support for .NET (C#) projects
