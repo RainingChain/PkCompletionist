@@ -1,9 +1,9 @@
-ï»¿using PKHeX.Core;
+using PKHeX.Core;
 using System.Linq;
 
 namespace PkCompletionist.Core;
 
-enum PK_EVENT4
+enum PK_EVENT5
 {
     //pcd pt
     SecretKey_Event,
@@ -26,95 +26,100 @@ enum PK_EVENT4
     AuroraTicketEvent_Gen3,
     Phione_MyPokemonRanch,
     Mew_MyPokemonRanch,
+
+    Manaphy_RangerShadow_Event,
+    Darkrai_RangerShadow_Event,
+    Manaphy_RangerGuardian_Event,
+    Deoxys_RangerGuardian_Event,
+    Shaymin_RangerGuardian_Event,
 }
 
-internal class EventSimulator4 : EventSimulatorX
+internal class EventSimulator5 : EventSimulatorX
 {
 
-    public EventSimulator4(Command command, SAV4 sav, SaveFile? savB) : base(command, sav, savB)
+    public EventSimulator5(Command command, SAV5 sav, SaveFile? savB) : base(command, sav, savB)
     {
         this.sav = sav;
     }
 
-    new SAV4 sav;
+    new SAV5 sav;
 
     public override string? ExecEvent(string evtName)
     {
-        var evt = ParseEvtName<PK_EVENT4>(evtName);
+        var evt = ParseEvtName<PK_EVENT5>(evtName);
 
-        if (evt == PK_EVENT4.ArceusRowap_Event)
+        if (evt == PK_EVENT5.ArceusRowap_Event)
             return AddPcd("Arceus.pcd");
 
-        if (evt == PK_EVENT4.ShayminMicle_Event)
+        if (evt == PK_EVENT5.ShayminMicle_Event)
             return AddPcd("ShayminMicleBerry.pcd");
 
-        if (evt == PK_EVENT4.EnteiCustap_Event)
+        if (evt == PK_EVENT5.EnteiCustap_Event)
             return AddPcd("EnteiCustapBerry.pcd");
-        
-        if (evt == PK_EVENT4.CelebiJaboca_Event)
+
+        if (evt == PK_EVENT5.CelebiJaboca_Event)
             return AddPcd("CelebiJabocaBerry.pcd");
 
-        if (evt == PK_EVENT4.Jirachi_Event)
+        if (evt == PK_EVENT5.Jirachi_Event)
             return AddPcd("Jirachi.pcd");
 
-        if (evt == PK_EVENT4.SecretKey_Event)
+        if (evt == PK_EVENT5.SecretKey_Event)
             return AddPcd("SecretKey.pcd");
 
-        if (evt == PK_EVENT4.OaksLetter_Event)
+        if (evt == PK_EVENT5.OaksLetter_Event)
             return AddPcd("OaksLetter.pcd");
 
-        if (evt == PK_EVENT4.MemberCard_Event)
+        if (evt == PK_EVENT5.MemberCard_Event)
             return AddPcd("MemberCard.pcd");
 
-        if (evt == PK_EVENT4.LucarioDoll_Event)
+        if (evt == PK_EVENT5.LucarioDoll_Event)
             return AddPcd("LucarioDoll.pcd");
-        
-        if (evt == PK_EVENT4.MewPremierRibbon_HGSS_Event)
+        /*
+        if (evt == PK_EVENT5.MewPremierRibbon_HGSS_Event)
         {
-            //if (!(savB is SAV4HGSS))
-            //    return "Error: This event is exclusive to HeartGold and SoulSilver. Load a HeartGold or SoulSilver savefile in .sav #2.";
+            if (!(savB is SAV5HGSS))
+                return "Error: This event is exclusive to HeartGold and SoulSilver. Load a HeartGold or SoulSilver savefile in .sav #2.";
 
-            return AddPcd("Mew_HGSS.pcd");
+            return AddPcd("Mew_HGSS.pcd", (SAV5HGSS)savB);
         }
-        if (evt == PK_EVENT4.Darkrai_DP_Event)
+        if (evt == PK_EVENT5.Darkrai_DP_Event)
         {
-            //if (!(savB is SAV4DP))
-            //    return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
+            if (!(savB is SAV5DP))
+                return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
             return AddPcd("Darkrai_DP.pcd");
         }
-        
-        if (evt == PK_EVENT4.Manaphy_DP_Event)
+
+        if (evt == PK_EVENT5.Manaphy_DP_Event)
         {
-            //if (!(savB is SAV4DP))
-            //    return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
+            if (!(savB is SAV5DP))
+                return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
             return AddPcd("Manaphy_DP.pcd");
         }
-        if (evt == PK_EVENT4.Deoxys_DP_Event)
+        if (evt == PK_EVENT5.Deoxys_DP_Event)
         {
-            //if (!(savB is SAV4DP))
-            //    return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
+            if (!(savB is SAV5DP))
+                return "Error: This event is exclusive to Diamond and Pearl. Load a Diamond or Pearl savefile in .sav #2.";
             return AddPcd("Deoxys_DP.pcd");
         }
 
-        if (evt == PK_EVENT4.Phione_MyPokemonRanch)
+        if (evt == PK_EVENT5.Phione_MyPokemonRanch)
         {
             if (sav.GetAllPKM().Count() < 250)
-                return "Error: You must own at least 250 PokÃ©mon to obtain Phione from My PokÃ©mon Ranch.";
+                return "Error: You must own at least 250 Pokémon to obtain Phione from My Pokémon Ranch.";
             return AddPkm("Phione_MyPokemonRanch.pk4");
         }
 
-        if (evt == PK_EVENT4.Mew_MyPokemonRanch)
+        if (evt == PK_EVENT5.Mew_MyPokemonRanch)
         {
             var monCount = sav.GetAllPKM().Count() + (savB == null ? 0 : savB.GetAllPKM().Count());
             if (monCount < 999)
-                return $"Error: You must own at least 999 PokÃ©mon within both savefiles to obtain Mew from My PokÃ©mon Ranch. You currently only own {monCount} PokÃ©mon.";
+                return $"Error: You must own at least 999 Pokémon within both savefiles to obtain Mew from My Pokémon Ranch. You currently only own {monCount} Pokémon.";
             return AddPkm("Mew_MyPokemonRanch.pk4");
         }
-
-        if (evt == PK_EVENT4.BrickMail_DP_Event)
+        if (evt == PK_EVENT5.BrickMail_DP_Event)
         {
-            //if (!(savB is SAV4DP))
-            //    return "Error: The Brick Mail trade was exclusive to Diamond and Pearl, as Platinum was not yet released. Load a Diamond or Pearl savefile in .sav #2.";
+            if (!(savB is SAV5DP))
+                return "Error: The Brick Mail trade was exclusive to Diamond and Pearl, as Platinum was not yet released. Load a Diamond or Pearl savefile in .sav #2.";
 
             for (var slot = 0; slot < savB.PartyData.Count; slot++)
             {
@@ -132,8 +137,9 @@ internal class EventSimulator4 : EventSimulatorX
 
             return "Error: You don't own a Japanese Lvl10+ Roselia holding Air Mail.";
         }
-
-        if (evt == PK_EVENT4.PokemonFestaRibbons_RSE_Event)
+        
+        */
+        if (evt == PK_EVENT5.PokemonFestaRibbons_RSE_Event)
         {
             if (!(savB is SAV3RS) && !(savB is SAV3E))
                 return "Error: Pokemon Festa Ribbons are exclusive to Ruby, Sapphire and Emerald. Load a Ruby, Sapphire or Emerald savefile in .sav #2.";
@@ -141,7 +147,7 @@ internal class EventSimulator4 : EventSimulatorX
             var sav3B = (SAV3)savB;
             return EventSimulator3.PokemonFestaRibbons(sav3B);
         }
-        if (evt == PK_EVENT4.AuroraTicketEvent_Gen3)
+        if (evt == PK_EVENT5.AuroraTicketEvent_Gen3)
         {
             if (!(savB is SAV3E) && !(savB is SAV3FRLG))
                 return "Error: Aurora Ticket Event is exclusive to Emerald, FireRed, LeafGreen. Load a Emerald savefile in .sav #2. (Only Emerald is supported by the tool.)";
@@ -153,10 +159,19 @@ internal class EventSimulator4 : EventSimulatorX
             return EventSimulator3.AuroraTicketEvent(sav3B);
         }
 
+        if (evt == PK_EVENT5.Manaphy_RangerShadow_Event ||
+            evt == PK_EVENT5.Darkrai_RangerShadow_Event ||
+            evt == PK_EVENT5.Manaphy_RangerGuardian_Event ||
+            evt == PK_EVENT5.Deoxys_RangerGuardian_Event ||
+            evt == PK_EVENT5.Shaymin_RangerGuardian_Event)
+        {
+            return "Error: Ranger events are not supported yet this by tool.";
+        }
+
         return $"Internal error : Invalid event name \"{evt}\".";
     }
 
-    public string? AddPcd(string path, SAV4? savArg = null)
+    public string? AddPcd(string path, SAV5? savArg = null)
     {
         var sav = savArg ?? this.sav;
         var pcd = (PCD?)SavUtils.LoadMysteryGift(path);
@@ -178,7 +193,7 @@ internal class EventSimulator4 : EventSimulatorX
             var gift = gifts[i];
             if (gift is PGT && pgtIdx == -1)
             {
-                if (gift.Empty || gift.CardID == -1) 
+                if (gift.Empty || gift.CardID == -1)
                     pgtIdx = i;
             }
 

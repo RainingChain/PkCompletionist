@@ -420,3 +420,13 @@ public enum ThoughWord
     REMSleep,
     MAX = REMSleep,
 }
+
+public enum GreetingWord
+{
+    KONNICHIWA,
+    HELLO,
+    BONJOUR,
+    CIAO,
+    HALLO,
+    HOLA,
+}

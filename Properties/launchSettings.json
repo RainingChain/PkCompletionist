@@ -8,6 +8,11 @@
     "Validate": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\""
+    },
+    "Validate2": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
       "commandLineArgs": "validate \"C:\\Users\\Samuel\\AppData\\Roaming\\Azahar\\sdmc\\Nintendo 3DS\\00000000000000000000000000000000\\00000000000000000000000000000000\\title\\00040000\\00141000\\data\\00000001\\savedata.bin\""
     },
     "Event": {

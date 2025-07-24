@@ -1056,6 +1056,8 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["EarthRibbon"] = HasRibbon(pk4 => pk4.RibbonEarth);
         ow["WorldRibbon"] = HasRibbon(pk4 => pk4.RibbonWorld);
         ow["ClassicRibbon"] = HasRibbon(pk4 => pk4.RibbonClassic);
+        ow["LegendRibbon"] = HasRibbon(pk4 => pk4.RibbonLegend);
+        ow["PremierRibbon"] = HasRibbon(pk4 => pk4.RibbonPremier);
     }
     public bool EnteredHallOfFame()
     {
@@ -1092,6 +1094,12 @@ internal class CompletionValidator4 : CompletionValidatorX
         var idx = (byte)word;
         return FlagUtil.GetFlag(sav.General, 0xCEB4 + idx / 8, idx % 8);
     }
+    public bool GetGreetingWordUnlocked(GreetingWord word)
+    {
+        var idx = (byte)word;
+        return FlagUtil.GetFlag(sav.General, 0xCEB0 + idx / 8, idx % 8);
+    }
+
     public void Generate_easyChatSystemWord()
     {
         var ow = new Dictionary<string, bool>();
@@ -1182,6 +1190,13 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["PokemonSolrock"] = HasSeenMon(338);
         ow["PokemonOthers"] = HasSeenMonAll();
         ow["Moves"] = UnlockedNationalDex;
+
+        ow["GreetingsKONNICHIWA"] = GetGreetingWordUnlocked(GreetingWord.KONNICHIWA);
+        ow["GreetingsHELLO"] = GetGreetingWordUnlocked(GreetingWord.HELLO);
+        ow["GreetingsBONJOUR"] = GetGreetingWordUnlocked(GreetingWord.BONJOUR);
+        ow["GreetingsCIAO"] = GetGreetingWordUnlocked(GreetingWord.CIAO);
+        ow["GreetingsHALLO"] = GetGreetingWordUnlocked(GreetingWord.HALLO);
+        ow["GreetingsHOLA"] = GetGreetingWordUnlocked(GreetingWord.HOLA);
     }
 
     public void Generate_geonet()
