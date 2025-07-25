@@ -1191,12 +1191,12 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["PokemonOthers"] = HasSeenMonAll();
         ow["Moves"] = UnlockedNationalDex;
 
-        ow["GreetingsKONNICHIWA"] = GetGreetingWordUnlocked(GreetingWord.KONNICHIWA);
-        ow["GreetingsHELLO"] = GetGreetingWordUnlocked(GreetingWord.HELLO);
-        ow["GreetingsBONJOUR"] = GetGreetingWordUnlocked(GreetingWord.BONJOUR);
-        ow["GreetingsCIAO"] = GetGreetingWordUnlocked(GreetingWord.CIAO);
-        ow["GreetingsHALLO"] = GetGreetingWordUnlocked(GreetingWord.HALLO);
-        ow["GreetingsHOLA"] = GetGreetingWordUnlocked(GreetingWord.HOLA);
+        ow["GreetingsKonnichiwa"] = GetGreetingWordUnlocked(GreetingWord.KONNICHIWA);
+        ow["GreetingsHello"] = GetGreetingWordUnlocked(GreetingWord.HELLO);
+        ow["GreetingsBonjour"] = GetGreetingWordUnlocked(GreetingWord.BONJOUR);
+        ow["GreetingsCiao"] = GetGreetingWordUnlocked(GreetingWord.CIAO);
+        ow["GreetingsHallo"] = GetGreetingWordUnlocked(GreetingWord.HALLO);
+        ow["GreetingsHola"] = GetGreetingWordUnlocked(GreetingWord.HOLA);
     }
 
     public void Generate_geonet()
