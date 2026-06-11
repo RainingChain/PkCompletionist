@@ -183,8 +183,7 @@ internal class CompletionValidator5 : CompletionValidatorX
             return ret;
         })();
 
-        //TODO
-        /*
+        //TODO: test
         ow["AllForeignPokedexEntries"] = new Func<bool>(() =>
         {
             var languages = new List<string> { "JP", "EN", "FR", "IT", "GE", "SP", "KO" };
@@ -193,7 +192,7 @@ internal class CompletionValidator5 : CompletionValidatorX
             for (ushort i = 1; i <= 493; i++)
             {
                 for (int j = 0; j < 6; j++)
-                    if (!this.sav.Zukan.GetLanguageBitIndex(i, j))
+                    if (!this.sav.Zukan.GetLanguageFlag(i - 1, j))
                     {
                         retStr.Add("#" + i.ToString() + " (" + languages[j] + ")");
                         ret = false;
@@ -203,7 +202,10 @@ internal class CompletionValidator5 : CompletionValidatorX
             if (!ret)
                 this.incompleteHints.Add("Missing Foreign Pokedex Entries: Pokemon " + String.Join(", ", retStr.ToArray()));
             return ret;
-        })();*/
+        })();
+
+        // TODO: Shiny Male & Female Form for All Pokémon
+        // TODO: Male & Female Form for All Pokémon
     }
 
     public bool HasSeenPkmForm(ushort species, byte form)
