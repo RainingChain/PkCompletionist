@@ -5,6 +5,9 @@ namespace PkCompletionist.Core;
 
 enum PK_EVENT5
 {
+    Arceus_BW_Event,
+    Victini_BW_Event,
+
     //pcd pt
     SecretKey_Event,
     OaksLetter_Event,
@@ -48,12 +51,13 @@ internal class EventSimulator5 : EventSimulatorX
     {
         var evt = ParseEvtName<PK_EVENT5>(evtName);
 
-        if (evt == PK_EVENT5.ArceusRowap_Event)
-            return AddPcd("Arceus.pcd");
+        if (evt == PK_EVENT5.Arceus_BW_Event)
+            return AddPkm("Global Link Arceus.pkm");
 
-        if (evt == PK_EVENT5.ShayminMicle_Event)
-            return AddPcd("ShayminMicleBerry.pcd");
+        if (evt == PK_EVENT5.Victini_BW_Event)
+            return SavUtils.AddMysteryGift(this.sav, "Movie 14 Victini.pgf");
 
+        /*
         if (evt == PK_EVENT5.EnteiCustap_Event)
             return AddPcd("EnteiCustapBerry.pcd");
 
@@ -74,6 +78,7 @@ internal class EventSimulator5 : EventSimulatorX
 
         if (evt == PK_EVENT5.LucarioDoll_Event)
             return AddPcd("LucarioDoll.pcd");
+        */
         /*
         if (evt == PK_EVENT5.MewPremierRibbon_HGSS_Event)
         {
@@ -171,49 +176,5 @@ internal class EventSimulator5 : EventSimulatorX
         return $"Internal error : Invalid event name \"{evt}\".";
     }
 
-    public string? AddPcd(string path, SAV5? savArg = null)
-    {
-        var sav = savArg ?? this.sav;
-        var pcd = (PCD?)SavUtils.LoadMysteryGift(path);
-        if (pcd == null)
-            return $"Internal error: invalid PCD. ({path})";
-
-        if (!sav.CanReceiveGift(pcd))
-            return "Error: The mystery gift can't be received in this game.";
-
-        if (!pcd.IsCardCompatible(sav, out string msg))
-            return msg;
-
-        var pcdIdx = -1;
-        var pgtIdx = -1;
-        var album = sav.GiftAlbum;
-        var gifts = album.Gifts;
-        for (var i = 0; i < gifts.Length; i++)
-        {
-            var gift = gifts[i];
-            if (gift is PGT && pgtIdx == -1)
-            {
-                if (gift.Empty || gift.CardID == -1)
-                    pgtIdx = i;
-            }
-
-            if (gift is PCD && pcdIdx == -1)
-            {
-                if (gift.Empty || ((PCD)gift).Gift.CardType == 0) // unused
-                    pcdIdx = i;
-            }
-        }
-        if (pcdIdx == -1 || pgtIdx == -1)
-            return "Error: There are no free Wonder Card slot.";
-
-        gifts[pcdIdx] = pcd;
-        gifts[pgtIdx] = pcd.Gift;
-
-        var flags = album.Flags;
-        flags[pcd.CardID] = true;
-        sav.GiftAlbum = new(gifts, flags);
-
-        return null;
-    }
 
 }

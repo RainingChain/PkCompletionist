@@ -290,19 +290,38 @@ internal class Program
             if (!ValidateArgLength(args, 3))
                 return;
 
-            var savData = TryReadAllBytes(args[2]);
+            var eventName = args[1];
+            var inputA = args[2];
+            var outputA = args[3];
+            var inputB = args.Length >= 6 ? args[4] : "";
+            var outputB = args.Length >= 6 ? args[5] : "";
+
+            var savData = TryReadAllBytes(inputA);
             if (savData == null)
                 return;
 
             byte[]? savBData = null;
-            if (args.Length >= 6)
-                savBData = TryReadAllBytes(args[4]);
+            if (inputB != "")
+                savBData = TryReadAllBytes(inputB);
 
-            if (EventSimulator.Execute(args[1], savData, versionHint, savBData))
+            if (EventSimulator.Execute(eventName, savData, versionHint, savBData))
             {
-                LastCommandSave(args[3]);
+                if (outputA == "" || outputA == inputA)
+                {
+                    File.Copy(inputA, inputA + DateTime.Now.ToShortDateString());
+                    outputA = inputA;
+                }
+                LastCommandSave(outputA);
+
                 if (savBData != null)
-                    LastCommandSave(args[5], false);
+                {
+                    if (outputB == "" || outputB == inputB)
+                    {
+                        File.Copy(inputB, inputB + DateTime.Now.ToShortDateString());
+                        outputB = inputB;
+                    }
+                    LastCommandSave(outputB, false);
+                }
             }
 
             LastCommandPrintMsgs();

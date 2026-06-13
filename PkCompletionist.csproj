@@ -39,6 +39,5 @@
 
 	<ItemGroup>
 	  <Folder Include="PkCompletionist.Core\Gen4b\" />
-	  <Folder Include="PkCompletionist.Core\Gen5\Resources\" />
 	</ItemGroup>
 </Project>

@@ -18,11 +18,16 @@
     "Event": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
-      "commandLineArgs": "event ArceusRowap_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum - Copy (4).sav\"   \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum2.sav\""
+      "commandLineArgs": "event ArceusRowap_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum2.sav\""
     },
     "Debug.OnStart()": {
       "commandName": "Executable",
       "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe"
+    },
+    "Event2": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "commandLineArgs": "event Victini_BW_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav\""
     }
   }
 }

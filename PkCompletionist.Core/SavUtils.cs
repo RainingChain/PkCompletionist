@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using System.Linq;
 using System;
+using System.Reflection;
 
 namespace PkCompletionist.Core;
 
@@ -116,5 +117,63 @@ internal class SavUtils
 
         sav.SetBoxSlotAtIndex(pkm, slot);
         return null;
+    }
+
+    static public string? AddMysteryGift(SaveFile sav, string path)
+    {
+        var giftToAdd = LoadMysteryGift(path);
+        if (giftToAdd == null || giftToAdd is not DataMysteryGift)
+            return $"Internal error: invalid mystery gift. ({path})";
+
+        var gift = (DataMysteryGift)giftToAdd;
+
+        if (!sav.CanReceiveGift(gift))
+            return "Error: The mystery gift can't be received in this game.";
+
+        if (!gift.IsCardCompatible(sav, out string msg))
+            return msg;
+
+        var gifts = sav.GiftAlbum.Gifts;
+        int lastUnfilled = GetLastUnfilledByType(gift, gifts);
+        int index = 0;
+        if (lastUnfilled > -1 && lastUnfilled < index)
+            index = lastUnfilled;
+        if (gift is PCD { IsLockCapsule: true })
+            index = 11;
+
+        var other = gifts[index];
+        if (gift is PCD { CanConvertToPGT: true } pcd && other is PGT)
+        {
+            gift = pcd.Gift;
+        }
+        else if (gift.Type != other.Type)
+        {
+            return $"Internal error: {gift.Type} != {other.Type}";
+        }
+        else if (gift is PCD g && (g is { IsLockCapsule: true } != (index == 11)))
+        {
+            return "Internal error: slot not valid.";
+        }
+
+        gifts[index] = (DataMysteryGift)gift.Clone();
+
+        var flags = sav.GiftAlbum.Flags;
+        flags[giftToAdd.CardID] = true;
+        sav.GiftAlbum = new(gifts, flags);
+
+        return null;
+    }
+    private static int GetLastUnfilledByType(DataMysteryGift gift, ReadOnlySpan<DataMysteryGift> album)
+    {
+        for (int i = 0; i < album.Length; i++)
+        {
+            var exist = album[i];
+            if (!exist.Empty)
+                continue;
+            if (exist.Type != gift.Type)
+                continue;
+            return i;
+        }
+        return -1;
     }
 }
