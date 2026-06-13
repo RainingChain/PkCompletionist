@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug: exe Validate",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "compile: exe",
+      "program": "${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe",
+      "args": ["validate", "C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}
