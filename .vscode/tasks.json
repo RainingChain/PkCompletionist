@@ -52,6 +52,21 @@
       "args": ["validate",  "C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav"],
       "dependsOn": "compile: exe",
       "problemMatcher": []
+    },
+    {
+      "label": "run: exe any",
+      "type": "shell",
+      "command": "\"${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe\" ${input:exeAnyInput}",
+      "dependsOn": "compile: exe",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "exeAnyInput",
+      "type": "promptString",
+      "description": "Input for PkCompletionist.exe",
+      "default": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav\""
     }
   ]
 }

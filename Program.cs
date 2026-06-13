@@ -259,6 +259,26 @@ internal class Program
             LastCommandPrintMsgs();                    
         }
 
+        //mergePkms input.sav input2.sav output.sav
+        if (args[0] == "mergePkms")
+        {
+            if (!ValidateArgLength(args, 4))
+                return;
+
+            var savData = TryReadAllBytes(args[1]);
+            if (savData == null)
+                return;
+
+            var savDataB = TryReadAllBytes(args[2]);
+            if (savDataB == null)
+                return;
+
+            if (PkMerger.Execute(savData, savDataB, versionHint))
+                LastCommandSave(args[3]);
+
+            LastCommandPrintMsgs();                    
+        }
+
 
         if (args[0] == "gen2_mysteryGift")
         {
