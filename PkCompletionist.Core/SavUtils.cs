@@ -159,7 +159,12 @@ internal class SavUtils
 
         var flags = sav.GiftAlbum.Flags;
         flags[giftToAdd.CardID] = true;
-        sav.GiftAlbum = new(gifts, flags);
+
+        if (sav.GiftAlbum is EncryptedMysteryGiftAlbum eAlbum){
+            sav.GiftAlbum = new EncryptedMysteryGiftAlbum(gifts, flags, eAlbum.Seed);
+        } else {
+            sav.GiftAlbum = new(gifts, flags);
+        }
 
         return null;
     }

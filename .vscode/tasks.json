@@ -34,6 +34,18 @@
       "problemMatcher": "$msCompile"
     },
     {
+      "label": "publish: wasm",
+      "type": "process",
+      "command": "robocopy",
+      "args": [
+        "${workspaceFolder}/bin/Release/net7.0/browser-wasm/AppBundle",
+        "C:/Users/Samuel/source/repos/pokemoncompletion/src/pokemonCompletion/PkCompletionist",
+        "/E",
+      ],
+      "dependsOn": "compile: wasm",
+      "problemMatcher": "$msCompile"
+    },
+    {
       "label": "run: exe Validate",
       "type": "process",
       "command": "${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe",

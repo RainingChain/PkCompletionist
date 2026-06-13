@@ -11,6 +11,17 @@
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "stopAtEntry": false
+    },
+    {
+      "name": "Debug: exe Event",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "compile: exe",
+      "program": "${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe",
+      "args": ["event", "Victini_BW_Event", "C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
     }
   ]
 }

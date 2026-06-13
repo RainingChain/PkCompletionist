@@ -292,7 +292,7 @@ internal class Program
 
             var eventName = args[1];
             var inputA = args[2];
-            var outputA = args[3];
+            var outputA = args.Length >= 4 ? args[3] : "";
             var inputB = args.Length >= 6 ? args[4] : "";
             var outputB = args.Length >= 6 ? args[5] : "";
 
