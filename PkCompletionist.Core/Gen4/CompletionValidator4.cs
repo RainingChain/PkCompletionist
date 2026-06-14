@@ -151,7 +151,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["ArceusFighting"] = HasArceus;
         ow["ArceusPoison"] = HasArceus;
         ow["ArceusGround"] = HasArceus;
-        ow["ArceusFly"] = HasArceus;
+        ow["ArceusFlying"] = HasArceus;
         ow["ArceusPsychic"] = HasArceus;
         ow["ArceusBug"] = HasArceus;
         ow["ArceusRock"] = HasArceus;

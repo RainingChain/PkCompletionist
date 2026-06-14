@@ -102,10 +102,10 @@ internal class CompletionValidator5 : CompletionValidatorX
         ow["UnownExclamationMark"] = HasOrSeenPkmBasedOnObjective2(201, 26);
         ow["UnownQuestionMark"] = HasOrSeenPkmBasedOnObjective2(201, 27);
 
-        ow["CastformNormal"] = HasOrSeenPkmBasedOnObjective(351);
-        ow["CastformFire"] = HasOrSeenPkmBasedOnObjective(351);
-        ow["CastformWater"] = HasOrSeenPkmBasedOnObjective(351);
-        ow["CastformIce"] = HasOrSeenPkmBasedOnObjective(351);
+        ow["CastformNormal"] = HasOrSeenPkmBasedOnObjective2(351,0);
+        ow["CastformFire"] = HasOrSeenPkmBasedOnObjective2(351,1);
+        ow["CastformWater"] = HasOrSeenPkmBasedOnObjective2(351,2);
+        ow["CastformIce"] = HasOrSeenPkmBasedOnObjective2(351,3);
 
         ow["DeoxysNormal"] = HasOrSeenPkmBasedOnObjective2(386, 0);
         ow["DeoxysAttack"] = HasOrSeenPkmBasedOnObjective2(386, 1);
@@ -136,60 +136,201 @@ internal class CompletionValidator5 : CompletionValidatorX
         ow["GetShinyPokemon"] = HasShinyMon();
 
         var HasArceus = this.OwnedPkms.Contains(493);
-        ow["ArceusNormal"] = HasArceus;
-        ow["ArceusFire"] = HasArceus;
-        ow["ArceusWater"] = HasArceus;
-        ow["ArceusElectric"] = HasArceus;
-        ow["ArceusGrass"] = HasArceus;
-        ow["ArceusIce"] = HasArceus;
-        ow["ArceusFighting"] = HasArceus;
-        ow["ArceusPoison"] = HasArceus;
-        ow["ArceusGround"] = HasArceus;
-        ow["ArceusFly"] = HasArceus;
-        ow["ArceusPsychic"] = HasArceus;
-        ow["ArceusBug"] = HasArceus;
-        ow["ArceusRock"] = HasArceus;
-        ow["ArceusGhost"] = HasArceus;
-        ow["ArceusDragon"] = HasArceus;
-        ow["ArceusDark"] = HasArceus;
-        ow["ArceusSteel"] = HasArceus;
+        byte nextForm = 0;
+        ow["ArceusNormal"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusFighting"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusFlying"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusPoison"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusGround"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusRock"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusBug"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusGhost"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusSteel"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusFire"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusWater"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusGrass"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusElectric"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusPsychic"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusIce"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusDragon"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
+        ow["ArceusDark"] = HasOrSeenPkmBasedOnObjectiveArceus(493, nextForm++);
 
+        ow["BasculinBlueStripe"] = HasOrSeenPkmBasedOnObjective2(550,0);
+        ow["BasculinRedStripe"] = HasOrSeenPkmBasedOnObjective2(550,1);
+        ow["DarmanitanStandard"] = HasOrSeenPkmBasedOnObjective2(555,0);
+        ow["DarmanitanZen"] = HasOrSeenPkmBasedOnObjective2(555,1);
+        ow["DeerlingSpring"] = HasOrSeenPkmBasedOnObjective2(585,0);
+        ow["DeerlingSummer"] = HasOrSeenPkmBasedOnObjective2(585,1);
+        ow["DeerlingAutumn"] = HasOrSeenPkmBasedOnObjective2(585,2);
+        ow["DeerlingWinter"] = HasOrSeenPkmBasedOnObjective2(585,3);
+        ow["SawsbuckSpring"] = HasOrSeenPkmBasedOnObjective2(586,0);
+        ow["SawsbuckSummer"] = HasOrSeenPkmBasedOnObjective2(586,1);
+        ow["SawsbuckAutumn"] = HasOrSeenPkmBasedOnObjective2(586,2);
+        ow["SawsbuckWinter"] = HasOrSeenPkmBasedOnObjective2(586,3);
+        ow["TornadusIncarnate"] = HasOrSeenPkmBasedOnObjective2(641,0);
+        ow["TornadusTherian"] = HasOrSeenPkmBasedOnObjective2(641,1);
+        ow["ThundurusIncarnate"] = HasOrSeenPkmBasedOnObjective2(642,0);
+        ow["ThundurusTherian"] = HasOrSeenPkmBasedOnObjective2(642,1);
+        ow["LandorusIncarnate"] = HasOrSeenPkmBasedOnObjective2(645,0);
+        ow["LandorusTherian"] = HasOrSeenPkmBasedOnObjective2(645,1);
+        ow["KyuremNormal"] = HasOrSeenPkmBasedOnObjective2(646,0);
+        ow["KyuremWhite"] = HasOrSeenPkmBasedOnObjective2(646,1);
+        ow["KyuremBlack"] = HasOrSeenPkmBasedOnObjective2(646,2);
+        ow["KeldeoOrdinary"] = HasOrSeenPkmBasedOnObjective2(647,0);
+        ow["KeldeoResolute"] = HasOrSeenPkmBasedOnObjective2(647,1);
+        ow["MeloettaAria"] = HasOrSeenPkmBasedOnObjective2(648,0);
+        ow["MeloettaPirouette"] = HasOrSeenPkmBasedOnObjective2(648,1);
+        ow["GenesectNormal"] = HasOrSeenPkmBasedOnObjective2(649,0);
+        ow["GenesectDouse"] = HasOrSeenPkmBasedOnObjective2(649,1);
+        ow["GenesectShock"] = HasOrSeenPkmBasedOnObjective2(649,2);
+        ow["GenesectBurn"] = HasOrSeenPkmBasedOnObjective2(649,3);
+        ow["GenesectChill"] = HasOrSeenPkmBasedOnObjective2(649,4);
+
+        /*
+        Seen: 0 Male, 1 Female, 2 Shiny Male, 3 Shiny Female, 0 Genderless, 1 Shiny Genderless.
+            Dex.GetSeen(species, 0-4);
+        Displayed: Only 1 can be active at one. it indicates the image displayed for that species. 
+        Owned: Dex.GetCaught
+
+        GetLanguageFlag(species - 1, LANG);
+        */
+        const int MALE_GENDERLESS_NON_SHINY = 0;
+        const int FEMALE_NON_SHINY = 1;
+        const int MALE_GENDERLESS_SHINY = 2;
+        const int FEMALE_SHINY = 3;
+
+        
         ow["AllMaleFemaleForms"] = new Func<bool>(() =>
         {
             var retStr = new List<string>();
-            var ret = true;
-            var genderLess = new HashSet<ushort> { 81, 82, 100, 101, 120, 121, 137, 233, 292, 337, 338, 343, 344, 374, 375, 376, 436, 437, 462, 474, 479, 479, 479, 479, 479, 479, 489, 490, 132, 144, 144, 145, 145, 146, 146, 150, 151, 201, 243, 244, 245, 249, 250, 251, 377, 378, 379, 382, 383, 384, 385, 386, 386, 386, 386, 480, 481, 482, 483, 484, 486, 487, 487, 491, 492, 492, 493 };
-            for (ushort i = 0; i <= 493; i++)
+            for (ushort i = 0; i <= 649; i++)
             {
                 if (!this.sav.Zukan.GetSeen(i))
                 {
-                    ret = false;
                     retStr.Add("#" + i.ToString());
                     continue;
                 }
-                if (genderLess.Contains(i))
+
+                var pi = this.sav.Personal[i];
+                if (pi.OnlyFemale || pi.OnlyMale || pi.Genderless){
                     continue;
-                //TODO
-                /*if (this.sav.Zukan.GetSeenGenderFirst(i) == this.sav.Zukan.GetSeenGenderSecond(i)) // 01 and 10 is when both genders are seen. 00 and 11 are when 1 is seen.
+                }
+                
+                if (!this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_NON_SHINY) && 
+                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
                 {
-                    ret = false;
-                    retStr.Add("#" + i.ToString());
+                    retStr.Add($"#{i} (Male)");
                     continue;
-                }*/
+                }
+                if (!this.sav.Zukan.GetSeen(i, FEMALE_NON_SHINY) && 
+                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                {
+                    retStr.Add($"#{i} (Female)");
+                    continue;
+                }
             }
 
-            if (!ret)
+            if (retStr.Count > 0)
                 this.incompleteHints.Add("Missing Male & Female Forms: Pokemon " + String.Join(", ", retStr.ToArray()));
-            return ret;
+            
+            return retStr.Count == 0;
         })();
 
-        //TODO: test
+        ow["1ShinyFormforAllPokemon"] = new Func<bool>(() =>
+        {
+            var retStr = new List<string>();
+            for (ushort i = 0; i <= 649; i++)
+            {
+                if (!this.sav.Zukan.GetSeen(i))
+                {
+                    retStr.Add("#" + i.ToString());
+                    continue;
+                }
+
+                if (!this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY) && 
+                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                {
+                    retStr.Add($"#{i}");
+                    continue;
+                }
+            }
+
+            if (retStr.Count > 0)
+                this.incompleteHints.Add("Missing Shiny Forms: Pokemon " + String.Join(", ", retStr.ToArray()));
+            
+            return retStr.Count == 0;
+        })();
+
+        ow["ShinyMaleFemaleFormsforAllPokemon"] = new Func<bool>(() =>
+        {
+            var retStr = new List<string>();
+            for (ushort i = 0; i <= 649; i++)
+            {
+                var pi = this.sav.Personal[i];
+                
+                if (!pi.OnlyFemale && 
+                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
+                {
+                    retStr.Add($"#{i} (Male)");
+                    continue;
+                }
+
+                if (!(pi.OnlyMale || pi.Genderless) && 
+                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                {
+                    retStr.Add($"#{i} (Female)");
+                    continue;
+                }
+            }
+
+            if (retStr.Count > 0)
+                this.incompleteHints.Add("Missing Shiny Male & Female Forms: Pokemon " + String.Join(", ", retStr.ToArray()));
+            
+            return retStr.Count == 0;
+        })();
+
+        // non-shiny forms are explicitely listed
+        ow["AllShinyFormsforAllPokemon"] = new Func<bool>(() =>
+        {
+            var retStr = new List<string>();
+            for (ushort i = 0; i <= 649; i++)
+            {
+                var pi = this.sav.Personal[i];
+                
+                //TODO: 
+                string[] forms = GetFormsGen5(species, types, forms, context.Generation())
+                
+                FormConverter.GetFormList(i, GameInfo.Strings.types, GameInfo.Strings.forms, Main.GenderSymbols, SAV.Context);
+                if (forms.Length < 1)
+                    return;
+
+                if (!pi.OnlyFemale && 
+                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
+                {
+                    retStr.Add($"#{i} (Male)");
+                    continue;
+                }
+
+                if (!(pi.OnlyMale || pi.Genderless) && 
+                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                {
+                    retStr.Add($"#{i} (Female)");
+                    continue;
+                }
+            }
+
+            if (retStr.Count > 0)
+                this.incompleteHints.Add("Missing Shiny Male & Female Forms: Pokemon " + String.Join(", ", retStr.ToArray()));
+            
+            return retStr.Count == 0;
+        })();
+
         ow["AllForeignPokedexEntries"] = new Func<bool>(() =>
         {
             var languages = new List<string> { "JP", "EN", "FR", "IT", "GE", "SP", "KO" };
             var retStr = new List<string>();
             var ret = true;
-            for (ushort i = 1; i <= 493; i++)
+            for (ushort i = 1; i <= 493; i++) // gen5 don't have language flags.
             {
                 for (int j = 0; j < 6; j++)
                     if (!this.sav.Zukan.GetLanguageFlag(i - 1, j))
@@ -204,19 +345,29 @@ internal class CompletionValidator5 : CompletionValidatorX
             return ret;
         })();
 
-        // TODO: Shiny Male & Female Form for All Pokémon
-        // TODO: Male & Female Form for All Pokémon
     }
 
     public bool HasSeenPkmForm(ushort species, byte form)
     {
-        //TODO
-        return false; // this.sav.Zukan.GetForms(species).Contains(form);
+        var pi = this.sav.Personal[species];
+
+        var fc = pi.FormCount;
+        int f = DexFormUtil.GetDexFormIndexB2W2(species, fc);
+
+        const int NON_SHINY = 0;
+        const int SHINY = 0;
+
+        return this.sav.Zukan.GetFormFlag(f + form, NON_SHINY) || this.sav.Zukan.GetFormFlag(f + form, SHINY);
     }
 
     public bool HasOrSeenPkmBasedOnObjective2(ushort species, byte form)
     {
         return this.objective != 0 ? HasPkmForm(species, form) : HasSeenPkmForm(species, form);
+    }
+    public bool HasOrSeenPkmBasedOnObjectiveArceus(ushort species, byte form)
+    {
+        // Arceus forms are not in the pokdex in gen5
+        return this.objective != 0 ? HasPkmForm(species, form) : HasSeenPkmForm(species, 0);
     }
 
     public override void Generate_item()
