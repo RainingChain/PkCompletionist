@@ -134,25 +134,14 @@ internal class SavUtils
             return msg;
 
         var gifts = sav.GiftAlbum.Gifts;
-        int lastUnfilled = GetLastUnfilledByType(gift, gifts);
-        int index = 0;
-        if (lastUnfilled > -1 && lastUnfilled < index)
-            index = lastUnfilled;
-        if (gift is PCD { IsLockCapsule: true })
-            index = 11;
+        int index = GetLastUnfilledByType(gift, gifts);
+        if (index == -1)
+            return "Error: no empty slot. Trash existing cards to make space.";
 
         var other = gifts[index];
         if (gift is PCD { CanConvertToPGT: true } pcd && other is PGT)
         {
             gift = pcd.Gift;
-        }
-        else if (gift.Type != other.Type)
-        {
-            return $"Internal error: {gift.Type} != {other.Type}";
-        }
-        else if (gift is PCD g && (g is { IsLockCapsule: true } != (index == 11)))
-        {
-            return "Internal error: slot not valid.";
         }
 
         gifts[index] = (DataMysteryGift)gift.Clone();
@@ -170,6 +159,9 @@ internal class SavUtils
     }
     private static int GetLastUnfilledByType(DataMysteryGift gift, ReadOnlySpan<DataMysteryGift> album)
     {
+        if (gift is PCD { IsLockCapsule: true } && !album[11].Empty)
+            return -1;
+
         for (int i = 0; i < album.Length; i++)
         {
             var exist = album[i];

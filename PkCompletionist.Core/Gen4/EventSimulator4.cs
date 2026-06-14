@@ -135,11 +135,11 @@ internal class EventSimulator4 : EventSimulatorX
 
         if (evt == PK_EVENT4.PokemonFestaRibbons_RSE_Event)
         {
-            if (savB is not SAV3RS && savB is not SAV3E)
-                return "Error: Pokemon Festa Ribbons are exclusive to Ruby, Sapphire and Emerald. Load a Ruby, Sapphire or Emerald savefile in .sav #2.";
+            //if (savB is not SAV3RS && savB is not SAV3E)
+            //    return "Error: Pokemon Festa Ribbons are exclusive to Ruby, Sapphire and Emerald. Load a Ruby, Sapphire or Emerald savefile in .sav #2.";
 
-            var sav3B = (SAV3)savB;
-            return EventSimulator3.PokemonFestaRibbons(sav3B);
+            //var sav3B = (SAV3)savB;
+            return EventSimulator3.PokemonFestaRibbons(sav);
         }
         if (evt == PK_EVENT4.AuroraTicketEvent_Gen3)
         {
