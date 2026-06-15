@@ -16,6 +16,11 @@ public sealed class PWTBlock5 : SaveBlock<SAV5B2W2>
         int ofs = Offset + 0x5C + ((int)id * 2);
         return ReadUInt16LittleEndian(Data.AsSpan(ofs));
     }
+    public ushort GetFlags(int id)
+    {
+        int ofs = Offset + 0x5C + ((int)29 * 2) + id;
+        return ReadUInt16LittleEndian(Data.AsSpan(ofs));
+    }
 
     public void SetPWTRecord(int id, ushort value) => SetPWTRecord((PWTRecordID)id, value);
 

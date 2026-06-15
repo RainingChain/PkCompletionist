@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug: exe Validate",
+      "name": "Validate (Debug: exe)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "compile: exe",
@@ -13,7 +13,7 @@
       "stopAtEntry": false
     },
     {
-      "name": "Debug: exe Event",
+      "name": "Event (Debug: exe)",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "compile: exe",
