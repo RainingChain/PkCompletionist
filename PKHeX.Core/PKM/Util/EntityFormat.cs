@@ -5,12 +5,15 @@ using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PKHeX.Core;
 
+/// <summary>
+/// Utility class for detecting the type format of a Pokémon entity.
+/// </summary>
 public static class EntityFormat
 {
     /// <summary>
-    /// Gets the generation of the Pokemon data.
+    /// Gets the generation of the Pokémon data.
     /// </summary>
-    /// <param name="data">Raw data representing a Pokemon.</param>
+    /// <param name="data">Raw data representing a Pokémon.</param>
     /// <returns>Enum indicating the generation of the PKM file, or <see cref="None"/> if the data is invalid.</returns>
     public static EntityFormatDetected GetFormat(ReadOnlySpan<byte> data)
     {
@@ -22,8 +25,10 @@ public static class EntityFormat
 
     private static EntityFormatDetected GetFormatInternal(ReadOnlySpan<byte> data) => data.Length switch
     {
-        SIZE_1JLIST or SIZE_1ULIST    => FormatPK1,
-        SIZE_2JLIST or SIZE_2ULIST    => FormatPK2,
+        SIZE_1JLIST or SIZE_1ULIST    => FormatPK1List,
+        SIZE_2JLIST or SIZE_2ULIST    => FormatPK2List,
+        SIZE_1PARTY or SIZE_1STORED   => FormatPK1,
+        SIZE_2PARTY or SIZE_2STORED   => FormatPK2,
         SIZE_2STADIUM                 => FormatSK2,
         SIZE_3PARTY or SIZE_3STORED   => FormatPK3,
         SIZE_3CSTORED                 => FormatCK3,
@@ -50,8 +55,8 @@ public static class EntityFormat
         if (ReadUInt16LittleEndian(data[0x04..]) != 0) // Bad Sanity?
             return false; // PGT with non-zero ItemID
 
-        // PGT files have the last 0x10 bytes 00; PK6/etc will have data here.
-        if (data[..^0x10].IndexOfAnyExcept<byte>(0) != -1)
+        // PGT files have the last 0x10 bytes 00; PK6/etc. will have data here.
+        if (data[..^0x10].ContainsAnyExcept<byte>(0))
             return true;
 
         if (ReadUInt16LittleEndian(data[0x06..]) == Checksums.Add16(data[8..SIZE_6STORED]))
@@ -67,9 +72,9 @@ public static class EntityFormat
         if (ReadUInt16LittleEndian(data[0x4..]) != 0)
             return FormatBK4; // BK4 non-zero sanity
         if (data[0x5F] < 0x10 && ReadUInt16LittleEndian(data[0x80..]) < 0x3333)
-            return FormatPK4; // gen3/4 version origin, not Transporter
+            return FormatPK4; // Gen3/4 version origin, not Transporter
         if (ReadUInt16LittleEndian(data[0x46..]) != 0)
-            return FormatPK4; // PK4.Met_LocationExtended (unused in PK5)
+            return FormatPK4; // PK4.MetLocationExtended (unused in PK5)
         return FormatPK5;
     }
 
@@ -87,38 +92,66 @@ public static class EntityFormat
     /// </summary>
     private static EntityFormatDetected GetFormat89(ReadOnlySpan<byte> data)
     {
-        var pk = new PK8(data.ToArray());
-        if (IsFormatReally9(pk))
-            return FormatPK9;
-        return IsFormatReally8b(pk);
-    }
+        var pk = new PK8(data.ToArray()); // Force decryption
 
-    private static bool IsFormatReally9(PK8 pk)
-    {
-        // PK8: Unused Alignment, PK9: Obedience Level
-        if (pk.Data[0x11F] != 0)
-            return true;
-        // PK8: Version, PK9: Unused -- Version relocated to 0xCE
-        return pk.Data[0xDE] == 0;
-        // No need to check for other usages being different.
+        var core = pk.Data;
+        if (core[0x11F] == 0) // PK8/PB8: Unused Alignment, PK9/PA9: Obedience Level
+        {
+            // Can still be zero if it's an egg in S/V.
+            var ivs = ReadUInt32LittleEndian(core[0x8C..]);
+            if (((ivs >> 30) & 1) != 1) // IsEgg flag not set!
+                // Not an egg, therefore should have obedience level as PK9/PA9.
+                // Since it doesn't, it's a Gen8 non-egg.
+                return IsFormatReally8b(pk);
+
+            // ZA has no eggs. If 0xDE is non-zero, it's a Gen8 egg.
+            if (core[0xDE] != 0) // SW/SH or BD/SP.
+                return IsFormatReally8b(pk);
+
+            // Else, is S/V egg.
+            return FormatPK9;
+        }
+
+        // Differentiate PK9/PA9.
+        if (core[0xCE] == (byte)GameVersion.ZA) // Version
+            return FormatPA9;
+        if (core[0x23] != 0) // IsAlpha
+            return FormatPA9;
+        if (core[0x96..0xA0].ContainsAnyExcept<byte>(0)) // Plus Flags [2..] (Tera Type in S/V uses first two bytes)
+            return FormatPA9;
+        if (core[0xD6..0xF7].ContainsAnyExcept<byte>(0)) // Plus Flags)
+            return FormatPA9;
+
+        if (core[0x82..0x8A].ContainsAnyExcept<byte>(0)) // Relearn Moves (unused by Z-A)
+            return FormatPK9;
+
+        // Really should have at least one plus move flag set as an external transfer, but level 1 mon's won't.
+        // I guess it won't hurt to force transfer it PK9=>PA9 if we just assume it's a PK9.
+        var item = ReadUInt16LittleEndian(core[0x0A..]);
+        if (ItemStorage9ZA.IsUniqueHeldItem(item)) // Mega Stone or Primal Orb, which S/V doesn't have.
+            return FormatPA9;
+
+        return Format9or9a; // Could be either; let other clues like extension/current save file format differentiate.
     }
 
     /// <summary>
     /// Creates an instance of <see cref="PKM"/> from the given data.
     /// </summary>
-    /// <param name="data">Raw data of the Pokemon file.</param>
+    /// <param name="data">Raw data of the Pokémon file.</param>
     /// <param name="prefer">Optional identifier for the preferred generation.  Usually the generation of the destination save file.</param>
     /// <returns>An instance of <see cref="PKM"/> created from the given <paramref name="data"/>, or null if <paramref name="data"/> is invalid.</returns>
-    public static PKM? GetFromBytes(byte[] data, EntityContext prefer = EntityContext.None)
+    public static PKM? GetFromBytes(Memory<byte> data, EntityContext prefer = EntityContext.None)
     {
-        var format = GetFormat(data);
+        var format = GetFormat(data.Span);
         return GetFromBytes(data, format, prefer);
     }
 
-    private static PKM? GetFromBytes(byte[] data, EntityFormatDetected format, EntityContext prefer) => format switch
+    private static PKM? GetFromBytes(Memory<byte> data, EntityFormatDetected format, EntityContext prefer) => format switch
     {
-        FormatPK1 => new PokeList1(data)[0],
-        FormatPK2 => new PokeList2(data)[0],
+        FormatPK1List => PokeList1.ReadFromSingle(data.Span),
+        FormatPK2List => PokeList2.ReadFromSingle(data.Span),
+        FormatPK1 => new PK1(data),
+        FormatPK2 => new PK2(data),
         FormatSK2 => new SK2(data),
         FormatPK3 => new PK3(data),
         FormatCK3 => new CK3(data),
@@ -135,7 +168,9 @@ public static class EntityFormat
         FormatPB8 => new PB8(data),
         Format6or7 => prefer == EntityContext.Gen6 ? new PK6(data) : new PK7(data),
         Format8or8b => prefer == EntityContext.Gen8b ? new PB8(data) : new PK8(data),
+        Format9or9a => prefer == EntityContext.Gen9a ? new PA9(data) : new PK9(data),
         FormatPK9 => new PK9(data),
+        FormatPA9 => new PA9(data),
         _ => null,
     };
 
@@ -148,7 +183,7 @@ public static class EntityFormat
     {
         if (pk.Version > Legal.MaxGameID_6)
         {
-            if (pk.Version is ((int)GameVersion.GP or (int)GameVersion.GE or (int)GameVersion.GO))
+            if (pk.Version is (GameVersion.GP or GameVersion.GE or GameVersion.GO))
                 return FormatPB7;
             return FormatPK7;
         }
@@ -171,16 +206,16 @@ public static class EntityFormat
         var et = pk.GroundTile;
         if (et != 0)
         {
-            if (pk.CurrentLevel < 100) // can't be hyper trained
+            if (pk.CurrentLevel < Experience.MaxLevel) // Can't be hyper trained in Gen7
                 return FormatPK6;
 
             if (!pk.Gen4) // can't have GroundTile
                 return FormatPK7;
-            if (et > GroundTileType.Max_Pt) // invalid gen4 GroundTile
+            if (et > GroundTileType.Max_Pt) // invalid Gen4 GroundTile
                 return FormatPK7;
         }
 
-        int mb = ReadUInt16LittleEndian(pk.Data.AsSpan(0x16));
+        int mb = ReadUInt16LittleEndian(pk.Data[0x16..]);
         if (mb > 0xAAA)
             return FormatPK6;
         for (int i = 0; i < 6; i++)
@@ -208,9 +243,17 @@ public static class EntityFormat
     }
 }
 
+/// <summary>
+/// Enum representing the detected format of a Pokémon entity.
+/// </summary>
+/// <remarks>
+/// Roughly correlated to derived <see cref="PKM"/> types, besides the "one-of" range of enum values.
+/// </remarks>
 public enum EntityFormatDetected
 {
-    None = -1,
+    None,
+
+    FormatPK1List, FormatPK2List,
 
     FormatPK1,
     FormatPK2, FormatSK2,
@@ -218,8 +261,9 @@ public enum EntityFormatDetected
     FormatPK4, FormatBK4, FormatRK4, FormatPK5,
     FormatPK6, FormatPK7, FormatPB7,
     FormatPK8, FormatPA8, FormatPB8,
-    FormatPK9,
+    FormatPK9, FormatPA9,
 
     Format6or7,
     Format8or8b,
+    Format9or9a,
 }

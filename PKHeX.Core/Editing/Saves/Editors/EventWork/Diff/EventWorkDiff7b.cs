@@ -1,5 +1,5 @@
-﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static PKHeX.Core.EventWorkUtil;
 using static PKHeX.Core.EventWorkDiffCompatibility;
@@ -10,15 +10,24 @@ namespace PKHeX.Core;
 public sealed class EventWorkDiff7b : IEventWorkDiff
 {
     private SAV7b? S1;
-    public List<int> SetFlags { get; } = new();
-    public List<int> ClearedFlags { get; } = new();
-    public List<int> WorkChanged { get; } = new();
-    public List<string> WorkDiff { get; } = new();
+    public List<int> SetFlags { get; } = [];
+    public List<int> ClearedFlags { get; } = [];
+    public List<int> WorkChanged { get; } = [];
+    public List<string> WorkDiff { get; } = [];
     public EventWorkDiffCompatibility Message { get; private set; }
 
     private const int MAX_SAVEFILE_SIZE = 0x10_0000; // 1 MB
 
     public EventWorkDiff7b(SAV7b s1, SAV7b s2) => Diff(s1, s2);
+
+    private static bool TryGetSaveFile(string path, [NotNullWhen(true)] out SAV7b? sav)
+    {
+        sav = null;
+        if (!SaveUtil.TryGetSaveFile(path, out var s) || s is not SAV7b b)
+            return false;
+        sav = b;
+        return true;
+    }
 
     public EventWorkDiff7b(string f1, string f2)
     {
@@ -26,11 +35,9 @@ public sealed class EventWorkDiff7b : IEventWorkDiff
         if (Message != Valid)
             return;
 
-        var s1 = SaveUtil.GetVariantSAV(f1);
-        var s2 = SaveUtil.GetVariantSAV(f2);
-        if (s1 is not SAV7b b1 || s2 is not SAV7b b2)
+        if (!TryGetSaveFile(f1, out var b1) || !TryGetSaveFile(f2, out var b2))
         {
-            Message = DifferentVersion;
+            Message = DifferentGameGroup;
             return;
         }
 
@@ -52,8 +59,8 @@ public sealed class EventWorkDiff7b : IEventWorkDiff
 
     public IReadOnlyList<string> Summarize()
     {
-        if (S1 == null)
-            return Array.Empty<string>();
+        if (S1 is null)
+            return [];
         var ew = S1.Blocks.EventWork;
 
         var fOn = SetFlags.Select(z => FlagSummary.Get(z, ew).ToString());
@@ -65,14 +72,14 @@ public sealed class EventWorkDiff7b : IEventWorkDiff
         if (SetFlags.Count == 0)
             list.Add("None.");
 
-        list.Add("");
+        list.Add(string.Empty);
         list.Add("Flags: OFF");
         list.Add("==========");
         list.AddRange(fOff);
         if (ClearedFlags.Count == 0)
             list.Add("None.");
 
-        list.Add("");
+        list.Add(string.Empty);
         list.Add("Work:");
         list.Add("=====");
         if (WorkChanged.Count == 0)

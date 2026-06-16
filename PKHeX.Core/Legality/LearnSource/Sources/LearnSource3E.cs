@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using static PKHeX.Core.LearnMethod;
 using static PKHeX.Core.LearnEnvironment;
+using static PKHeX.Core.PersonalInfo3;
 
 namespace PKHeX.Core;
 
@@ -12,13 +13,15 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
 {
     public static readonly LearnSource3E Instance = new();
     private static readonly PersonalTable3 Personal = PersonalTable.E;
-    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(BinLinkerAccessor.Get(Util.GetBinaryResource("lvlmove_e.pkl"), "em"));
+    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(BinLinkerAccessor16.Get(Util.GetBinaryResource("lvlmove_e.pkl"), "em"u8));
     private const int MaxSpecies = Legal.MaxSpeciesID_3;
     private const LearnEnvironment Game = E;
-    private const int Generation = 3;
+    private const byte Generation = 3;
     private const int CountTM = 50;
 
-    public Learnset GetLearnset(ushort species, byte form) => Learnsets[species];
+    public LearnEnvironment Environment => Game;
+
+    public Learnset GetLearnset(ushort species, byte form) => Learnsets[species < Learnsets.Length ? species : 0];
     internal PersonalInfo3 this[ushort species] => Personal[species];
 
     public bool TryGetPersonal(ushort species, byte form, [NotNullWhen(true)] out PersonalInfo3? pi)
@@ -32,17 +35,19 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
 
     public bool GetIsEggMove(ushort species, byte form, ushort move)
     {
-        if (species > MaxSpecies)
+        var arr = EggMoves;
+        if (species >= arr.Length)
             return false;
-        var moves = EggMoves[species];
-        return moves.GetHasEggMove(move);
+        var moves = arr[species];
+        return moves.GetHasMove(move);
     }
 
     public ReadOnlySpan<ushort> GetEggMoves(ushort species, byte form)
     {
-        if (species > MaxSpecies)
-            return ReadOnlySpan<ushort>.Empty;
-        return EggMoves[species].Moves;
+        var arr = EggMoves;
+        if (species >= arr.Length)
+            return [];
+        return arr[species].Moves;
     }
 
     public MoveLearnInfo GetCanLearn(PKM pk, PersonalInfo3 pi, EvoCriteria evo, ushort move, MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
@@ -50,9 +55,8 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
         if (types.HasFlag(MoveSourceType.LevelUp))
         {
             var learn = GetLearnset(evo.Species, evo.Form);
-            var level = learn.GetLevelLearnMove(move);
-            if (level != -1 && level <= evo.LevelMax)
-                return new(LevelUp, Game, (byte)level);
+            if (learn.TryGetLevelLearnMove(move, out var level) && level <= evo.LevelMax)
+                return new(LevelUp, Game, level);
         }
 
         if (types.HasFlag(MoveSourceType.Machine))
@@ -80,7 +84,7 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
 
     private static bool GetIsTM(PersonalInfo3 info, ushort move)
     {
-        var index = TM_3.IndexOf(move);
+        var index = MachineMovesTechnical.IndexOf(move);
         if (index == -1)
             return false;
         return info.TMHM[index];
@@ -88,7 +92,7 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
 
     private static bool GetIsHM(PersonalInfo3 info, ushort move)
     {
-        var index = HM_3.IndexOf(move);
+        var index = MachineMovesHidden.IndexOf(move);
         if (index == -1)
             return false;
         return info.TMHM[CountTM + index];
@@ -110,7 +114,7 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
         if (types.HasFlag(MoveSourceType.Machine))
         {
             var flags = pi.TMHM;
-            var moves = TM_3;
+            var moves = MachineMovesTechnical;
             for (int i = 0; i < moves.Length; i++)
             {
                 if (flags[i])
@@ -119,7 +123,7 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
 
             if (pk.Format == 3)
             {
-                moves = HM_3;
+                moves = MachineMovesHidden;
                 for (int i = 0; i < moves.Length; i++)
                 {
                     if (flags[CountTM + i])
@@ -140,10 +144,33 @@ public sealed class LearnSource3E : LearnSource3, ILearnSource<PersonalInfo3>, I
         }
     }
 
-    private static ReadOnlySpan<ushort> Tutor_E => new ushort[]
+    // TODO RSE VC: Remove these.
+    internal static bool GetIsTutorFRLG(ushort species, ushort move)
     {
-        005, 014, 025, 034, 038, 068, 069, 102, 118, 135,
-        138, 086, 153, 157, 164, 223, 205, 244, 173, 196,
-        203, 189, 008, 207, 214, 129, 111, 009, 007, 210,
-    };
+        var info = Personal[species];
+        var index = Tutor_E.IndexOf(move);
+        if ((uint)index >= 15)
+            return false;
+        return info.TypeTutors[index];
+    }
+
+    internal static void GetAllTutorMovesFRLG(Span<bool> result, ushort species)
+    {
+        var pi = Personal[species];
+        var flags = pi.TypeTutors;
+        var moves = Tutor_E;
+        for (int i = 0; i < 15; i++)
+        {
+            if (flags[i])
+                result[moves[i]] = true;
+        }
+    }
+
+    private static ReadOnlySpan<ushort> Tutor_E =>
+    [
+        // Introduced in FR/LG
+        005, 014, 025, 034, 038, 068, 069, 102, 118, 135, 138, 086, 153, 157, 164,
+        // Introduced in Emerald
+        223, 205, 244, 173, 196, 203, 189, 008, 207, 214, 129, 111, 009, 007, 210,
+    ];
 }

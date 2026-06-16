@@ -3,16 +3,16 @@ using System;
 namespace PKHeX.Core;
 
 /// <summary>
-/// Group that checks the source of a move in <see cref="GameVersion.PLA"/>.
+/// Group that checks the source of a move in <see cref="EntityContext.Gen8a"/>.
 /// </summary>
 public sealed class LearnGroup8a : ILearnGroup
 {
     public static readonly LearnGroup8a Instance = new();
-    private const int Generation = 8;
+    private const byte Generation = 8;
     private const EntityContext Context = EntityContext.Gen8a;
     public ushort MaxMoveID => Legal.MaxMoveID_8a;
 
-    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => null;
+    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => option == LearnOption.AtAnyTimeChain ? LearnGroupHOME.Instance : null;
     public bool HasVisited(PKM pk, EvolutionHistory history) => history.HasVisitedPLA;
 
     public bool Check(Span<MoveResult> result, ReadOnlySpan<ushort> current, PKM pk, EvolutionHistory history,
@@ -27,7 +27,7 @@ public sealed class LearnGroup8a : ILearnGroup
 
         var home = LearnGroupHOME.Instance;
         if (option != LearnOption.HOME && home.HasVisited(pk, history))
-            return home.Check(result, current, pk, history, enc, types);
+            return home.Check(result, current, pk, history, enc, types, option);
         return false;
     }
 
@@ -45,7 +45,7 @@ public sealed class LearnGroup8a : ILearnGroup
             var move = current[i];
             var chk = game.GetCanLearn(pk, pi, evo, move);
             if (chk != default)
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
         }
     }
 
@@ -56,6 +56,10 @@ public sealed class LearnGroup8a : ILearnGroup
 
         foreach (var evo in history.Gen8a)
             GetAllMoves(result, pk, evo, types, option);
+
+        var home = LearnGroupHOME.Instance;
+        if (option != LearnOption.HOME && home.HasVisited(pk, history))
+            home.GetAllMoves(result, pk, history, enc, types);
     }
 
     private static void GetAllMoves(Span<bool> result, PKM pk, EvoCriteria evo, MoveSourceType types, LearnOption option)
@@ -84,18 +88,8 @@ public sealed class LearnGroup8a : ILearnGroup
     private static void FlagEncounterMoves(IEncounterTemplate enc, Span<bool> result)
     {
         if (enc is IMoveset { Moves: { HasMoves: true } x })
-        {
-            result[x.Move4] = true;
-            result[x.Move3] = true;
-            result[x.Move2] = true;
-            result[x.Move1] = true;
-        }
+            x.FlagMoves(result);
         if (enc is IRelearn { Relearn: { HasMoves: true } r })
-        {
-            result[r.Move4] = true;
-            result[r.Move3] = true;
-            result[r.Move2] = true;
-            result[r.Move1] = true;
-        }
+            r.FlagMoves(result);
     }
 }

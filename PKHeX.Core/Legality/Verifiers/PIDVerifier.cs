@@ -1,5 +1,5 @@
 using System;
-using static PKHeX.Core.LegalityCheckStrings;
+using static PKHeX.Core.LegalityCheckResultCode;
 
 namespace PKHeX.Core;
 
@@ -20,68 +20,95 @@ public sealed class PIDVerifier : Verifier
         if (enc.Species == (int)Species.Wurmple)
             VerifyECPIDWurmple(data);
         else if (enc.Species is (int)Species.Tandemaus or (int)Species.Dunsparce)
-            VerifyEC100(data);
+            VerifyEC100(data, enc.Species);
 
         if (pk.PID == 0)
-            data.AddLine(Get(LPIDZero, Severity.Fishy));
-        if (pk.Nature >= 25) // out of range
-            data.AddLine(GetInvalid(LPIDNatureMismatch));
+            data.AddLine(Get(Severity.Fishy, PIDZero));
+        if (!pk.Nature.IsFixed) // out of range
+            data.AddLine(GetInvalid(PIDNatureMismatch));
+        if (data.Info.EncounterMatch is IEncounterEgg egg)
+            VerifyEggPID(data, pk, egg);
 
         VerifyShiny(data);
+    }
+
+    private static void VerifyEggPID(LegalityAnalysis data, PKM pk, IEncounterEgg egg)
+    {
+        if (egg is EncounterEgg4 e4)
+        {
+            // Gen4 Eggs are "egg available" based on the stored PID value in the save file.
+            // If this value is 0 or is generated as 0 (possible), the game will see "false" and no egg is available.
+            // Only a non-zero value is possible to obtain.
+            // However, With Masuda Method, the egg PID is re-rolled with the ARNG (until shiny, at most 4 times) upon receipt.
+            // None of the un-rolled states share the same shiny-xor as PID=0, you can re-roll into an all-zero PID.
+            // Flag it as fishy, because more often than not, it is hacked rather than a legitimately obtained egg.
+            if (pk.EncryptionConstant == 0)
+                data.AddLine(Get(CheckIdentifier.EC, Severity.Fishy, PIDEncryptZero));
+
+            if (Breeding.IsGenderSpeciesDetermination(e4.Species))
+                VerifyEggGender8000(data, pk);
+        }
+        else if (egg is EncounterEgg3 e3)
+        {
+            if (!Daycare3.IsValidProcPID(pk.EncryptionConstant, e3.Version))
+                data.AddLine(Get(CheckIdentifier.EC, Severity.Invalid, PIDEncryptZero));
+
+            if (Breeding.IsGenderSpeciesDetermination(e3.Species))
+                VerifyEggGender8000(data, pk);
+            // PID and IVs+Inheritance randomness is sufficiently random; any permutation of vBlank correlations is possible.
+        }
+    }
+
+    private static void VerifyEggGender8000(LegalityAnalysis data, PKM pk)
+    {
+        var gender = pk.Gender;
+        if (Breeding.IsValidSpeciesBit34(pk.EncryptionConstant, gender))
+            return; // 50/50 chance!
+        if (gender == 1 || IsEggBitRequiredMale34(data.Info.Moves))
+            data.AddLine(GetInvalid(CheckIdentifier.EC, PIDGenderMismatch));
     }
 
     private void VerifyShiny(LegalityAnalysis data)
     {
         var pk = data.Entity;
+        var enc = data.EncounterMatch;
 
-        switch (data.EncounterMatch)
+        if (!enc.Shiny.IsValid(pk))
+            data.AddLine(GetInvalid(CheckIdentifier.Shiny, EncStaticPIDShiny));
+
+        switch (enc)
         {
-            case EncounterStatic s:
-                if (!s.Shiny.IsValid(pk))
-                    data.AddLine(GetInvalid(LEncStaticPIDShiny, CheckIdentifier.Shiny));
+            // Forced PID or generated without an encounter
+            case IGeneration { Generation: 5 } and not (EncounterTrade5BW or PGF) and IFixedGender { Gender: 0 or 1 } fg:
+                if (!MonochromeRNG.IsValidForcedRandomGender(pk.EncryptionConstant, fg.Gender))
+                    data.AddLine(GetInvalid(CheckIdentifier.PID, EncConditionBadRNGFrame));
 
-                // Underground Raids are originally anti-shiny on encounter.
-                // When selecting a prize at the end, the game rolls and force-shiny is applied to be XOR=1.
-                if (s is EncounterStatic8U {Shiny: Shiny.Random})
-                {
-                    if (pk.ShinyXor is <= 15 and not 1)
-                        data.AddLine(GetInvalid(LEncStaticPIDShiny, CheckIdentifier.Shiny));
-                    break;
-                }
-
-                if (s.Generation != 5)
-                    break;
-
-                // Generation 5 has a correlation for wild captures.
-                // Certain static encounter types are just generated straightforwardly.
-                if (s.Location == 75) // Entree Forest
-                    break;
-
-                // Not wild / forced ability
-                if (s.Gift || s.Ability == AbilityPermission.OnlyHidden)
-                    break;
-
-                // Forced PID or generated without an encounter
-                // Crustle has 0x80 for its StartWildBattle flag; dunno what it does, but sometimes it doesn't align with the expected PID xor.
-                if (s is EncounterStatic5 { IsWildCorrelationPID: true })
+                if (enc is EncounterStatic5 { IsWildCorrelationPID: true })
                     VerifyG5PID_IDCorrelation(data);
                 break;
-
-            case EncounterSlot5 {IsHiddenGrotto: true}:
-                if (pk.IsShiny)
-                    data.AddLine(GetInvalid(LG5PIDShinyGrotto, CheckIdentifier.Shiny));
+            case EncounterStatic5 { IsWildCorrelationPID: true }:
+                VerifyG5PID_IDCorrelation(data);
                 break;
-            case EncounterSlot5:
+
+            case EncounterSlot5 {IsHiddenGrotto: true} when pk.IsShiny:
+                data.AddLine(GetInvalid(CheckIdentifier.Shiny, G5PIDShinyGrotto));
+                break;
+            case EncounterSlot5 {IsHiddenGrotto: false}:
                 VerifyG5PID_IDCorrelation(data);
                 break;
 
             case PCD d: // fixed PID
                 if (d.IsFixedPID() && pk.EncryptionConstant != d.Gift.PK.PID)
-                    data.AddLine(GetInvalid(LEncGiftPIDMismatch, CheckIdentifier.Shiny));
+                    data.AddLine(GetInvalid(CheckIdentifier.Shiny, EncGiftPIDMismatch));
                 break;
 
-            case WC7 wc7 when wc7.IsAshGreninjaWC7(pk) && pk.IsShiny:
-                data.AddLine(GetInvalid(LEncGiftShinyMismatch, CheckIdentifier.Shiny));
+            case WC7 { IsAshGreninja: true } when pk.IsShiny:
+                data.AddLine(GetInvalid(CheckIdentifier.Shiny, EncGiftShinyMismatch));
+                break;
+            // Underground Raids are originally anti-shiny on encounter.
+            // When selecting a prize at the end, the game rolls and force-shiny is applied to be XOR=1.
+            case EncounterStatic8U u when !u.IsShinyXorValid(pk.ShinyXor):
+                data.AddLine(GetInvalid(CheckIdentifier.Shiny, EncStaticPIDShiny));
                 break;
         }
     }
@@ -89,10 +116,9 @@ public sealed class PIDVerifier : Verifier
     private void VerifyG5PID_IDCorrelation(LegalityAnalysis data)
     {
         var pk = data.Entity;
-        var pid = pk.EncryptionConstant;
-        var result = (pid & 1) ^ (pid >> 31) ^ (pk.TID16 & 1) ^ (pk.SID16 & 1);
+        var result = MonochromeRNG.GetBitXor(pk, pk.EncryptionConstant);
         if (result != 0)
-            data.AddLine(GetInvalid(LPIDTypeMismatch));
+            data.AddLine(GetInvalid(PIDTypeMismatch));
     }
 
     private static void VerifyECPIDWurmple(LegalityAnalysis data)
@@ -102,37 +128,26 @@ public sealed class PIDVerifier : Verifier
         if (pk.Species == (int)Species.Wurmple)
         {
             // Indicate what it will evolve into
-            uint evoVal = WurmpleUtil.GetWurmpleEvoVal(pk.EncryptionConstant);
-            var evolvesTo = evoVal == 0 ? (int)Species.Beautifly : (int)Species.Dustox;
-            var species = ParseSettings.SpeciesStrings[evolvesTo];
-            var msg = string.Format(L_XWurmpleEvo_0, species);
-            data.AddLine(GetValid(msg, CheckIdentifier.EC));
+            var evoVal = WurmpleUtil.GetWurmpleEvoVal(pk.EncryptionConstant);
+            var evolvesTo = evoVal == WurmpleEvolution.Silcoon ? (ushort)Species.Beautifly : (ushort)Species.Dustox;
+            data.AddLine(GetValid(CheckIdentifier.EC, HintEvolvesToSpecies_0, evolvesTo));
         }
         else if (!WurmpleUtil.IsWurmpleEvoValid(pk))
         {
-            data.AddLine(GetInvalid(LPIDEncryptWurmple, CheckIdentifier.EC));
+            data.AddLine(GetInvalid(CheckIdentifier.EC, PIDEncryptWurmple));
         }
     }
 
-    private static void VerifyEC100(LegalityAnalysis data)
+    private static void VerifyEC100(LegalityAnalysis data, ushort encSpecies)
     {
         var pk = data.Entity;
-        var enc = data.EncounterMatch;
-        if (pk.Species == enc.Species)
-        {
-            uint evoVal = pk.EncryptionConstant % 100;
-            bool rare = evoVal == 0;
-            var (species, form) = enc.Species switch
-            {
-                (int)Species.Tandemaus => ((ushort)Species.Maushold,    rare ? 0 : 1),
-                (int)Species.Dunsparce => ((ushort)Species.Dudunsparce, rare ? 1 : 0),
-                _ => throw new ArgumentOutOfRangeException(nameof(enc.Species), "Incorrect EC%100 species."),
-            };
-            var str = GameInfo.Strings;
-            var forms = FormConverter.GetFormList(species, str.Types, str.forms, GameInfo.GenderSymbolASCII, EntityContext.Gen9);
-            var msg = string.Format(L_XRareFormEvo_0_1, forms[form], rare);
-            data.AddLine(GetValid(msg, CheckIdentifier.EC));
-        }
+        if (pk.Species != encSpecies)
+            return; // Evolved, don't need to calculate the final evolution for the verbose report.
+
+        // Indicate the evolution for the user.
+        var rare = EvolutionRestrictions.IsEvolvedSpeciesFormRare(pk.EncryptionConstant);
+        var hint = rare ? (byte)1 : (byte)0;
+        data.AddLine(GetValid(CheckIdentifier.EC, HintEvolvesToRareForm_0, hint));
     }
 
     private static void VerifyEC(LegalityAnalysis data)
@@ -144,7 +159,7 @@ public sealed class PIDVerifier : Verifier
         {
             if (Info.EncounterMatch is WC8 {IsHOMEGift: true})
                 return; // HOME Gifts
-            data.AddLine(Get(LPIDEncryptZero, Severity.Fishy, CheckIdentifier.EC));
+            data.AddLine(Get(CheckIdentifier.EC, Severity.Fishy, PIDEncryptZero));
         }
 
         // Gen3-5 => Gen6 have PID==EC with an edge case exception.
@@ -164,7 +179,7 @@ public sealed class PIDVerifier : Verifier
             if (enc is WB8 {IsEquivalentFixedECPID: true})
                 return;
 
-            data.AddLine(GetInvalid(LPIDEqualsEC, CheckIdentifier.EC)); // better to flag than 1:2^32 odds since RNG is not feasible to yield match
+            data.AddLine(GetInvalid(CheckIdentifier.EC, PIDEqualsEC)); // better to flag than 1:2^32 odds since RNG is not feasible to yield match
             return;
         }
 
@@ -173,7 +188,7 @@ public sealed class PIDVerifier : Verifier
         {
             var xor = pk.ShinyXor;
             if (xor >> 3 == 1) // 8 <= x <= 15
-                data.AddLine(Get(LTransferPIDECXor, Severity.Fishy, CheckIdentifier.EC));
+                data.AddLine(Get(CheckIdentifier.EC, Severity.Fishy, TransferEncryptGen6Xor));
         }
     }
 
@@ -185,16 +200,16 @@ public sealed class PIDVerifier : Verifier
     /// <returns>True if the <see cref="ec"/> is appropriate to use.</returns>
     public static bool GetTransferEC(PKM pk, out uint ec)
     {
-        var ver = pk.Version;
-        if (ver is 0 or >= (int)GameVersion.X) // Gen6+ ignored
+        var version = pk.Version;
+        if (version is 0 or >= GameVersion.X) // Gen6+ ignored
         {
             ec = 0;
             return false;
         }
 
+        // get the current shiny xor value, check against the previous 1:8192 scheme
         var pid = pk.PID;
-        var tmp = pid ^ pk.ID32;
-        var XOR = (ushort)(tmp ^ (tmp >> 16));
+        var XOR = ShinyUtil.GetShinyXor(pid, pk.ID32);
 
         // Ensure we don't have a shiny.
         if (XOR >> 3 == 1) // Illegal, fix. (not 16<XOR>=8)
@@ -210,27 +225,28 @@ public sealed class PIDVerifier : Verifier
     private static void VerifyTransferEC(LegalityAnalysis data)
     {
         var pk = data.Entity;
-        // When transferred to Generation 6, the Encryption Constant is copied from the PID.
-        // The PID is then checked to see if it becomes shiny with the new Shiny rules (>>4 instead of >>3)
-        // If the PID is nonshiny->shiny, the top bit is flipped.
 
         // Check to see if the PID and EC are properly configured.
-        var bitFlipProc = GetExpectedTransferPID(pk, out var expect);
-        bool valid = pk.PID == expect;
-        if (valid)
+        var expect = PK5.GetTransferPID(pk.EncryptionConstant, pk.ID32, out var bitFlipProc);
+        if (pk.PID == expect)
             return;
 
-        var msg = bitFlipProc ? LTransferPIDECBitFlip : LTransferPIDECEquals;
-        data.AddLine(GetInvalid(msg, CheckIdentifier.EC));
+        var msg = bitFlipProc ? TransferEncryptGen6BitFlip : TransferEncryptGen6Equals;
+        data.AddLine(GetInvalid(CheckIdentifier.EC, msg));
     }
 
-    private static bool GetExpectedTransferPID(PKM pk, out uint expect)
+    private static bool IsEggBitRequiredMale34(ReadOnlySpan<MoveResult> moves)
     {
-        var ec = pk.EncryptionConstant; // should be original PID
-        var tmp = ec ^ pk.ID32;
-        var xor = tmp ^ (tmp >> 16);
-        bool xorPID = (xor & 0xFFF8u) == 8;
-        expect = (xorPID ? (ec ^ 0x80000000) : ec);
-        return xorPID;
+        // If female, it must match the correlation.
+        // If Ditto was used with a Male Nidoran / Volbeat, it'll always be that gender.
+        // If Ditto was not used and a Male was obtained, it must match the correlation.
+        // This not-Ditto scenario is detectable if the entity has any Inherited level up moves.
+        foreach (var move in moves)
+        {
+            // Egg Moves (passed via Male) are allowed. Check only for inherited level up moves.
+            if (move.Info.Method is LearnMethod.InheritLevelUp)
+                return true;
+        }
+        return false;
     }
 }

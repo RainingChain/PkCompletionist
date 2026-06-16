@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static System.Buffers.Binary.BinaryPrimitives;
 
@@ -11,12 +13,12 @@ namespace PKHeX.Core;
 /// <remarks>Shared logic is used by Gen6 and Gen7 save files.</remarks>
 public abstract class SAV_BEEF : SaveFile, ISecureValueStorage
 {
-    protected SAV_BEEF(byte[] data, int biOffset) : base(data)
+    protected SAV_BEEF(Memory<byte> data, [ConstantExpected] int biOffset) : base(data)
     {
         BlockInfoOffset = biOffset;
     }
 
-    protected SAV_BEEF(int size, int biOffset) : base(size)
+    protected SAV_BEEF([ConstantExpected] int size, [ConstantExpected] int biOffset) : base(size)
     {
         BlockInfoOffset = biOffset;
     }
@@ -32,18 +34,20 @@ public abstract class SAV_BEEF : SaveFile, ISecureValueStorage
     /// <summary>
     /// Timestamp that the save file was last saved at (Secure Value)
     /// </summary>
+    [TypeConverter(typeof(TypeConverterU64))]
     public ulong TimeStampCurrent
     {
-        get => ReadUInt64LittleEndian(Data.AsSpan(BlockInfoOffset));
-        set => WriteUInt64LittleEndian(Data.AsSpan(BlockInfoOffset), value);
+        get => ReadUInt64LittleEndian(Data[BlockInfoOffset..]);
+        set => WriteUInt64LittleEndian(Data[BlockInfoOffset..], value);
     }
 
     /// <summary>
     /// Timestamp that the save file was saved at prior to the <see cref="TimeStampCurrent"/> (Secure Value)
     /// </summary>
+    [TypeConverter(typeof(TypeConverterU64))]
     public ulong TimeStampPrevious
     {
-        get => ReadUInt64LittleEndian(Data.AsSpan(BlockInfoOffset));
-        set => WriteUInt64LittleEndian(Data.AsSpan(BlockInfoOffset), value);
+        get => ReadUInt64LittleEndian(Data[(BlockInfoOffset + 8)..]);
+        set => WriteUInt64LittleEndian(Data[(BlockInfoOffset + 8)..], value);
     }
 }

@@ -28,7 +28,10 @@ public sealed class SCBlock
     /// <summary>
     /// Decrypted data for this block.
     /// </summary>
-    public readonly byte[] Data;
+    public readonly Memory<byte> Raw;
+
+    /// <inheritdoc cref="Data"/>
+    public Span<byte> Data => Raw.Span;
 
     /// <summary>
     /// Changes the block's Boolean type. Will throw if the old / new <see cref="Type"/> is not boolean.
@@ -39,6 +42,31 @@ public sealed class SCBlock
     {
         if (Type is not (SCTypeCode.Bool1 or SCTypeCode.Bool2) || value is not (SCTypeCode.Bool1 or SCTypeCode.Bool2))
             throw new InvalidOperationException($"Cannot change {Type} to {value}.");
+        Type = value;
+    }
+
+    /// <summary>
+    /// Changes the block's data type. Use with caution.
+    /// </summary>
+    /// <param name="value">New data type to set.</param>
+    /// <remarks>Will throw if the requested block state changes are incorrect.</remarks>
+    public void ChangeStoredType(SCTypeCode value)
+    {
+        var noData = Data.Length == 0;
+        var isBoolean = value is SCTypeCode.Bool1 or SCTypeCode.Bool2;
+        if (noData != isBoolean)
+            throw new InvalidOperationException($"Cannot change {Type} to {value}.");
+
+        if (value is SCTypeCode.Array)
+        {
+
+        }
+        else if (!isBoolean)
+        {
+            var size = value.GetTypeSize();
+            if (Data.Length != size)
+                throw new InvalidOperationException($"Cannot change {Type} to {value}.");
+        }
         Type = value;
     }
 
@@ -59,7 +87,7 @@ public sealed class SCBlock
     /// </summary>
     /// <param name="key">Hash key</param>
     /// <param name="type">Value the block has</param>
-    internal SCBlock(uint key, SCTypeCode type) : this(key, type, Array.Empty<byte>())
+    internal SCBlock(uint key, SCTypeCode type) : this(key, type, Memory<byte>.Empty)
     {
     }
 
@@ -69,11 +97,11 @@ public sealed class SCBlock
     /// <param name="key">Hash key</param>
     /// <param name="type">Type of data that can be read</param>
     /// <param name="arr">Backing byte array to interpret as a typed value</param>
-    internal SCBlock(uint key, SCTypeCode type, byte[] arr)
+    internal SCBlock(uint key, SCTypeCode type, Memory<byte> arr)
     {
         Key = key;
         Type = type;
-        Data = arr;
+        Raw = arr;
     }
 
     /// <summary>
@@ -82,11 +110,11 @@ public sealed class SCBlock
     /// <param name="key">Hash key</param>
     /// <param name="arr">Backing byte array to read primitives from</param>
     /// <param name="subType">Primitive value type</param>
-    internal SCBlock(uint key, byte[] arr, SCTypeCode subType)
+    internal SCBlock(uint key, Memory<byte> arr, SCTypeCode subType)
     {
         Key = key;
         Type = SCTypeCode.Array;
-        Data = arr;
+        Raw = arr;
         SubType = subType;
     }
 
@@ -109,7 +137,7 @@ public sealed class SCBlock
     {
         if (Data.Length == 0)
             return new SCBlock(Key, Type);
-        var clone = Data.AsSpan().ToArray();
+        var clone = Data.ToArray();
         if (SubType == 0)
             return new SCBlock(Key, Type, clone);
         return new SCBlock(Key, clone, SubType);
@@ -136,8 +164,23 @@ public sealed class SCBlock
             bw.Write((byte)((byte)SubType ^ xk.Next()));
         }
 
-        foreach (ref var b in Data.AsSpan())
+        foreach (var b in Data)
             bw.Write((byte)(b ^ xk.Next()));
+    }
+
+    /// <summary>
+    /// Determines the exact length of the block when serialized, according to the <see cref="Type"/> and <see cref="SubType"/>. Useful for pre-allocating buffers.
+    /// </summary>
+    /// <returns>The length of the serialized block in bytes.</returns>
+    public int GetSerializedLength()
+    {
+        var length = 1 + 4; // key & type byte
+        if (Type == SCTypeCode.Object)
+            length += 4; // length prefix
+        else if (Type == SCTypeCode.Array)
+            length += 5; // count prefix + subtype byte
+        length += Data.Length; // data bytes
+        return length;
     }
 
     /// <inheritdoc cref="GetTotalLength(ReadOnlySpan{byte},uint,int)"/>
@@ -261,7 +304,7 @@ public sealed class SCBlock
     private static void EnsureArrayIsSane(SCTypeCode sub, ReadOnlySpan<byte> arr)
     {
         if (sub == SCTypeCode.Bool3)
-            Debug.Assert(arr.IndexOfAnyExcept<byte>(0, 1, 2) == -1);
+            Debug.Assert(!arr.ContainsAnyExcept<byte>(0, 1, 2));
         else
             Debug.Assert(sub > SCTypeCode.Array);
     }

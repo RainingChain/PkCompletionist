@@ -3,15 +3,15 @@ using System;
 namespace PKHeX.Core;
 
 /// <summary>
-/// Group that checks the source of a move in <see cref="GameVersion.Gen5"/>.
+/// Group that checks the source of a move in <see cref="EntityContext.Gen5"/>.
 /// </summary>
 public sealed class LearnGroup5 : ILearnGroup
 {
     public static readonly LearnGroup5 Instance = new();
-    private const int Generation = 5;
+    private const EntityContext Context = EntityContext.Gen5;
     public ushort MaxMoveID => Legal.MaxMoveID_5;
 
-    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => enc.Generation is Generation ? null : LearnGroup4.Instance;
+    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => enc.Context is EntityContext.Gen5 ? null : LearnGroup4.Instance;
     public bool HasVisited(PKM pk, EvolutionHistory history) => history.HasVisitedGen5;
 
     public bool Check(Span<MoveResult> result, ReadOnlySpan<ushort> current, PKM pk, EvolutionHistory history,
@@ -21,13 +21,13 @@ public sealed class LearnGroup5 : ILearnGroup
         for (var i = 0; i < evos.Length; i++)
             Check(result, current, pk, evos[i], i, types, option);
 
-        if (types.HasFlag(MoveSourceType.Encounter) && enc is EncounterEgg { Generation: Generation } egg)
+        if (types.HasFlag(MoveSourceType.Encounter) && enc is EncounterEgg5 egg)
             CheckEncounterMoves(result, current, egg);
 
         return MoveResult.AllParsed(result);
     }
 
-    private static void CheckEncounterMoves(Span<MoveResult> result, ReadOnlySpan<ushort> current, EncounterEgg egg)
+    private static void CheckEncounterMoves(Span<MoveResult> result, ReadOnlySpan<ushort> current, EncounterEgg5 egg)
     {
         ILearnSource inst = egg.Version > GameVersion.B ? LearnSource5B2W2.Instance : LearnSource5BW.Instance;
         var eggMoves = inst.GetEggMoves(egg.Species, egg.Form);
@@ -39,11 +39,11 @@ public sealed class LearnGroup5 : ILearnGroup
                 continue;
             var move = current[i];
             if (eggMoves.Contains(move))
-                result[i] = new(LearnMethod.EggMove);
+                result[i] = new(LearnMethod.EggMove, inst.Environment);
             else if (levelMoves.Contains(move))
-                result[i] = new(LearnMethod.InheritLevelUp);
+                result[i] = new(LearnMethod.InheritLevelUp, inst.Environment);
             else if (move is (ushort)Move.VoltTackle && egg.CanHaveVoltTackle)
-                result[i] = new(LearnMethod.SpecialEgg);
+                result[i] = new(LearnMethod.SpecialEgg, inst.Environment);
         }
     }
 
@@ -86,7 +86,7 @@ public sealed class LearnGroup5 : ILearnGroup
             var move = current[i];
             var chk = b2w2.GetCanLearn(pk, b2w2_pi, evo, move, types, option);
             if (chk != default)
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
 
             if (bw_pi is null)
                 continue;
@@ -94,13 +94,13 @@ public sealed class LearnGroup5 : ILearnGroup
             // B2/W2 is the same besides some level up moves.
             chk = LearnSource5BW.Instance.GetCanLearn(pk, bw_pi, evo, move, types & MoveSourceType.LevelUp, option);
             if (chk != default)
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
         }
     }
 
     public void GetAllMoves(Span<bool> result, PKM pk, EvolutionHistory history, IEncounterTemplate enc, MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
     {
-        if (types.HasFlag(MoveSourceType.Encounter) && enc.Generation == Generation)
+        if (types.HasFlag(MoveSourceType.Encounter) && enc.Context == Context)
             FlagEncounterMoves(enc, result);
 
         foreach (var evo in history.Gen5)
@@ -121,7 +121,7 @@ public sealed class LearnGroup5 : ILearnGroup
         if (!inst.TryGetPersonal(evo.Species, evo.Form, out var pi))
             return;
 
-        // Above species have same level up moves on BW & B2/W2; just check B2/W2.
+        // Above species have same level up moves on B/W & B2/W2; just check B2/W2.
         var fc = pi.FormCount;
         for (int i = 0; i < fc; i++)
             LearnSource5B2W2.Instance.GetAllMoves(result, pk, evo with { Form = (byte)i }, types);
@@ -130,11 +130,6 @@ public sealed class LearnGroup5 : ILearnGroup
     private static void FlagEncounterMoves(IEncounterTemplate enc, Span<bool> result)
     {
         if (enc is IMoveset { Moves: { HasMoves: true } x })
-        {
-            result[x.Move4] = true;
-            result[x.Move3] = true;
-            result[x.Move2] = true;
-            result[x.Move1] = true;
-        }
+            x.FlagMoves(result);
     }
 }

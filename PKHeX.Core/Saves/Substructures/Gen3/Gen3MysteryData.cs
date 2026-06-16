@@ -8,19 +8,20 @@ namespace PKHeX.Core;
 /// </summary>
 public abstract class Gen3MysteryData
 {
-    public readonly byte[] Data;
+    public readonly Memory<byte> Raw;
+    public Span<byte> Data => Raw.Span;
 
-    protected Gen3MysteryData(byte[] data) => Data = data;
+    protected Gen3MysteryData(Memory<byte> raw) => Raw = raw;
 
     public ushort Checksum
     {
-        get => ReadUInt16LittleEndian(Data.AsSpan(0));
-        set => WriteUInt16LittleEndian(Data.AsSpan(0), value);
+        get => ReadUInt16LittleEndian(Data);
+        set => WriteUInt16LittleEndian(Data, value);
     }
 
     public bool IsChecksumValid() => Checksum == ComputeChecksum();
     public void FixChecksum() => Checksum = ComputeChecksum();
-    protected virtual ushort ComputeChecksum() => GetChecksum(Data.AsSpan(4));
+    protected virtual ushort ComputeChecksum() => GetChecksum(Data[4..]);
 
     private static ushort GetChecksum(ReadOnlySpan<byte> data)
     {
@@ -30,8 +31,8 @@ public abstract class Gen3MysteryData
         return (ushort)~chk;
     }
 
-    private static ReadOnlySpan<ushort> CRCTable => new ushort[]
-    {
+    private static ReadOnlySpan<ushort> CRCTable =>
+    [
         0x0000, 0x1189, 0x2312, 0x329B, 0x4624, 0x57AD, 0x6536, 0x74BF,
         0x8C48, 0x9DC1, 0xAF5A, 0xBED3, 0xCA6C, 0xDBE5, 0xE97E, 0xF8F7,
         0x1081, 0x0108, 0x3393, 0x221A, 0x56A5, 0x472C, 0x75B7, 0x643E,
@@ -64,5 +65,5 @@ public abstract class Gen3MysteryData
         0x6B46, 0x7ACF, 0x4854, 0x59DD, 0x2D62, 0x3CEB, 0x0E70, 0x1FF9,
         0xF78F, 0xE606, 0xD49D, 0xC514, 0xB1AB, 0xA022, 0x92B9, 0x8330,
         0x7BC7, 0x6A4E, 0x58D5, 0x495C, 0x3DE3, 0x2C6A, 0x1EF1, 0x0F78,
-    };
+    ];
 }

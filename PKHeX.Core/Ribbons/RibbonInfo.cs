@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PKHeX.Core;
 
 /// <summary>
-/// Provides ribbon information about the state of a given ribbon.
+/// Provides information about the state of a given ribbon.
 /// </summary>
 public sealed class RibbonInfo
 {
@@ -46,17 +47,20 @@ public sealed class RibbonInfo
         }
     }
 
+    /// <summary>
+    /// Gets a list of all ribbons available for the entity and their state.
+    /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to enumerate ribbon properties on PKM types.")]
     public static List<RibbonInfo> GetRibbonInfo(PKM pk)
     {
-        // Get a list of all Ribbon Attributes in the PKM
         var riblist = new List<RibbonInfo>();
         var names = ReflectUtil.GetPropertiesStartWithPrefix(pk.GetType(), PropertyPrefix);
         foreach (var name in names)
         {
-            object? RibbonValue = ReflectUtil.GetValue(pk, name);
-            if (RibbonValue is bool b)
+            var value = ReflectUtil.GetValue(pk, name);
+            if (value is bool b)
                 riblist.Add(new RibbonInfo(name, b));
-            else if (RibbonValue is byte x)
+            else if (value is byte x)
                 riblist.Add(new RibbonInfo(name, x));
         }
         return riblist;

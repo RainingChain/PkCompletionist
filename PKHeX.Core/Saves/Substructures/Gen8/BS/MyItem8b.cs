@@ -7,24 +7,23 @@ namespace PKHeX.Core;
 /// Player item pouches storage
 /// </summary>
 /// <remarks>size=0xBB80 (<see cref="ItemSaveSize"/> items)</remarks>
-public sealed class MyItem8b : MyItem
+public sealed class MyItem8b(SAV8BS sav, Memory<byte> raw) : MyItem(sav, raw)
 {
     public const int ItemSaveSize = 3000;
-
-    public MyItem8b(SAV8BS sav, int offset) : base(sav) => Offset = offset;
+    public const int SIZE = ItemSaveSize * InventoryItem8b.SIZE;
 
     public int GetItemQuantity(ushort itemIndex)
     {
-        var ofs = InventoryPouch8b.GetItemOffset(itemIndex, Offset);
-        var span = Data.AsSpan(ofs, InventoryItem8b.SIZE);
+        var ofs = InventoryPouch8b.GetItemOffset(itemIndex);
+        var span = Data.Slice(ofs, InventoryItem8b.SIZE);
         var item = InventoryItem8b.Read(itemIndex, span);
         return item.Count;
     }
 
     public void SetItemQuantity(ushort itemIndex, int quantity)
     {
-        var ofs = InventoryPouch8b.GetItemOffset(itemIndex, Offset);
-        var span = Data.AsSpan(ofs, InventoryItem8b.SIZE);
+        var ofs = InventoryPouch8b.GetItemOffset(itemIndex);
+        var span = Data.Slice(ofs, InventoryItem8b.SIZE);
         var item = InventoryItem8b.Read(itemIndex, span);
         item.Count = quantity;
         if (!item.IsValidSaveSortNumberCount) // not yet obtained
@@ -43,8 +42,8 @@ public sealed class MyItem8b : MyItem
         ushort max = 0;
         foreach (var itemID in legal)
         {
-            var ofs = InventoryPouch8b.GetItemOffset(itemID, Offset);
-            var span = Data.AsSpan(ofs, InventoryItem8b.SIZE);
+            var ofs = InventoryPouch8b.GetItemOffset(itemID);
+            var span = Data.Slice(ofs, InventoryItem8b.SIZE);
             var item = InventoryItem8b.Read(itemID, span);
             if (item.SortOrder > max)
                 max = item.SortOrder;
@@ -52,31 +51,7 @@ public sealed class MyItem8b : MyItem
         return ++max;
     }
 
-    public override IReadOnlyList<InventoryPouch> Inventory { get => ConvertToPouches(); set => LoadFromPouches(value); }
-
-    private IReadOnlyList<InventoryPouch> ConvertToPouches()
-    {
-        var pouches = new[]
-        {
-            MakePouch(InventoryType.Items),
-            MakePouch(InventoryType.KeyItems),
-            MakePouch(InventoryType.TMHMs),
-            MakePouch(InventoryType.Medicine),
-            MakePouch(InventoryType.Berries),
-            MakePouch(InventoryType.Balls),
-            MakePouch(InventoryType.BattleItems),
-            MakePouch(InventoryType.Treasure),
-        };
-        return pouches.LoadAll(Data);
-    }
-
-    private void LoadFromPouches(IReadOnlyList<InventoryPouch> value)
-    {
-        value.SaveAll(Data);
-        CleanIllegalSlots();
-    }
-
-    private void CleanIllegalSlots()
+    public void CleanIllegalSlots()
     {
         var types = ItemStorage8BDSP.ValidTypes;
         var hashSet = new HashSet<ushort>(Legal.MaxItemID_8b);
@@ -87,17 +62,14 @@ public sealed class MyItem8b : MyItem
                 hashSet.Add(item);
         }
 
-        for (ushort i = 0; i < (ushort)SAV.MaxItemID; i++) // even though there are 3000, just overwrite the ones that people will mess up.
+        // even though there are 3000, just overwrite the ones that people will mess up.
+        var max = (ushort)sav.MaxItemID;
+        for (ushort itemIndex = 0; itemIndex < max; itemIndex++)
         {
-            if (!hashSet.Contains(i))
-                InventoryItem8b.Clear(Data, InventoryPouch8b.GetItemOffset(i, Offset));
+            if (!hashSet.Contains(itemIndex))
+                DeleteItem(itemIndex);
         }
     }
 
-    private InventoryPouch8b MakePouch(InventoryType type)
-    {
-        var info = ItemStorage8BDSP.Instance;
-        var max = info.GetMax(type);
-        return new InventoryPouch8b(type, info, max, Offset);
-    }
+    private void DeleteItem(ushort itemIndex) => InventoryItem8b.Clear(Data, InventoryPouch8b.GetItemOffset(itemIndex));
 }

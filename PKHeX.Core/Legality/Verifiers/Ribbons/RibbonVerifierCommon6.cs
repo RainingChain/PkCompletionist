@@ -7,89 +7,92 @@ namespace PKHeX.Core;
 /// </summary>
 public static class RibbonVerifierCommon6
 {
-    public static void Parse(this IRibbonSetCommon6 r, RibbonVerifierArguments args, ref RibbonResultList list)
+    extension(IRibbonSetCommon6 r)
     {
-        if (r is IRibbonSetMemory6 m)
-            GetInvalidRibbons6Memory(m, args, ref list);
-        var pk = args.Entity;
-        var evos = args.History;
-
-        bool gen6 = evos.HasVisitedGen6;
-        bool bdsp = evos.HasVisitedBDSP;
-        bool kalos6 = gen6 && pk is not { IsUntraded: true, AO: true } && args.Encounter is not EncounterStatic6 { Species: (int)Species.Pikachu, Form: not 0 };
-        bool oras6 = gen6 && pk is not { IsUntraded: true, XY: true };
-        bool contest = oras6 || bdsp;
-
-        bool k = r.RibbonChampionKalos;
-        bool h = r.RibbonChampionG6Hoenn;
-        if (k && !kalos6)
-            list.Add(ChampionKalos);
-        if (h && !oras6)
-            list.Add(ChampionG6Hoenn);
-        if (!k && !h) // no champ ribbon, check memory.
-            CheckChampionMemory(args, ref list);
-
-        if (!contest)
+        public void Parse(in RibbonVerifierArguments args, ref RibbonResultList list)
         {
-            FlagContest(r, ref list);
+            if (r is IRibbonSetMemory6 m)
+                GetInvalidRibbons6Memory(m, args, ref list);
+            var pk = args.Entity;
+            var evos = args.History;
+
+            bool gen6 = evos.HasVisitedGen6;
+            bool bdsp = evos.HasVisitedBDSP;
+            bool kalos6 = gen6 && pk is not { IsUntraded: true, AO: true } && args.Encounter is not EncounterStatic6 { Species: (int)Species.Pikachu, Form: not 0 };
+            bool oras6 = gen6 && pk is not { IsUntraded: true, XY: true };
+            bool contest = oras6 || bdsp;
+
+            bool k = r.RibbonChampionKalos;
+            bool h = r.RibbonChampionG6Hoenn;
+            if (k && !kalos6)
+                list.Add(ChampionKalos);
+            if (h && !oras6)
+                list.Add(ChampionG6Hoenn);
+            if (!k && !h) // no champ ribbon, check memory.
+                CheckChampionMemory(args, ref list);
+
+            if (!contest)
+            {
+                FlagContest(r, ref list);
+            }
+            else
+            {
+                // Winning a contest in Gen6 adds 20 to OT affection. Each ribbon, add 20 to our expected minimum.
+                if (pk is IAffection a) // False in Gen8+
+                    FlagContestAffection(r, ref list, a.OriginalTrainerAffection);
+
+                // Winning all contests grants the Contest Star ribbon.
+                // If we have all ribbons and the star is not present, flag it as missing.
+                // If we have the star and not all are present, flag it as invalid.
+                bool allContest = r.HasAllContestRibbons();
+                if (allContest != r.RibbonContestStar)
+                    list.Add(ContestStar, allContest);
+            }
+
+            if (r.RibbonBestFriends && !RibbonRules.IsRibbonValidBestFriends(args.Entity, evos))
+                list.Add(BestFriends);
+
+            if (!gen6)
+            {
+                if (r.RibbonTraining)
+                    list.Add(Training);
+
+                // Maison
+                if (r.RibbonBattlerSkillful)
+                    list.Add(BattlerSkillful);
+                if (r.RibbonBattlerExpert)
+                    list.Add(BattlerExpert);
+            }
+            else
+            {
+                if (r.RibbonTraining && !RibbonRules.IsRibbonValidSuperTraining(pk))
+                    list.Add(Training);
+
+                // Maison
+                CheckMaisonRibbons(r, args, ref list);
+            }
         }
-        else
+
+        public void ParseEgg(ref RibbonResultList list)
         {
-            // Winning a contest in Gen6 adds 20 to OT affection. Each ribbon, add 20 to our expected minimum.
-            if (pk is IAffection a) // False in Gen8+
-                FlagContestAffection(r, ref list, a.OT_Affection);
-
-            // Winning all contests grants the Contest Star ribbon.
-            // If we have all ribbons and the star is not present, flag it as missing.
-            // If we have the star and not all are present, flag it as invalid.
-            bool allContest = r.HasAllContestRibbons();
-            if (allContest != r.RibbonContestStar)
-                list.Add(ContestStar, allContest);
-        }
-
-        if (r.RibbonBestFriends && !RibbonRules.IsRibbonValidBestFriends(args.Entity, evos))
-            list.Add(BestFriends);
-
-        if (!gen6)
-        {
+            if (r.RibbonChampionKalos)
+                list.Add(ChampionKalos);
+            if (r.RibbonChampionG6Hoenn)
+                list.Add(ChampionG6Hoenn);
+            if (r.RibbonBestFriends)
+                list.Add(BestFriends);
             if (r.RibbonTraining)
                 list.Add(Training);
-
-            // Maison
             if (r.RibbonBattlerSkillful)
                 list.Add(BattlerSkillful);
             if (r.RibbonBattlerExpert)
                 list.Add(BattlerExpert);
-        }
-        else
-        {
-            if (r.RibbonTraining && pk is ISuperTrain s && !RibbonRules.IsRibbonValidSuperTraining(s))
-                list.Add(Training);
 
-            // Maison
-            CheckMaisonRibbons(r, args, ref list);
+            FlagContest(r, ref list);
         }
     }
 
-    public static void ParseEgg(this IRibbonSetCommon6 r, ref RibbonResultList list)
-    {
-        if (r.RibbonChampionKalos)
-            list.Add(ChampionKalos);
-        if (r.RibbonChampionG6Hoenn)
-            list.Add(ChampionG6Hoenn);
-        if (r.RibbonBestFriends)
-            list.Add(BestFriends);
-        if (r.RibbonTraining)
-            list.Add(Training);
-        if (r.RibbonBattlerSkillful)
-            list.Add(BattlerSkillful);
-        if (r.RibbonBattlerExpert)
-            list.Add(BattlerExpert);
-
-        FlagContest(r, ref list);
-    }
-
-    private static void GetInvalidRibbons6Memory(IRibbonSetMemory6 r, RibbonVerifierArguments args, ref RibbonResultList list)
+    private static void GetInvalidRibbons6Memory(IRibbonSetMemory6 r, in RibbonVerifierArguments args, ref RibbonResultList list)
     {
         var format = args.Entity.Format;
         (byte contest, byte battle) = RibbonRules.GetMaxMemoryCounts(args.History, args.Entity, args.Encounter);
@@ -99,7 +102,7 @@ public static class RibbonVerifierCommon6
             list.Add(CountMemoryBattle);
     }
 
-    private static bool IsCountFlagValid(byte count, bool state, int format, byte max)
+    private static bool IsCountFlagValid(byte count, bool state, byte format, byte max)
     {
         if (count > max)
             return false;
@@ -138,7 +141,7 @@ public static class RibbonVerifierCommon6
             list.Add(MasterToughness);
     }
 
-    private static void CheckChampionMemory(RibbonVerifierArguments args, ref RibbonResultList list)
+    private static void CheckChampionMemory(in RibbonVerifierArguments args, ref RibbonResultList list)
     {
         var pk = args.Entity;
         var enc = args.Encounter;
@@ -150,7 +153,7 @@ public static class RibbonVerifierCommon6
         list.Add(ribbon, true);
     }
 
-    private static void CheckMaisonRibbons(IRibbonSetCommon6 r, RibbonVerifierArguments args, ref RibbonResultList list)
+    private static void CheckMaisonRibbons(IRibbonSetCommon6 r, in RibbonVerifierArguments args, ref RibbonResultList list)
     {
         var pk = args.Entity;
         if (!RibbonRules.IsAllowedBattleFrontier(pk.Species))
@@ -173,7 +176,7 @@ public static class RibbonVerifierCommon6
 
         // Gen6 can get the memory with any party member when defeating the champion.
         const int memChampion = 27;
-        return (enc.Generation == 6 && m.OT_Memory == memChampion)
-                  || (pk.Format < 8 && m.HT_Memory == memChampion);
+        return (enc.Generation == 6 && m.OriginalTrainerMemory == memChampion)
+                  || (pk.Format < 8 && m.HandlingTrainerMemory == memChampion);
     }
 }

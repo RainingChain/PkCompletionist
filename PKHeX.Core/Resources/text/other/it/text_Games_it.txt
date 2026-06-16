@@ -1,4 +1,4 @@
-﻿
+
 Zaffiro
 Rubino
 Smeraldo
@@ -13,8 +13,8 @@ Perla
 Platino
 
 
-Colosseo/XD
-
+Colosseum/XD
+Battle Revolution
 
 
 
@@ -50,3 +50,5 @@ Diamante Lucente
 Perla Splendente
 Scarlatto
 Violetto
+Leggende: Z-A
+Champions

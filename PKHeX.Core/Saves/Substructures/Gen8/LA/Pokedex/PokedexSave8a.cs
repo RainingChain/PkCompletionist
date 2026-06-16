@@ -9,23 +9,15 @@ namespace PKHeX.Core;
 /// <summary>
 /// Pokédex structure used for <see cref="GameVersion.PLA"/>.
 /// </summary>>
-public sealed class PokedexSave8a
+public sealed class PokedexSave8a(SAV8LA SaveFile, SCBlock block)
 {
-    private readonly SAV8LA SaveFile;
-
-    private readonly PokedexSaveData SaveData;
+    private readonly PokedexSaveData SaveData = new(block.Raw);
 
     public const int MAX_SPECIES = 981;
     public const int MAX_FORM = 120;
 
     private static PersonalTable8LA Personal => PersonalTable.LA;
     private const int MaxSpeciesID = Legal.MaxSpeciesID_8a;
-
-    public PokedexSave8a(SAV8LA sav, SCBlock block)
-    {
-        SaveFile = sav;
-        SaveData = new PokedexSaveData(block.Data);
-    }
 
     private const int DexInvalid = 0;
 
@@ -166,15 +158,15 @@ public sealed class PokedexSave8a
 
         for (ushort species = 1; species <= MaxSpeciesID; species++)
         {
-            // Only allow reports of pokemon in hisui dex
+            // Only allow reports of Pokémon in Hisui dex
             if (GetDexIndex(Hisui, species) == 0)
                 continue;
 
-            // Only allow reports of pokemon which have been caught
+            // Only allow reports of Pokémon which have been caught
             if (SaveData.GetPokeGetCount(species) == 0)
                 continue;
 
-            // Check if the pokemon is unreported or has unreported tasks.
+            // Check if the Pokémon is unreported or has unreported tasks.
             if (!SaveData.HasAnyReport(species) || GetUnreportedTaskCount(species) > 0)
                 count++;
         }
@@ -188,7 +180,7 @@ public sealed class PokedexSave8a
 
         for (ushort species = 1; species <= MaxSpeciesID; species++)
         {
-            // Only allow reports of pokemon which have been caught
+            // Only allow reports of Pokémon which have been caught
             if (SaveData.GetPokeGetCount(species) == 0)
                 continue;
 
@@ -436,7 +428,7 @@ public sealed class PokedexSave8a
 
         for (ushort species = 1; species <= MaxSpeciesID; species++)
         {
-            // Only return pokemon with all required tasks complete
+            // Only return Pokémon with all required tasks complete
             if (!IsAllRequiredTasksComplete(species))
                 continue;
 
@@ -559,8 +551,8 @@ public sealed class PokedexSave8a
     {
         var hisuiComplete = true;
         var hisuiPerfect = true;
-        Span<bool> localComplete = stackalloc bool[] { true, true, true, true, true };
-        Span<bool> localPerfect = stackalloc bool[] { true, true, true, true, true };
+        Span<bool> localComplete = [true, true, true, true, true];
+        Span<bool> localPerfect = [true, true, true, true, true];
 
         for (ushort species = 1; species <= MaxSpeciesID; species++)
         {
@@ -664,7 +656,7 @@ public sealed class PokedexSave8a
         if (species >= MAX_SPECIES)
             return;
 
-        // All research increases set the update flag whether or not they increment the value
+        // All research increases set the update flag whether they increment the value
         SetPokeHasBeenUpdated(species);
 
         // If we shouldn't, don't do the update
@@ -696,7 +688,7 @@ public sealed class PokedexSave8a
         if (species >= MAX_SPECIES)
             return;
 
-        // All research increases set the update flag whether or not they increment the value
+        // All research increases set the update flag whether they increment the value
         SetPokeHasBeenUpdated(species);
 
         // Get the research entry
@@ -824,7 +816,7 @@ public sealed class PokedexSave8a
         // 1.0.1: sub_7101283760
         // Is this on receiving an egg?
 
-        // var metLoc = pk.Met_Location;
+        // var metLoc = pk.MetLocation;
         // if (!GetCurrentTime())
         //     return;
         // SetMetOrEggLocation(pk, metLoc, calendarTime);
@@ -886,15 +878,15 @@ public sealed class PokedexSave8a
         // Light poke potentially obtained 
         OnPokeLightCaught(pk.Species, pa8.WeightAbsolute);
 
-        // Handle if pokemon was caught while sleeping
+        // Handle if Pokémon was caught while sleeping
         if (sleeping)
             OnPokeCaughtSleeping(pk.Species);
 
-        // Handle if pokemon was caught while in the air
+        // Handle if Pokémon was caught while in the air
         if (inAir)
             OnPokeCaughtInAir(pk.Species);
 
-        // Handle if pokemon was caught while not spotted
+        // Handle if Pokémon was caught while not spotted
         if (notSpotted)
             OnPokeCaughtNotSpotted(pk.Species);
 
@@ -964,7 +956,7 @@ public sealed class PokedexSave8a
     private void OnPokeDefeated(ushort species) => IncrementResearchTaskProgress(species, Defeat);
 
     private void OnPokeDefeatedWithMoveType(ushort species, MoveType moveType)
-        => IncrementResearchTaskProgress(species, DefeatWithMoveType, TryGetTriggeredTask(species, moveType, out var task), task.Index);
+        => IncrementResearchTaskProgress(species, DefeatWithMoveType, TryGetTriggeredTask(species, moveType, out var task), task?.Index ?? -1);
 
     public void OnPokeUseMove(PKM pk, ushort move)
     {
@@ -975,7 +967,7 @@ public sealed class PokedexSave8a
     }
 
     private void OnPokeUseMove(ushort species, ushort move)
-        => IncrementResearchTaskProgress(species, UseMove, TryGetTriggeredTask(species, move, out var task), task.Index);
+        => IncrementResearchTaskProgress(species, UseMove, TryGetTriggeredTask(species, move, out var task), task?.Index ?? -1);
 
     public void OnPokeEvolved(ushort fromSpecies, ushort toSpecies)
     {
@@ -1121,8 +1113,10 @@ public sealed class PokedexSave8a
         if (hash == 0xCBF29CE484222645)
             return 0;
 
-        return (int)(uint)SaveFile.Accessor.GetBlockValue((uint)(hash & 0xFFFFFFFF));
+        return (int)(uint)SaveFile.Accessor.GetBlockValue(GetSaveBlockKey(hash));
     }
+
+    private static uint GetSaveBlockKey(ulong hash) => (uint)hash; // truncate to 32-bit
 
     private int GetSpeciesQuestState(ulong hash)
     {
@@ -1130,7 +1124,8 @@ public sealed class PokedexSave8a
             return 0;
 
         // These are single-byte blocks, but type is "object"...
-        return SaveFile.Accessor.GetBlock((uint)(hash & 0xFFFFFFFF)).Data[0];
+        var key = GetSaveBlockKey(hash);
+        return SaveFile.Accessor.GetBlock(key).Data[0];
     }
 
     public static bool IsAnyTaskTriggered(ushort species, PokedexResearchTaskType8a which, MoveType moveType, int move, PokedexTimeOfDay8a timeOfDay)
@@ -1144,18 +1139,18 @@ public sealed class PokedexSave8a
         return task.TaskThresholds[^1];
     }
 
-    private static bool TryGetTriggeredTask(ushort species, PokedexResearchTaskType8a which, out PokedexResearchTask8a outTask)
+    private static bool TryGetTriggeredTask(ushort species, PokedexResearchTaskType8a which, [NotNullWhen(true)] out PokedexResearchTask8a? outTask)
         => TryGetTriggeredTask(species, which, MoveType.Any, -1, PokedexTimeOfDay8a.Invalid, out outTask);
-    private static bool TryGetTriggeredTask(ushort species, MoveType moveType, out PokedexResearchTask8a outTask)
+    private static bool TryGetTriggeredTask(ushort species, MoveType moveType, [NotNullWhen(true)] out PokedexResearchTask8a? outTask)
         => TryGetTriggeredTask(species, DefeatWithMoveType, moveType, -1, PokedexTimeOfDay8a.Invalid, out outTask);
-    private static bool TryGetTriggeredTask(ushort species, int move, out PokedexResearchTask8a outTask)
+    private static bool TryGetTriggeredTask(ushort species, int move, [NotNullWhen(true)] out PokedexResearchTask8a? outTask)
         => TryGetTriggeredTask(species, UseMove, MoveType.Any, move, PokedexTimeOfDay8a.Invalid, out outTask);
-    private static bool TryGetTriggeredTask(ushort species, PokedexTimeOfDay8a timeOfDay, out PokedexResearchTask8a outTask)
+    private static bool TryGetTriggeredTask(ushort species, PokedexTimeOfDay8a timeOfDay, [NotNullWhen(true)] out PokedexResearchTask8a? outTask)
         => TryGetTriggeredTask(species, CatchAtTime, MoveType.Any, -1, timeOfDay, out outTask);
 
-    private static bool TryGetTriggeredTask(ushort species, PokedexResearchTaskType8a which, MoveType moveType, int move, PokedexTimeOfDay8a timeOfDay, out PokedexResearchTask8a outTask)
+    private static bool TryGetTriggeredTask(ushort species, PokedexResearchTaskType8a which, MoveType moveType, int move, PokedexTimeOfDay8a timeOfDay, [NotNullWhen(true)] out PokedexResearchTask8a? outTask)
     {
-        outTask = new PokedexResearchTask8a();
+        outTask = null;
 
         if (!TryGetResearchTasks(species, out var tasks))
             return false;

@@ -12,8 +12,8 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
 {
     public static readonly LearnSource8SWSH Instance = new();
     private static readonly PersonalTable8SWSH Personal = PersonalTable.SWSH;
-    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(BinLinkerAccessor.Get(Util.GetBinaryResource("lvlmove_swsh.pkl"), "ss"));
-    private static readonly EggMoves7[] EggMoves = EggMoves7.GetArray(BinLinkerAccessor.Get(Util.GetBinaryResource("eggmove_swsh.pkl"), "ss"));
+    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(BinLinkerAccessor16.Get(Util.GetBinaryResource("lvlmove_swsh.pkl"), "ss"u8));
+    private static readonly MoveSource[] EggMoves = MoveSource.GetArray(BinLinkerAccessor16.Get(Util.GetBinaryResource("eggmove_swsh.pkl"), "ss"u8));
     private const int MaxSpecies = Legal.MaxSpeciesID_8_R2;
     private const LearnEnvironment Game = SWSH;
 
@@ -30,17 +30,19 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
 
     public bool GetIsEggMove(ushort species, byte form, ushort move)
     {
-        if (species > MaxSpecies)
+        var index = Personal.GetFormIndex(species, form);
+        if (index >= EggMoves.Length)
             return false;
-        var moves = EggMoves.GetFormEggMoves(species, form);
-        return moves.Contains(move);
+        var moves = EggMoves[index];
+        return moves.GetHasMove(move);
     }
 
     public ReadOnlySpan<ushort> GetEggMoves(ushort species, byte form)
     {
-        if (species > MaxSpecies)
-            return ReadOnlySpan<ushort>.Empty;
-        return EggMoves.GetFormEggMoves(species, form);
+        var index = Personal.GetFormIndex(species, form);
+        if (index >= EggMoves.Length)
+            return [];
+        return EggMoves[index].Moves;
     }
 
     public MoveLearnInfo GetCanLearn(PKM pk, PersonalInfo8SWSH pi, EvoCriteria evo, ushort move, MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
@@ -48,9 +50,8 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
         if (types.HasFlag(MoveSourceType.LevelUp))
         {
             var learn = GetLearnset(evo.Species, evo.Form);
-            var level = learn.GetLevelLearnMove(move);
-            if (level != -1 && level <= evo.LevelMax)
-                return new(LevelUp, Game, (byte)level);
+            if (learn.TryGetLevelLearnMove(move, out var level) && level <= evo.LevelMax)
+                return new(LevelUp, Game, level);
         }
 
         if (types.HasFlag(MoveSourceType.SharedEggMove) && GetIsSharedEggMove(pi, move))
@@ -74,7 +75,10 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
         return default;
     }
 
-    private static bool GetIsEnhancedTutor(EvoCriteria evo, ISpeciesForm current, ushort move, LearnOption option) => evo.Species switch
+    private static bool GetIsEnhancedTutor<T1, T2>(T1 evo, T2 current, ushort move, LearnOption option)
+        where T1 : ISpeciesForm
+        where T2 : ISpeciesForm
+        => evo.Species switch
     {
         (int)Species.Necrozma => move switch
         {
@@ -98,7 +102,7 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
     {
         var baseSpecies = pi.HatchSpecies;
         var baseForm = pi.HatchFormIndexEverstone;
-        return GetEggMoves(baseSpecies, baseForm).IndexOf(move) != -1;
+        return GetEggMoves(baseSpecies, baseForm).Contains(move);
     }
 
     private static bool GetIsTR(PersonalInfo8SWSH info, PKM pk, EvoCriteria evo, ushort move, LearnOption option)
@@ -128,7 +132,7 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
         return false;
     }
 
-    public void GetAllMoves(Span<bool> result, PKM pk, EvoCriteria evo, MoveSourceType types = MoveSourceType.All)
+    public void GetAllMoves(Span<bool> result, PKM _, EvoCriteria evo, MoveSourceType types = MoveSourceType.All)
     {
         if (!TryGetPersonal(evo.Species, evo.Form, out var pi))
             return;
@@ -167,11 +171,11 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
         if (types.HasFlag(MoveSourceType.EnhancedTutor))
         {
             var species = evo.Species;
-            if (species is (int)Species.Rotom && pk.Form is not 0)
+            if (species is (int)Species.Rotom && evo.Form is not 0)
                 result[MoveTutor.GetRotomFormMove(evo.Form)] = true;
-            else if (species is (int)Species.Necrozma && pk.Form is 1) // Sun
+            else if (species is (int)Species.Necrozma && evo.Form is 1) // Sun
                 result[(int)Move.SunsteelStrike] = true;
-            else if (species is (int)Species.Necrozma && pk.Form is 2) // Moon
+            else if (species is (int)Species.Necrozma && evo.Form is 2) // Moon
                 result[(int)Move.MoongeistBeam] = true;
         }
     }
@@ -185,9 +189,8 @@ public sealed class LearnSource8SWSH : ILearnSource<PersonalInfo8SWSH>, IEggSour
         if (types.HasFlag(MoveSourceType.LevelUp))
         {
             var learn = GetLearnset(evo.Species, evo.Form);
-            var level = learn.GetLevelLearnMove(move);
-            if (level != -1)
-                return new(LevelUp, Game, (byte)level);
+            if (learn.TryGetLevelLearnMove(move, out var level))
+                return new(LevelUp, Game, level);
         }
 
         if (types.HasFlag(MoveSourceType.SharedEggMove) && GetIsSharedEggMove(pi, move))

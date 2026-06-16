@@ -6,7 +6,7 @@ namespace PKHeX.Core;
 /// <summary>
 /// Side game data for <see cref="PB7"/> data transferred into HOME.
 /// </summary>
-public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSizeAbsolute, IMemoryOT, IGameDataSplitAbility
+public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSizeAbsolute, IGameDataSplitAbility, IGameDataSidePP
 {
     private const HomeGameDataFormat ExpectFormat = HomeGameDataFormat.PB7;
     private const int SIZE = HomeCrypto.SIZE_2GAME_PB7;
@@ -32,14 +32,14 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
     public ushort Move3 { get => ReadUInt16LittleEndian(Data[0x0B..]); set => WriteUInt16LittleEndian(Data[0x0B..], value); }
     public ushort Move4 { get => ReadUInt16LittleEndian(Data[0x0D..]); set => WriteUInt16LittleEndian(Data[0x0D..], value); }
 
-    public int Move1_PP { get => Data[0x0F]; set => Data[0x0F] = (byte)value; }
-    public int Move2_PP { get => Data[0x10]; set => Data[0x10] = (byte)value; }
-    public int Move3_PP { get => Data[0x11]; set => Data[0x11] = (byte)value; }
-    public int Move4_PP { get => Data[0x12]; set => Data[0x12] = (byte)value; }
-    public int Move1_PPUps { get => Data[0x13]; set => Data[0x13] = (byte)value; }
-    public int Move2_PPUps { get => Data[0x14]; set => Data[0x14] = (byte)value; }
-    public int Move3_PPUps { get => Data[0x15]; set => Data[0x15] = (byte)value; }
-    public int Move4_PPUps { get => Data[0x16]; set => Data[0x16] = (byte)value; }
+    public byte Move1_PP { get => Data[0x0F]; set => Data[0x0F] = value; }
+    public byte Move2_PP { get => Data[0x10]; set => Data[0x10] = value; }
+    public byte Move3_PP { get => Data[0x11]; set => Data[0x11] = value; }
+    public byte Move4_PP { get => Data[0x12]; set => Data[0x12] = value; }
+    public byte Move1_PPUps { get => Data[0x13]; set => Data[0x13] = value; }
+    public byte Move2_PPUps { get => Data[0x14]; set => Data[0x14] = value; }
+    public byte Move3_PPUps { get => Data[0x15]; set => Data[0x15] = value; }
+    public byte Move4_PPUps { get => Data[0x16]; set => Data[0x16] = value; }
 
     public ushort RelearnMove1  { get => ReadUInt16LittleEndian(Data[0x17..]); set => WriteUInt16LittleEndian(Data[0x17..], value); }
     public ushort RelearnMove2  { get => ReadUInt16LittleEndian(Data[0x19..]); set => WriteUInt16LittleEndian(Data[0x19..], value); }
@@ -48,22 +48,25 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
     public float HeightAbsolute { get => ReadSingleLittleEndian(Data[0x1F..]); set => WriteSingleLittleEndian(Data[0x1F..], value); }
     public float WeightAbsolute { get => ReadSingleLittleEndian(Data[0x23..]); set => WriteSingleLittleEndian(Data[0x23..], value); }
 
-    public byte FieldEventFatigue1 { get => Data[0x27]; set => Data[0x27] = value; }
-    public byte FieldEventFatigue2 { get => Data[0x28]; set => Data[0x28] = value; }
+    public byte Spirit { get => Data[0x27]; set => Data[0x27] = value; }
+    public byte Mood { get => Data[0x28]; set => Data[0x28] = value; }
     public byte Fullness { get => Data[0x29]; set => Data[0x29] = value; }
     public byte Rank { get => Data[0x2A]; set => Data[0x2A] = value; }
-    public int OT_Affection { get => Data[0x2B]; set => Data[0x2B] = (byte)value; }
-    public byte OT_Intensity { get => Data[0x2C]; set => Data[0x2C] = value; }
-    public byte OT_Memory { get => Data[0x2D]; set => Data[0x2D] = value; }
-    public ushort OT_TextVar { get => ReadUInt16LittleEndian(Data[0x2E..]); set => WriteUInt16LittleEndian(Data[0x2E..], value); }
-    public byte OT_Feeling { get => Data[0x30]; set => Data[0x30] = value; }
+
+    public byte ReceivedYear { get => Data[0x2B]; set => Data[0x2B] = value; }
+    public byte ReceivedMonth { get => Data[0x2C]; set => Data[0x2C] = value; }
+    public byte ReceivedDay { get => Data[0x2D]; set => Data[0x2D] = value; }
+    public byte ReceivedHour { get => Data[0x2E]; set => Data[0x2E] = value; }
+    public byte ReceivedMinute { get => Data[0x2F]; set => Data[0x2F] = value; }
+    public byte ReceivedSecond { get => Data[0x30]; set => Data[0x30] = value; }
+
     public byte Enjoyment { get => Data[0x31]; set => Data[0x31] = value; }
     public uint GeoPadding { get => ReadUInt32LittleEndian(Data[0x32..]); set => WriteUInt32LittleEndian(Data[0x32..], value); }
-    public int Ball { get => Data[0x36]; set => Data[0x36] = (byte)value; }
-    public int Egg_Location { get => ReadUInt16LittleEndian(Data[0x37..]); set => WriteUInt16LittleEndian(Data[0x37..], (ushort)value); }
-    public int Met_Location { get => ReadUInt16LittleEndian(Data[0x39..]); set => WriteUInt16LittleEndian(Data[0x39..], (ushort)value); }
+    public byte Ball { get => Data[0x36]; set => Data[0x36] = value; }
+    public ushort EggLocation { get => ReadUInt16LittleEndian(Data[0x37..]); set => WriteUInt16LittleEndian(Data[0x37..], value); }
+    public ushort MetLocation { get => ReadUInt16LittleEndian(Data[0x39..]); set => WriteUInt16LittleEndian(Data[0x39..], value); }
 
-    public byte PKRS { get => Data[0x3B]; set => Data[0x3B] = value; }
+    public byte PokerusState { get => Data[0x3B]; set => Data[0x3B] = value; }
     public ushort Ability { get => ReadUInt16LittleEndian(Data[0x3C..]); set => WriteUInt16LittleEndian(Data[0x3C..], value); }
     public byte AbilityNumber { get => Data[0x3E]; set => Data[0x3E] = value; }
 
@@ -83,19 +86,20 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
         pk.AV_SPA = AV_SPA;
         pk.AV_SPD = AV_SPD;
         pk.ResortEventStatus = (ResortEventState)ResortEventState;
-        pk.HeightAbsolute = pk.CalcHeightAbsolute; // Ignore the stored value, be nice and recalculate for the user.
-        pk.WeightAbsolute = pk.CalcWeightAbsolute; // Ignore the stored value, be nice and recalculate for the user.
+        pk.HeightAbsolute = pk.HeightAbsolute; // Don't recalculate; some event gifts are "wrong" but it is "right" to retain.
+        pk.WeightAbsolute = pk.WeightAbsolute; // Don't recalculate; some event gifts are "wrong" but it is "right" to retain.
 
         // Some fields are unused as PB7, don't bother copying.
-        pk.FieldEventFatigue1 = FieldEventFatigue1;
-        pk.FieldEventFatigue2 = FieldEventFatigue2;
+        pk.Spirit = Spirit;
+        pk.Mood = Mood;
         pk.Fullness = Fullness;
         // pk.Rank = Rank;
-        // pk.OT_Affection
-        // pk.OT_Intensity
-        // pk.OT_Memory
-        // pk.OT_TextVar
-        // pk.OT_Feeling
+        pk.ReceivedYear = ReceivedYear;
+        pk.ReceivedMonth = ReceivedMonth;
+        pk.ReceivedDay = ReceivedDay;
+        pk.ReceivedHour = ReceivedHour;
+        pk.ReceivedMinute = ReceivedMinute;
+        pk.ReceivedSecond = ReceivedSecond;
         pk.Enjoyment = Enjoyment;
         // pk.GeoPadding = GeoPadding;
         pk.AbilityNumber = AbilityNumber;
@@ -112,27 +116,28 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
         AV_SPA = pk.AV_SPA;
         AV_SPD = pk.AV_SPD;
         ResortEventState = (byte)pk.ResortEventStatus;
-        HeightAbsolute = pk.CalcHeightAbsolute; // Ignore the stored value, be nice and recalculate for the user.
-        WeightAbsolute = pk.CalcWeightAbsolute; // Ignore the stored value, be nice and recalculate for the user.
+        HeightAbsolute = pk.HeightAbsolute; // Don't recalculate; some event gifts are "wrong" but it is "right" to retain.
+        WeightAbsolute = pk.WeightAbsolute; // Don't recalculate; some event gifts are "wrong" but it is "right" to retain.
 
         // Some fields are unused as PB7, don't bother copying.
-        FieldEventFatigue1 = pk.FieldEventFatigue1;
-        FieldEventFatigue2 = pk.FieldEventFatigue2;
+        Spirit = pk.Spirit;
+        Mood = pk.Mood;
         Fullness = pk.Fullness;
         // Rank = pk.Rank;
-        // OT_Affection
-        // OT_Intensity
-        // OT_Memory
-        // OT_TextVar
-        // OT_Feeling
+        ReceivedYear = pk.ReceivedYear;
+        ReceivedMonth = pk.ReceivedMonth;
+        ReceivedDay = pk.ReceivedDay;
+        ReceivedHour = pk.ReceivedHour;
+        ReceivedMinute = pk.ReceivedMinute;
+        ReceivedSecond = pk.ReceivedSecond;
         Enjoyment = pk.Enjoyment;
         // GeoPadding = pk.GeoPadding;
         AbilityNumber = (byte)pk.AbilityNumber;
         Ability = (ushort)pk.Ability;
 
         // All other side formats have HT Language. Just fake a value.
-        if (pkh is { HT_Language: 0, IsUntraded: false })
-            pkh.HT_Language = (byte)pk.Language;
+        if (pkh is { HandlingTrainerLanguage: 0, IsUntraded: false })
+            pkh.HandlingTrainerLanguage = (byte)pk.Language;
     }
 
     public PB7 ConvertToPKM(PKH pkh)
@@ -158,7 +163,7 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
         // There isn't an actual preference since this format cannot naturally backwards transfer.
         // Just pick out the first one.
         var result = CreateInternal(pkh);
-        if (result == null)
+        if (result is null)
             return null;
 
         result.PopulateFromCore(pkh);
@@ -168,14 +173,14 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
     private static GameDataPB7? CreateInternal(PKH pkh)
     {
         var side = GetNearestNeighbor(pkh);
-        if (side == null)
+        if (side is null)
             return null;
 
         var ball = side.Ball;
-        if (pkh.Version is (int)GameVersion.GO)
-            return new GameDataPB7 { Ball = ball, Met_Location = Locations.GO7 };
-        if (pkh.Version is (int)GameVersion.GP or (int)GameVersion.GE)
-            return new GameDataPB7 { Ball = ball, Met_Location = side.Met_Location };
+        if (pkh.Version is GameVersion.GO)
+            return new GameDataPB7 { Ball = ball, MetLocation = Locations.GO7 };
+        if (pkh.Version is GameVersion.GP or GameVersion.GE)
+            return new GameDataPB7 { Ball = ball, MetLocation = side.MetLocation };
 
         var result = new GameDataPB7();
         result.InitializeFrom(side, pkh);
@@ -184,8 +189,8 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
 
     public void InitializeFrom(IGameDataSide side, PKH pkh)
     {
-        Met_Location = side.Met_Location == Locations.Default8bNone ? 0 : side.Met_Location;
-        Egg_Location = side.Egg_Location == Locations.Default8bNone ? 0 : side.Egg_Location;
+        MetLocation = side.MetLocation != Locations.Default8bNone ? side.MetLocation : (ushort)0;
+        EggLocation = side.EggLocation != Locations.Default8bNone ? side.EggLocation : (ushort)0;
 
         if (side is IGameDataSplitAbility a)
             AbilityNumber = a.AbilityNumber;
@@ -198,18 +203,19 @@ public sealed class GameDataPB7 : HomeOptional1, IGameDataSide<PB7>, IScaledSize
         var pi = PersonalTable.GG.GetFormEntry(pkh.Species, pkh.Form);
         HeightAbsolute = PB7.GetHeightAbsolute(pi, pkh.HeightScalar);
         WeightAbsolute = PB7.GetWeightAbsolute(pi, pkh.HeightScalar, pkh.WeightScalar);
-        Ability = (ushort)pi.GetAbilityAtIndex(AbilityNumber >> 1);
+        var index = AbilityNumber >> 1;
+        if (index >= pi.AbilityCount)
+            index = 0;
+        Ability = (ushort)pi.GetAbilityAtIndex(index);
     }
 
-    private static IGameDataSide? GetNearestNeighbor(PKH pkh) => pkh.DataPK9 as IGameDataSide
-                                                                 ?? pkh.DataPB8 as IGameDataSide
-                                                                 ?? pkh.DataPK8 as IGameDataSide
-                                                                 ?? pkh.DataPB7;
+    private static IGameDataSide? GetNearestNeighbor(PKH pkh)
+        => pkh.DataPA9 ?? pkh.DataPK9 ?? pkh.DataPB8 ?? pkh.DataPK8 ?? pkh.DataPB7 as IGameDataSide;
 
     public static T Create<T>(GameDataPB7 data) where T : IGameDataSide, new() => new()
     {
         Ball = data.Ball,
-        Met_Location = data.Met_Location,
-        Egg_Location = data.Egg_Location,
+        MetLocation = data.MetLocation,
+        EggLocation = data.EggLocation,
     };
 }

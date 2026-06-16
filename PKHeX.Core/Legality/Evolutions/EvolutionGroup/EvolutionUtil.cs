@@ -42,7 +42,7 @@ internal static class EvolutionUtil
     private static EvoCriteria[] GetLocalEvolutionArray(Span<EvoCriteria> result)
     {
         if (result.Length == 0)
-            return Array.Empty<EvoCriteria>();
+            return [];
 
         var array = result.ToArray();
         var length = CleanEvolve(array);
@@ -63,6 +63,49 @@ internal static class EvolutionUtil
                 continue;
 
             ShiftDown(result[i..]);
+            i--; // re-check this index
+        }
+    }
+
+    public static void Discard<T>(Span<EvoCriteria> result, T pt, int ability, int abilityIndex) where T : IPersonalTable
+    {
+        Discard(result, pt);
+
+        // Additionally, discard any that have abilities that don't match.
+        // Birth ability should match.
+        uint indexes = 0u;
+        for (int i = 0; i < result.Length; i++)
+        {
+            var evo = result[i];
+            if (evo.Species == 0)
+                break;
+            if (!pt.IsPresentInGame(evo.Species, evo.Form))
+            {
+                indexes |= 1u << i; // mark for removal
+                continue;
+            }
+
+            var pi = pt.GetFormEntry(evo.Species, evo.Form);
+            var evoAbility = pi.GetAbilityAtIndex(abilityIndex);
+            if (evoAbility == ability)
+                continue; // OK
+
+            indexes |= 1u << i; // mark for removal
+        }
+
+        if (indexes == 0 || indexes == (1u << result.Length) - 1)
+            return; // nothing to remove, or everything to remove
+
+        for (int i = 0; i < result.Length; i++)
+        {
+            if ((indexes & 1u) == 0u)
+            {
+                indexes >>= 1;
+                continue; // keep
+            }
+            ShiftDown(result[i..]);
+            indexes >>= 1;
+            i--; // re-check this index
         }
     }
 
@@ -162,5 +205,17 @@ internal static class EvolutionUtil
             evo = evo with { LevelMax = newMax };
         }
         return i;
+    }
+
+    public static void ConditionEncounterNoMet(Span<EvoCriteria> chain)
+    {
+        // Allow for under-leveled evolutions for purposes of finding an under-leveled evolved encounter.
+        // e.g. a level 5 Silcoon encounter slot (normally needs level 7).
+        for (int i = 0; i < chain.Length - 1; i++)
+        {
+            ref var evo = ref chain[i];
+            if (evo.Method.IsLevelUpRequired)
+                evo = evo with { LevelMin = (byte)(chain[i + 1].LevelMin + evo.LevelUpRequired) };
+        }
     }
 }

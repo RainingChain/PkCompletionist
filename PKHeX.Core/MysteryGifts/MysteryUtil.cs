@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -23,72 +24,131 @@ public static class MysteryUtil
             if (!MysteryGift.IsMysteryGift(fi.Length))
                 continue;
 
-            var gift = MysteryGift.GetMysteryGift(File.ReadAllBytes(file), fi.Extension);
-            if (gift != null)
+            var data = File.ReadAllBytes(file);
+            var gift = MysteryGift.GetMysteryGift(data, fi.Extension);
+            if (gift is not null)
                 yield return gift;
         }
     }
 
-    /// <summary>
-    /// Gets a description of the <see cref="MysteryGift"/> using the current default string data.
-    /// </summary>
-    /// <param name="gift">Gift data to parse</param>
-    /// <returns>List of lines</returns>
-    public static IEnumerable<string> GetDescription(this MysteryGift gift) => gift.GetDescription(GameInfo.Strings);
-
-    /// <summary>
-    /// Gets a description of the <see cref="MysteryGift"/> using provided string data.
-    /// </summary>
-    /// <param name="gift">Gift data to parse</param>
-    /// <param name="strings">String data to use</param>
-    /// <returns>List of lines</returns>
-    public static IEnumerable<string> GetDescription(this MysteryGift gift, IBasicStrings strings)
+    extension(MysteryGift gift)
     {
-        if (gift.Empty)
-            return new[] { MsgMysteryGiftSlotEmpty };
+        /// <summary>
+        /// Gets the title of the <see cref="MysteryGift"/> using the current default string data.
+        /// </summary>
+        /// <returns>Title as a string</returns>
+        public string GetTitleFromIndex() => gift.GetTitleFromIndex(GameInfo.Strings);
 
-        var result = new List<string> { gift.CardHeader };
-        if (gift.IsItem)
+        /// <summary>
+        /// Gets the title of the <see cref="MysteryGift"/> using provided string data.
+        /// </summary>
+        /// <param name="strings">String data to use</param>
+        /// <returns>List of lines</returns>
+        public string GetTitleFromIndex(GameStrings strings)
         {
-            AddLinesItem(gift, strings, result);
-        }
-        else if (gift.IsEntity)
-        {
-            try
+            var titles = gift.Generation switch
             {
-                AddLinesPKM(gift, strings, result);
+                7 => GameInfo.Strings.wondercard7,
+                8 => GameInfo.Strings.wondercard8,
+                9 => GameInfo.Strings.wondercard9,
+                _ => throw new ArgumentOutOfRangeException(nameof(gift), gift, null),
+            };
+            if (gift.CardTitleIndex < 0 || gift.CardTitleIndex >= titles.Length || titles[gift.CardTitleIndex].Length == 0)
+                return "Mystery Gift";
+
+            var args = new string[15];
+            if (gift.IsEntity)
+            {
+                args[0] = strings.Species[gift.Species];
+                // 1: category (e.g. "Victory Pokémon" for Victini)
+                args[2] = FormConverter.GetStringFromForm(gift.Species, gift.Form, strings, GameInfo.GenderSymbolASCII, gift.Context);
+                args[3] = gift.OriginalTrainerName;
+                args[4] = strings.Move[gift.Moves.Move1];
+                args[5] = strings.Move[gift.Moves.Move2];
+                args[6] = strings.Move[gift.Moves.Move3];
+                args[7] = strings.Move[gift.Moves.Move4];
+                args[9] = strings.Item[gift.HeldItem];
+                if (gift is WC9 wc9)
+                    args[13] = strings.Types[(int)wc9.TeraType];
             }
-            catch { result.Add(MsgMysteryGiftParseFail); }
+            else if (gift.IsItem)
+            {
+                args[8] = strings.Item[gift.ItemID];
+            }
+            // 10: G8 Ranked Battle season
+            // 11: G8/9 title from affixed Ribbon/mark
+            // 12: G8/9 cash back money amount
+            // 13: BDSP underground item
+            // 14: Z-A extra side mission
+            return string.Format(titles[gift.CardTitleIndex], args);
         }
-        else
+
+        /// <summary>
+        /// Gets a description of the <see cref="MysteryGift"/> using the current default string data.
+        /// </summary>
+        /// <returns>List of lines</returns>
+        public IEnumerable<string> GetDescription() => gift.GetDescription(GameInfo.Strings);
+
+        /// <summary>
+        /// Gets a description of the <see cref="MysteryGift"/> using provided string data.
+        /// </summary>
+        /// <param name="strings">String data to use</param>
+        /// <returns>List of lines</returns>
+        public IEnumerable<string> GetDescription(IBasicStrings strings)
         {
+            if (gift.IsEmpty)
+                return [MsgMysteryGiftSlotEmpty];
+
+            var result = new List<string> { gift.CardHeader };
+            if (gift.IsItem)
+            {
+                AddLinesItem(gift, strings, result);
+            }
+            else if (gift.IsEntity)
+            {
+                try
+                {
+                    AddLinesPKM(gift, strings, result);
+                }
+                catch { result.Add(MsgMysteryGiftParseFail); }
+            }
+            else
+            {
+                switch (gift)
+                {
+                    case WC7 { IsBP: true } w7bp:
+                        result.Add($"BP: {w7bp.BP}");
+                        break;
+                    case WC7 { IsBean: true } w7bean:
+                        result.Add($"Bean ID: {w7bean.Bean}");
+                        result.Add($"Quantity: {w7bean.Quantity}");
+                        break;
+                    case PCD pcd:
+                        AddLinesPGT(pcd.Gift, result);
+                        result.Add($"Collected: {pcd.GiftUsed}");
+                        break;
+                    case PGT pgt:
+                        AddLinesPGT(pgt, result);
+                        break;
+                    default:
+                        result.Add(MsgMysteryGiftParseTypeUnknown);
+                        break;
+                }
+            }
+
             switch (gift)
             {
-                case WC7 { IsBP: true } w7bp:
-                    result.Add($"BP: {w7bp.BP}");
-                    break;
-                case WC7 { IsBean: true } w7bean:
-                    result.Add($"Bean ID: {w7bean.Bean}");
-                    result.Add($"Quantity: {w7bean.Quantity}");
-                    break;
-                default:
-                    result.Add(MsgMysteryGiftParseTypeUnknown);
+                case WC7 w7:
+                    result.Add($"Repeatable: {w7.GiftRepeatable}");
+                    result.Add($"Collected: {w7.GiftUsed}");
+                    result.Add($"Once Per Day: {w7.GiftOncePerDay}");
                     break;
             }
+            return result;
         }
-
-        switch (gift)
-        {
-            case WC7 w7:
-                result.Add($"Repeatable: {w7.GiftRepeatable}");
-                result.Add($"Collected: {w7.GiftUsed}");
-                result.Add($"Once Per Day: {w7.GiftOncePerDay}");
-                break;
-        }
-        return result;
     }
 
-    private static void AddLinesItem(MysteryGift gift, IBasicStrings strings, ICollection<string> result)
+    private static void AddLinesItem(MysteryGift gift, IBasicStrings strings, List<string> result)
     {
         result.Add($"Item: {strings.Item[gift.ItemID]} (Quantity: {gift.Quantity})");
         if (gift is not WC7 wc7)
@@ -100,13 +160,13 @@ public static class MysteryUtil
         }
     }
 
-    private static void AddLinesPKM(MysteryGift gift, IBasicStrings strings, ICollection<string> result)
+    private static void AddLinesPKM(MysteryGift gift, IBasicStrings strings, List<string> result)
     {
         var id = gift.Generation < 7 ? $"{gift.TID16:D5}/{gift.SID16:D5}" : $"[{gift.TrainerSID7:D4}]{gift.TrainerTID7:D6}";
 
         var first =
             $"{strings.Species[gift.Species]} @ {strings.Item[gift.HeldItem >= 0 ? gift.HeldItem : 0]}  --- "
-            + (gift.IsEgg ? strings.EggName : $"{gift.OT_Name} - {id}");
+            + (gift.IsEgg ? strings.EggName : $"{gift.OriginalTrainerName} - {id}");
         result.Add(first);
         result.Add(gift.Moves.GetMovesetLine(strings.Move));
 
@@ -116,6 +176,48 @@ public static class MysteryUtil
             if (addItem != 0)
                 result.Add($"+ {strings.Item[addItem]}");
         }
+    }
+
+    private static void AddLinesPGT(PGT gift, List<string> result)
+    {
+        static string Get(ReadOnlySpan<string> list, int index)
+        {
+            if ((uint)index >= list.Length)
+                return $"Unknown ({index})";
+            return list[index];
+        }
+        try
+        {
+            switch (gift.GiftType)
+            {
+                case GiftType4.Goods:
+                    result.Add($"Goods: {Get(GameInfo.Strings.uggoods, gift.ItemID)}");
+                    break;
+                case GiftType4.HasSubType:
+                    switch (gift.GiftSubType) {
+                        case GiftSubType4.Seal:
+                            result.Add($"Seal: {Get(GameInfo.Strings.seals, (int)gift.Seal)}");
+                            break;
+                        case GiftSubType4.Accessory:
+                            result.Add($"Accessory: {Get(GameInfo.Strings.accessories, (int)gift.Accessory)}");
+                            break;
+                        case GiftSubType4.Backdrop:
+                            result.Add($"Backdrop: {Get(GameInfo.Strings.backdrops, (int)gift.Backdrop)}");
+                            break;
+                    }
+                    break;
+                case GiftType4.PokétchApp:
+                    result.Add($"Pokétch App: {Get(GameInfo.Strings.poketchapps, (int)gift.PoketchApp)}");
+                    break;
+                case GiftType4.PokéwalkerCourse:
+                    result.Add($"Route Map: {Get(GameInfo.Strings.walkercourses, gift.PokewalkerCourseID)}");
+                    break;
+                default:
+                    result.Add($"{gift.GiftType}");
+                    break;
+            }
+        }
+        catch { result.Add(MsgMysteryGiftParseFail); }
     }
 
     /// <summary>
@@ -139,13 +241,11 @@ public static class MysteryUtil
             return false;
         }
 
-        if (g is WC6 { CardID: 2048, ItemID: 726 }) // Eon Ticket (OR/AS)
+        if (g is WC6 { CardID: 2048, ItemID: 726 } && sav is not SAV6AO)
         {
-            if (sav is not SAV6AO)
-            {
-                message = MsgMysteryGiftSlotSpecialReject;
-                return false;
-            }
+            // Eon Ticket (OR/AS)
+            message = MsgMysteryGiftSlotSpecialReject;
+            return false;
         }
 
         message = string.Empty;

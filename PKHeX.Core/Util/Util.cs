@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace PKHeX.Core;
 
 public static partial class Util
 {
     /// <summary>
-    /// Parses the string into an <see cref="int"/>, skipping all characters except for valid digits.
+    /// Parses the string into a 32-bit integer, skipping all characters except for valid digits.
     /// </summary>
     /// <param name="value">String to parse</param>
     /// <returns>Parsed value</returns>
@@ -71,17 +69,17 @@ public static partial class Util
             if (char.IsAsciiDigit(c))
             {
                 result <<= 4;
-                result += (uint)(c - '0');
+                result |= (uint)(c - '0');
             }
             else if (char.IsAsciiHexDigitUpper(c))
             {
                 result <<= 4;
-                result += (uint)(c - 'A' + 10);
+                result |= (uint)(c - 'A' + 10);
             }
             else if (char.IsAsciiHexDigitLower(c))
             {
                 result <<= 4;
-                result += (uint)(c - 'a' + 10);
+                result |= (uint)(c - 'a' + 10);
             }
         }
         return result;
@@ -103,56 +101,41 @@ public static partial class Util
             if (char.IsAsciiDigit(c))
             {
                 result <<= 4;
-                result += (uint)(c - '0');
+                result |= (uint)(c - '0');
             }
             else if (char.IsAsciiHexDigitUpper(c))
             {
                 result <<= 4;
-                result += (uint)(c - 'A' + 10);
+                result |= (uint)(c - 'A' + 10);
             }
             else if (char.IsAsciiHexDigitLower(c))
             {
                 result <<= 4;
-                result += (uint)(c - 'a' + 10);
+                result |= (uint)(c - 'a' + 10);
             }
         }
         return result;
     }
 
-    /// <summary>
-    /// Parses a variable length hex string (non-spaced, bytes in reverse order).
-    /// </summary>
+    /// <inheritdoc cref="GetBytesFromHexString(ReadOnlySpan{char}, Span{byte})"/>
     public static byte[] GetBytesFromHexString(ReadOnlySpan<char> input)
-    {
-        byte[] result = new byte[input.Length / 2];
-        GetBytesFromHexString(input, result);
-        return result;
-    }
+        => Convert.FromHexString(input);
 
-    /// <inheritdoc cref="GetBytesFromHexString(ReadOnlySpan{char})"/>
+    /// <summary>
+    /// Parses a variable length hex string (non-spaced, bytes in order).
+    /// </summary>
+    /// <param name="input">Hex string to parse</param>
+    /// <param name="result">Buffer to write the result to</param>
     public static void GetBytesFromHexString(ReadOnlySpan<char> input, Span<byte> result)
-    {
-        for (int i = 0; i < result.Length; i++)
-        {
-            var slice = input.Slice(i * 2, 2);
-            result[^(i + 1)] = (byte)GetHexValue(slice);
-        }
-    }
+        => Convert.FromHexString(input, result, out _, out _);
 
-    private const string HexChars = "0123456789ABCDEF";
-
+    /// <summary>
+    /// Converts the byte array into a hex string (non-spaced, bytes in order).
+    /// </summary>
     public static string GetHexStringFromBytes(ReadOnlySpan<byte> data)
     {
         System.Diagnostics.Debug.Assert(data.Length is (4 or 8 or 12 or 16));
-        Span<char> result = stackalloc char[data.Length * 2];
-        for (int i = 0; i < data.Length; i++)
-        {
-            // Write tuples from the opposite side of the result buffer.
-            var offset = (data.Length - i - 1) * 2;
-            result[offset + 0] = HexChars[data[i] >> 4];
-            result[offset + 1] = HexChars[data[i] & 0xF];
-        }
-        return new string(result);
+        return Convert.ToHexString(data);
     }
 
     /// <summary>
@@ -164,27 +147,44 @@ public static partial class Util
         if (str.IsWhiteSpace())
             return string.Empty;
 
-        int ctr = 0;
         Span<char> result = stackalloc char[str.Length];
+        int ctr = GetOnlyHex(str, result);
+        return new string(result[..ctr]);
+    }
+
+    /// <inheritdoc cref="GetOnlyHex(ReadOnlySpan{char})"/>
+    public static int GetOnlyHex(ReadOnlySpan<char> str, Span<char> result)
+    {
+        int ctr = 0;
         foreach (var c in str)
         {
             if (char.IsAsciiHexDigit(c))
                 result[ctr++] = c;
         }
-        return new string(result[..ctr]);
+        return ctr;
     }
 
-    /// <summary>
-    /// Returns a new string with each word converted to its appropriate title case.
-    /// </summary>
-    /// <param name="span">Input string to modify</param>
+    /// <inheritdoc cref="ToTitleCase(ReadOnlySpan{char}, Span{char})"/>
     public static string ToTitleCase(ReadOnlySpan<char> span)
     {
         if (span.IsEmpty)
             return string.Empty;
 
         Span<char> result = stackalloc char[span.Length];
-        // Add each word to the string builder. Continue from the first index that isn't a space.
+        ToTitleCase(span, result);
+        return new string(result);
+    }
+
+    /// <summary>
+    /// Returns a new string with each word converted to its appropriate title case.
+    /// </summary>
+    /// <remarks>
+    /// Assumes that words are separated by whitespace characters. Duplicate whitespace are not skipped.
+    /// </remarks>
+    /// <param name="span">Input string to modify</param>
+    /// <param name="result">>Buffer to write the result to</param>
+    public static void ToTitleCase(ReadOnlySpan<char> span, Span<char> result)
+    {
         // Add the first character as uppercase, then add each successive character as lowercase.
         bool first = true;
         for (var i = 0; i < span.Length; i++)
@@ -205,36 +205,5 @@ public static partial class Util
             }
             result[i] = c;
         }
-        return new string(result);
-    }
-
-    /// <summary>
-    /// Trims a string at the first instance of a 0x0000 terminator.
-    /// </summary>
-    /// <param name="input">String to trim.</param>
-    /// <returns>Trimmed string.</returns>
-    public static string TrimFromZero(string input) => TrimFromFirst(input, '\0');
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static string TrimFromFirst(string input, char c)
-    {
-        int index = input.IndexOf(c);
-        return index < 0 ? input : input[..index];
-    }
-
-    public static Dictionary<string, int>[] GetMultiDictionary(IReadOnlyList<IReadOnlyList<string>> nameArray, int start)
-    {
-        var result = new Dictionary<string, int>[nameArray.Count];
-        for (int i = 0; i < result.Length; i++)
-            result[i] = GetDictionary(nameArray[i], start);
-        return result;
-    }
-
-    private static Dictionary<string, int> GetDictionary(IReadOnlyList<string> names, int start)
-    {
-        var result = new Dictionary<string, int>(names.Count - start);
-        for (int i = start; i < names.Count; i++)
-            result.Add(names[i], i);
-        return result;
     }
 }

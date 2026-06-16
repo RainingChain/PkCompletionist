@@ -14,14 +14,9 @@ public static class AbilityChangeRules
     /// <param name="enc">Original Encounter</param>
     /// <param name="evosAll">Evolution and game visitation</param>
     /// <param name="abilityFlag">Current ability index value</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible to obtain <see cref="abilityFlag"/></returns>
-    public static bool IsAbilityStateValid(this IEncounterTemplate enc, EvolutionHistory evosAll, int abilityFlag, EntityContext current, EntityContext original) => (enc switch
-    {
-        IFixedAbilityNumber f => f.Ability,
-        _ => Any12,
-    }).IsAbilityStateValid(evosAll, abilityFlag, current, original);
+    public static bool IsAbilityStateValid(this IEncounterTemplate enc, EvolutionHistory evosAll, int abilityFlag)
+        => enc.Ability.IsAbilityStateValid(evosAll, abilityFlag);
 
     /// <summary>
     /// Checks if the current <see cref="abilityFlag"/> value is possible to obtain based on the original <see cref="ability"/> and game visiting.
@@ -29,17 +24,15 @@ public static class AbilityChangeRules
     /// <param name="ability">Original Ability Permitted</param>
     /// <param name="evosAll">Evolution and game visitation</param>
     /// <param name="abilityFlag">Current ability index value</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible to obtain <see cref="abilityFlag"/></returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static bool IsAbilityStateValid(this AbilityPermission ability, EvolutionHistory evosAll, int abilityFlag, EntityContext current, EntityContext original) => ability switch
+    public static bool IsAbilityStateValid(this AbilityPermission ability, EvolutionHistory evosAll, int abilityFlag) => ability switch
     {
         Any12H     => true,
-        Any12      => abilityFlag != 4 || IsAbilityPatchPossible(evosAll, current, original),
-        OnlyHidden => abilityFlag == 4 || IsAbilityPatchRevertPossible(evosAll, abilityFlag, current, original),
-        OnlyFirst  => abilityFlag == 1 || (abilityFlag == 4 && IsAbilityPatchPossible(evosAll, current, original)) || (abilityFlag != 4 && IsAbilityCapsulePossible(evosAll, current, original)),
-        OnlySecond => abilityFlag == 2 || (abilityFlag == 4 && IsAbilityPatchPossible(evosAll, current, original)) || (abilityFlag != 4 && IsAbilityCapsulePossible(evosAll, current, original)),
+        Any12      => abilityFlag != 4 || IsAbilityPatchPossible(evosAll),
+        OnlyHidden => abilityFlag == 4 || IsAbilityPatchRevertPossible(evosAll, abilityFlag),
+        OnlyFirst  => abilityFlag == 1 || (abilityFlag == 4 && IsAbilityPatchPossible(evosAll)) || (abilityFlag != 4 && IsAbilityCapsulePossible(evosAll)),
+        OnlySecond => abilityFlag == 2 || (abilityFlag == 4 && IsAbilityPatchPossible(evosAll)) || (abilityFlag != 4 && IsAbilityCapsulePossible(evosAll)),
         _ => throw new ArgumentOutOfRangeException(nameof(ability), ability, null),
     };
 
@@ -48,30 +41,23 @@ public static class AbilityChangeRules
     /// </summary>
     /// <param name="enc">Original Encounter</param>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if the ability can be changed</returns>
-    public static bool IsAbilityChangeAvailable(this IEncounterTemplate enc, EvolutionHistory evosAll, EntityContext current, EntityContext original) => (enc switch
-    {
-        IFixedAbilityNumber f => f.Ability,
-        _ => Any12,
-    }).IsAbilityChangeAvailable(evosAll, current, original);
+    public static bool IsAbilityChangeAvailable(this IEncounterTemplate enc, EvolutionHistory evosAll)
+        => enc.Ability.IsAbilityChangeAvailable(evosAll);
 
     /// <summary>
     /// Checks if the original <see cref="ability"/> value can be changed based on the games visited.
     /// </summary>
     /// <param name="ability">Original Ability Permitted</param>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if the ability can be changed</returns>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
-    public static bool IsAbilityChangeAvailable(this AbilityPermission ability, EvolutionHistory evosAll, EntityContext current, EntityContext original) => ability switch
+    public static bool IsAbilityChangeAvailable(this AbilityPermission ability, EvolutionHistory evosAll) => ability switch
     {
         Any12H => true,
-        Any12 => IsAbilityPatchAvailable(evosAll, current, original),
-        OnlyHidden => IsAbilityPatchRevertAvailable(evosAll, current, original),
-        OnlyFirst or OnlySecond => IsAbilityPatchAvailable(evosAll, current, original) || IsAbilityCapsuleAvailable(evosAll, current, original),
+        Any12 => IsAbilityPatchAvailable(evosAll),
+        OnlyHidden => IsAbilityPatchRevertAvailable(evosAll),
+        OnlyFirst or OnlySecond => IsAbilityPatchAvailable(evosAll) || IsAbilityCapsuleAvailable(evosAll),
         _ => throw new ArgumentOutOfRangeException(nameof(ability), ability, null),
     };
 
@@ -79,11 +65,12 @@ public static class AbilityChangeRules
     /// Checks if the Ability Capsule (1 &lt;-&gt; 2) item is available in any game visited.
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityCapsuleAvailable(EvolutionHistory evosAll, EntityContext current, EntityContext original)
+    public static bool IsAbilityCapsuleAvailable(EvolutionHistory evosAll)
     {
+        // ZA: Not available
+        if (evosAll.HasVisitedGen9)
+            return true;
         if (evosAll.HasVisitedSWSH)
             return true;
         if (evosAll.HasVisitedBDSP)
@@ -92,10 +79,6 @@ public static class AbilityChangeRules
             return true;
         if (evosAll.HasVisitedGen6)
             return true;
-        if (IsAbilityRestoredHOME(current, original))
-            return false;
-        if (evosAll.HasVisitedGen9)
-            return true;
         return false;
     }
 
@@ -103,11 +86,12 @@ public static class AbilityChangeRules
     /// Checks if any of the games visited allow applying an Ability Capsule (1 &lt;-&gt; 2) item.
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityCapsulePossible(EvolutionHistory evosAll, EntityContext current, EntityContext original)
+    public static bool IsAbilityCapsulePossible(EvolutionHistory evosAll)
     {
+        // ZA: Not available
+        if (evosAll.HasVisitedGen9 && IsCapsulePossible<PersonalTable9SV, PersonalInfo9SV, EvoCriteria>(evosAll.Gen9, PersonalTable.SV))
+            return true;
         if (evosAll.HasVisitedSWSH && IsCapsulePossible<PersonalTable8SWSH, PersonalInfo8SWSH, EvoCriteria>(evosAll.Gen8, PersonalTable.SWSH))
             return true;
         if (evosAll.HasVisitedBDSP && IsCapsulePossible<PersonalTable8BDSP, PersonalInfo8BDSP, EvoCriteria>(evosAll.Gen8b, PersonalTable.BDSP))
@@ -116,10 +100,6 @@ public static class AbilityChangeRules
             return true;
         if (evosAll.HasVisitedGen6 && IsCapsulePossible<PersonalTable6AO, PersonalInfo6AO, EvoCriteria>(evosAll.Gen6, PersonalTable.AO))
             return true;
-        if (IsAbilityRestoredHOME(current, original))
-            return false;
-        if (evosAll.HasVisitedGen9 && IsCapsulePossible<PersonalTable9SV, PersonalInfo9SV, EvoCriteria>(evosAll.Gen9, PersonalTable.SV))
-            return true;
         return false;
     }
 
@@ -127,16 +107,12 @@ public static class AbilityChangeRules
     /// Checks if the Ability Patch (1/2-&gt; H) item is available in any game visited.
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityPatchAvailable(EvolutionHistory evosAll, EntityContext current, EntityContext original)
+    public static bool IsAbilityPatchAvailable(EvolutionHistory evosAll)
     {
-        if (evosAll.HasVisitedSWSH || evosAll.HasVisitedBDSP)
+        if (evosAll.HasVisitedGen9) // ZA: Not available
             return true;
-        if (IsAbilityRestoredHOME(current, original))
-            return false;
-        if (evosAll.HasVisitedGen9)
+        if (evosAll.HasVisitedSWSH || evosAll.HasVisitedBDSP)
             return true;
         return false;
     }
@@ -145,17 +121,14 @@ public static class AbilityChangeRules
     /// Checks if any of the games visited allow applying an Ability Patch (1/2-&gt; H) item.
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityPatchPossible(EvolutionHistory evosAll, EntityContext current, EntityContext original)
+    public static bool IsAbilityPatchPossible(EvolutionHistory evosAll)
     {
+        // ZA: Not available
         if (evosAll.HasVisitedSWSH && IsPatchPossible<PersonalTable8SWSH, PersonalInfo8SWSH, EvoCriteria>(evosAll.Gen8, PersonalTable.SWSH))
             return true;
         if (evosAll.HasVisitedBDSP && IsPatchPossible<PersonalTable8BDSP, PersonalInfo8BDSP, EvoCriteria>(evosAll.Gen8b, PersonalTable.BDSP))
             return true;
-        if (IsAbilityRestoredHOME(current, original))
-            return false;
         if (evosAll.HasVisitedGen9 && IsPatchPossible<PersonalTable9SV, PersonalInfo9SV, EvoCriteria>(evosAll.Gen9, PersonalTable.SV))
             return true;
         return false;
@@ -165,30 +138,11 @@ public static class AbilityChangeRules
     /// Checks if any of the games visited allow reverting an Ability Patch (1/2-&gt; H) item.
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityPatchRevertAvailable(EvolutionHistory evosAll, EntityContext current, EntityContext original)
+    public static bool IsAbilityPatchRevertAvailable(EvolutionHistory evosAll)
     {
-        if (IsAbilityRestoredHOME(current, original))
-            return false;
-
-        if (evosAll.HasVisitedGen9)
+        if (evosAll.HasVisitedGen9) // ZA: Not available
             return true;
-        return false;
-    }
-
-    private static bool IsAbilityRestoredHOME(EntityContext current, EntityContext original)
-    {
-        var originalGen = original.Generation();
-        if (originalGen < 9)
-        {
-            // HOME restores abilities if it existed in the current format prior to transferring to a future game with reversion possible.
-            if (originalGen != 8)
-                original = EntityContext.Gen8;
-            if (current == original)
-                return true;
-        }
         return false;
     }
 
@@ -197,19 +151,12 @@ public static class AbilityChangeRules
     /// </summary>
     /// <param name="evosAll">Evolution and game visitation</param>
     /// <param name="abilityIndex">Current ability index value</param>
-    /// <param name="current">Current context</param>
-    /// <param name="original">Original context</param>
     /// <returns>True if possible</returns>
-    public static bool IsAbilityPatchRevertPossible(EvolutionHistory evosAll, int abilityIndex, EntityContext current, EntityContext original)
+    public static bool IsAbilityPatchRevertPossible(EvolutionHistory evosAll, int abilityIndex)
     {
-        // With HOME 3.0, ability modifications are locked to sets of games -- modifying in SV won't change SWSH.
-        if (current == EntityContext.Gen9)
-        {
-            if (IsAbilityRestoredHOME(current, original))
-                return false;
-            if (evosAll.HasVisitedGen9 && IsRevertPossible<PersonalTable9SV, PersonalInfo9SV, EvoCriteria>(evosAll.Gen9, PersonalTable.SV, abilityIndex))
-                return true;
-        }
+        // ZA: Not available
+        if (evosAll.HasVisitedGen9 && IsRevertPossible<PersonalTable9SV, PersonalInfo9SV, EvoCriteria>(evosAll.Gen9, PersonalTable.SV, abilityIndex))
+            return true;
         return false;
     }
 
@@ -222,7 +169,7 @@ public static class AbilityChangeRules
         {
             var evo = evos[i];
             var pi = table[evo.Species, evo.Form];
-            if (!pi.GetIsAbility12Same())
+            if (!pi.IsAbility12Same)
                 return true;
         }
         return false;
@@ -237,22 +184,33 @@ public static class AbilityChangeRules
         {
             var evo = evos[i];
             var pi = table[evo.Species, evo.Form];
-            if (pi.GetIsAbilityHiddenUnique())
+            if (pi.IsAbilityHiddenUnique)
                 return true;
         }
 
         // Some species have a distinct hidden ability only on another form, and can change between that form and its current form.
-        var first = evos[0];
-        return first.Form != 0 && first.Species switch
-        {
-            (int)Species.Giratina => true, // Form-0 is a/a/h
-            (int)Species.Tornadus => true, // Form-0 is a/a/h
-            (int)Species.Thundurus => true, // Form-0 is a/a/h
-            (int)Species.Landorus => true, // Form-0 is a/a/h
-            (int)Species.Enamorus => true, // Form-0 is a/a/h
-            _ => false,
-        };
+        return IsFormChangeDifferentHidden(evos[0]);
     }
+
+    /// <inheritdoc cref="IsFormChangeDifferentHidden(ushort)"/>
+    public static bool IsFormChangeDifferentHidden<TEvo>(TEvo first) where TEvo : ISpeciesForm =>
+        first.Form != 0 && IsFormChangeDifferentHidden(first.Species);
+
+    /// <summary>
+    /// Checks if the species has a different hidden ability on another form (usually Form-0).
+    /// </summary>
+    /// <remarks>
+    /// Some forms are single ability, but if changed to another form, can be mutated to have an "inaccessible" index.
+    /// </remarks>
+    public static bool IsFormChangeDifferentHidden(ushort species) => species switch
+    {
+        (int)Species.Giratina => true, // Form-0 is a/a/h
+        (int)Species.Tornadus => true, // Form-0 is a/a/h
+        (int)Species.Thundurus=> true, // Form-0 is a/a/h
+        (int)Species.Landorus => true, // Form-0 is a/a/h
+        (int)Species.Enamorus => true, // Form-0 is a/a/h
+        _ => false,
+    };
 
     private static bool IsRevertPossible<TTable, TInfo, TDex>(ReadOnlySpan<TDex> evos, TTable table, int abilityIndex)
         where TTable : IPersonalTable<TInfo>
@@ -264,14 +222,36 @@ public static class AbilityChangeRules
         {
             var evo = evos[i];
             var pi = table[evo.Species, evo.Form];
-            if (revert && !pi.GetIsAbility12Same())
+            if (revert && !pi.IsAbility12Same)
                 return true;
-            if (!pi.GetIsAbilityHiddenUnique())
+            if (!pi.IsAbilityHiddenUnique)
                 continue;
-            if (abilityIndex == 1 || !pi.GetIsAbility12Same())
+            if (abilityIndex == 1 || !pi.IsAbility12Same)
                 return true;
             revert = true;
         }
-        return false;
+
+        // Some species have a distinct hidden ability only on another form, and can change between that form and its current form.
+        return abilityIndex == 1 && IsFormChangeDifferentHidden(evos[0]); // can't change to second index
+    }
+
+    /// <summary>
+    /// Gets the suggested ability value for an evolved entity based on its original encounter and current form.
+    /// </summary>
+    public static int GetExpectedAbilityZA<TEntity, TEnc>(TEntity pk, TEnc enc, int abilityFlag)
+        where TEntity : PKM
+        where TEnc : ISpeciesForm
+    {
+        var index = abilityFlag >> 1;
+        if (index is not (0 or 1 or 2))
+            index = 0;
+
+        var species = pk.Species;
+        var table = PersonalTable.ZA;
+        var pi = table[enc.Species, enc.Form];
+        if (FormInfo.HasMegaForm(species) || species is (int)Species.Aegislash)
+            pi = table[species, pk.Form];
+
+        return pi.GetAbilityAtIndex(index);
     }
 }

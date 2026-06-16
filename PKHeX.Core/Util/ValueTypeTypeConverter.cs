@@ -29,6 +29,12 @@ public sealed class ValueTypeTypeConverter : ExpandableObjectConverter
     }
 }
 
+/// <summary>
+/// Used for converting a <see cref="uint"/> to an uppercase hex string and back.
+/// </summary>
+/// <remarks>
+/// When converting from a string, it accepts both "0x" prefixed and non-prefixed hex strings, with case insensitivity.
+/// </remarks>
 public sealed class TypeConverterU32 : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -52,12 +58,20 @@ public sealed class TypeConverterU32 : TypeConverter
     {
         if (value is not string input)
             return base.ConvertFrom(context, culture, value);
-        if (input.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            input = input[2..];
-        return uint.TryParse(input, System.Globalization.NumberStyles.HexNumber, culture, out var result) ? result : 0u;
+
+        var span = input.AsSpan();
+        if (span.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            span = span[2..];
+        return uint.TryParse(span, System.Globalization.NumberStyles.HexNumber, culture, out var result) ? result : 0u;
     }
 }
 
+/// <summary>
+/// Used for converting a <see cref="ulong"/> to an uppercase hex string and back.
+/// </summary>
+/// <remarks>
+/// When converting from a string, it accepts both "0x" prefixed and non-prefixed hex strings, with case insensitivity.
+/// </remarks>
 public sealed class TypeConverterU64 : TypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
@@ -81,8 +95,9 @@ public sealed class TypeConverterU64 : TypeConverter
     {
         if (value is not string input)
             return base.ConvertFrom(context, culture, value);
-        if (input.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            input = input[2..];
-        return ulong.TryParse(input, System.Globalization.NumberStyles.HexNumber, culture, out var result) ? result : 0ul;
+        var span = input.AsSpan();
+        if (span.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+            span = span[2..];
+        return ulong.TryParse(span, System.Globalization.NumberStyles.HexNumber, culture, out var result) ? result : 0ul;
     }
 }

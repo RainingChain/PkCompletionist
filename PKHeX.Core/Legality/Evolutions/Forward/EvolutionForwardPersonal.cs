@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace PKHeX.Core;
 
 /// <summary>
-/// Provides forward evolution pathways with reliance on personal table data for form branched evolutions.
+/// Represents a forward evolution handler that determines evolution methods and possible evolutions for a given species
+/// and form, based on personal data and evolution entries.
 /// </summary>
-public sealed class EvolutionForwardPersonal : IEvolutionForward
+/// <remarks>This class provides methods to retrieve evolution methods, determine possible evolutions, and
+/// validate evolution criteria for a given Pokémon species and form. It uses a combination of evolution entries and
+/// personal data to perform these operations.</remarks>
+/// <param name="Entries">Collection of evolution methods indexed by the Personal Table's <see cref="IPersonalTable.GetFormIndex"/></param>
+/// <param name="Personal">Personal Table containing species and form data.</param>
+/// <seealso cref="EvolutionForwardSpecies"/>
+public sealed class EvolutionForwardPersonal(EvolutionMethod[][] Entries, IPersonalTable Personal) : IEvolutionForward
 {
-    private readonly IPersonalTable Personal;
-    private readonly EvolutionMethod[][] Entries;
-
-    public EvolutionForwardPersonal(EvolutionMethod[][] entries, IPersonalTable personal)
-    {
-        Entries = entries;
-        Personal = personal;
-    }
-
     public ReadOnlyMemory<EvolutionMethod> GetForward(ushort species, byte form)
     {
         int index = Personal.GetFormIndex(species, form);
@@ -45,7 +44,7 @@ public sealed class EvolutionForwardPersonal : IEvolutionForward
         }
     }
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, EvolutionRuleTweak tweak, out EvoCriteria result) where T : ISpeciesForm
     {
         var methods = GetForward(head.Species, head.Form);
         foreach (var method in methods.Span)
@@ -56,11 +55,11 @@ public sealed class EvolutionForwardPersonal : IEvolutionForward
             if (next.Form != expectForm)
                 continue;
 
-            var chk = method.Check(pk, currentMaxLevel, levelMin, skipChecks);
+            var chk = method.Check(pk, currentMaxLevel, levelMin, skipChecks, tweak);
             if (chk != EvolutionCheckResult.Valid)
                 continue;
 
-            result = Create(next.Species, next.Form, method, currentMaxLevel, levelMin);
+            result = Create(next.Species, next.Form, method, currentMaxLevel, levelMin, tweak);
             return true;
         }
 
@@ -68,7 +67,7 @@ public sealed class EvolutionForwardPersonal : IEvolutionForward
         return false;
     }
 
-    private static EvoCriteria Create(ushort species, byte form, EvolutionMethod method, byte currentMaxLevel, byte min) => new()
+    private static EvoCriteria Create(ushort species, byte form, EvolutionMethod method, byte currentMaxLevel, byte min, EvolutionRuleTweak tweak) => new()
     {
         Species = species,
         Form = form,
@@ -76,7 +75,21 @@ public sealed class EvolutionForwardPersonal : IEvolutionForward
         Method = method.Method,
 
         // Temporarily store these and overwrite them when we clean the list.
-        LevelMin = Math.Max(min, method.Level),
-        LevelUpRequired = method.RequiresLevelUp ? (byte)1 : (byte)0,
+        LevelMin = Math.Max((byte)(min + method.LevelUp), method.Level),
+        LevelUpRequired = GetLevelUp(method.LevelUp, currentMaxLevel, tweak),
     };
+
+    /// <summary>
+    /// Gets the level up requirement for the evolution.
+    /// </summary>
+    /// <seealso cref="EvolutionReversal.GetLevelUp"/>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static byte GetLevelUp(byte flag, byte currentMaxLevel, EvolutionRuleTweak tweak)
+    {
+        if (flag == 0)
+            return 0;
+        if (currentMaxLevel == Experience.MaxLevel && tweak.AllowLevelUpEvolution100)
+            return 0;
+        return flag;
+    }
 }

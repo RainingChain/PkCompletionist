@@ -6,18 +6,25 @@ public sealed class EvolutionGroup2 : IEvolutionGroup
 {
     public static readonly EvolutionGroup2 Instance = new();
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves2;
-    private const int Generation = 2;
+    private const byte Generation = 2;
     private static PersonalTable2 Personal => PersonalTable.C;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Default;
 
     public IEvolutionGroup? GetNext(PKM pk, EvolutionOrigin enc) => pk.Format > Generation ? EvolutionGroup7.Instance : null;
     public IEvolutionGroup? GetPrevious(PKM pk, EvolutionOrigin enc) => pk.Format != 1 ? EvolutionGroup1.Instance : null;
-    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk) => EvolutionUtil.Discard(result, Personal);
+    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc)
+    {
+        if (enc.Generation == 1)
+            EvolutionUtil.Discard(result, PersonalTable.RB);
+        else
+            EvolutionUtil.Discard(result, PersonalTable.C);
+    }
 
     public int Devolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc)
     {
         if (pk.Format > Generation && !enc.SkipChecks)
         {
-            byte max = (byte)pk.Met_Level;
+            byte max = pk.MetLevel;
             EvolutionUtil.UpdateCeiling(result, max);
             enc = enc with { LevelMin = 2, LevelMax = max };
         }
@@ -37,15 +44,15 @@ public sealed class EvolutionGroup2 : IEvolutionGroup
         return present;
     }
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
     }
 
     public int Evolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc, EvolutionHistory history)
     {
         if (pk.Format > Generation)
-            enc = enc with { LevelMax = (byte)pk.Met_Level };
+            enc = enc with { LevelMax = pk.MetLevel };
 
         int present = 1;
         for (int i = result.Length - 1; i >= 1; i--)
@@ -67,8 +74,8 @@ public sealed class EvolutionGroup2 : IEvolutionGroup
         return present;
     }
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        return Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        return Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
     }
 }

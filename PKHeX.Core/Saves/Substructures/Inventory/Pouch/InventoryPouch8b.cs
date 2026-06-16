@@ -4,14 +4,14 @@ using System.Diagnostics;
 
 namespace PKHeX.Core;
 
-public sealed class InventoryPouch8b : InventoryPouch
+public sealed class InventoryPouch8b(InventoryType type, IItemStorage info, int maxCount)
+    : InventoryPouch(type, info, maxCount, 0)
 {
     public bool SetNew { get; set; }
 
-    public InventoryPouch8b(InventoryType type, IItemStorage info, int maxCount, int offset)
-        : base(type, info, maxCount, offset) { }
-
-    public override InventoryItem8b GetEmpty(int itemID = 0, int count = 0) => new() { Index = itemID, Count = count, IsNew = true };
+    public override InventoryItem8b GetEmpty(int itemID = 0, int count = 0) => new() { Index = itemID, Count = count, IsNew = count != 0 };
+    private InventoryItem8b[] _items = [];
+    public override InventoryItem8b[] Items => _items;
 
     public override void GetPouch(ReadOnlySpan<byte> data)
     {
@@ -21,7 +21,7 @@ public sealed class InventoryPouch8b : InventoryPouch
         int ctr = 0;
         foreach (var index in LegalItems)
         {
-            var item = GetItem(data, index);
+            var item = ReadItem(data, index);
             if (!item.IsValidSaveSortNumberCount)
                 continue;
             items[ctr++] = item;
@@ -29,22 +29,22 @@ public sealed class InventoryPouch8b : InventoryPouch
         while (ctr != LegalItems.Length)
             items[ctr++] = new InventoryItem8b();
 
-        Items = items;
+        _items = items;
         SortBy<InventoryItem8b, ushort>(z => !z.IsValidSaveSortNumberCount ? (ushort)0xFFFF : z.SortOrder);
     }
 
-    public InventoryItem8b GetItem(ReadOnlySpan<byte> data, ushort itemID)
+    public static InventoryItem8b ReadItem(ReadOnlySpan<byte> data, ushort itemID)
     {
-        var ofs = GetItemOffset(itemID, Offset);
+        var ofs = GetItemOffset(itemID);
         return InventoryItem8b.Read(itemID, data[ofs..]);
     }
 
     public override void SetPouch(Span<byte> data)
     {
-        HashSet<ushort> processed = new();
+        HashSet<ushort> processed = [];
 
         // Write all the item slots still present in the pouch. Keep track of the item IDs processed.
-        var items = (InventoryItem8b[])Items;
+        var items = _items;
         for (int i = 0; i < items.Length; i++)
             items[i].SortOrder = (ushort)(i + 1);
 
@@ -62,12 +62,13 @@ public sealed class InventoryPouch8b : InventoryPouch
 
             if (SetNew && item.Index != 0)
             {
-                var original = GetItem(data, (ushort)item.Index);
+                var original = ReadItem(data, (ushort)item.Index);
                 item.IsNew |= !original.IsValidSaveSortNumberCount;
             }
 
-            var ofs = GetItemOffset(index, Offset);
-            item.Write(data[ofs..]);
+            var ofs = GetItemOffset(index);
+            var dest = data[ofs..];
+            item.Write(dest);
 
             // In the event of duplicates, we just overwrite what was previously written by a prior duplicate.
             // Don't care if we've already processed this item, just write it again.
@@ -83,7 +84,7 @@ public sealed class InventoryPouch8b : InventoryPouch
         }
     }
 
-    public static int GetItemOffset(ushort index, int baseOffset) => baseOffset + (InventoryItem8b.SIZE * index);
+    public static int GetItemOffset(ushort index) => InventoryItem8b.SIZE * index;
 
-    public void ClearItem(Span<byte> data, ushort index) => InventoryItem8b.Clear(data, GetItemOffset(index, Offset));
+    public static void ClearItem(Span<byte> data, ushort index) => InventoryItem8b.Clear(data, GetItemOffset(index));
 }

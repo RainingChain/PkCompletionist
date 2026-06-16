@@ -1,4 +1,4 @@
-using static PKHeX.Core.LegalityCheckStrings;
+using static PKHeX.Core.LegalityCheckResultCode;
 
 namespace PKHeX.Core;
 
@@ -17,61 +17,59 @@ public sealed class LevelVerifier : Verifier
         {
             if (!IsMetLevelMatchEncounter(gift, pk))
             {
-                data.AddLine(GetInvalid(LLevelMetGift));
+                data.AddLine(GetInvalid(LevelMetGift));
                 return;
             }
             if (gift.Level > pk.CurrentLevel)
             {
-                data.AddLine(GetInvalid(LLevelMetGiftFail));
+                data.AddLine(GetInvalid(LevelMetGiftFail, gift.Level));
                 return;
             }
         }
 
         if (pk.IsEgg)
         {
-            int elvl = enc.LevelMin;
-            if (elvl != pk.CurrentLevel)
+            if (pk.CurrentLevel != enc.LevelMin)
             {
-                data.AddLine(GetInvalid(string.Format(LEggFMetLevel_0, elvl)));
+                data.AddLine(GetInvalid(EggFMetLevel_0, enc.LevelMin));
                 return;
             }
 
-            var reqEXP = enc is EncounterStatic2Odd
+            var reqEXP = enc is EncounterStatic2 { IsDizzyPunchEgg: true }
                 ? 125 // Gen2 Dizzy Punch gifts always have 125 EXP, even if it's more than the Lv5 exp required.
-                : Experience.GetEXP(elvl, pk.PersonalInfo.EXPGrowth);
+                : Experience.GetEXP(enc.LevelMin, data.PersonalInfo.EXPGrowth);
             if (reqEXP != pk.EXP)
-                data.AddLine(GetInvalid(LEggEXP));
+                data.AddLine(GetInvalid(EggEXP, reqEXP));
             return;
         }
 
-        int lvl = pk.CurrentLevel;
-        if (lvl >= 100)
+        var lvl = pk.CurrentLevel;
+        if (lvl >= Experience.MaxLevel)
         {
-            var expect = Experience.GetEXP(100, pk.PersonalInfo.EXPGrowth);
+            var expect = Experience.GetEXP(Experience.MaxLevel, data.PersonalInfo.EXPGrowth);
             if (pk.EXP != expect)
-                data.AddLine(GetInvalid(LLevelEXPTooHigh));
+                data.AddLine(GetInvalid(Identifier, LevelEXPTooHigh, expect));
         }
 
-        if (lvl < pk.Met_Level)
-            data.AddLine(GetInvalid(LLevelMetBelow));
-        else if (!enc.IsWithinEncounterRange(pk) && lvl != 100 && pk.EXP == Experience.GetEXP(lvl, pk.PersonalInfo.EXPGrowth))
-            data.AddLine(Get(LLevelEXPThreshold, Severity.Fishy));
+        if (lvl < pk.MetLevel)
+            data.AddLine(GetInvalid(LevelMetBelow, lvl));
+        else if (!enc.IsWithinEncounterRange(pk) && lvl != Experience.MaxLevel && pk.EXP == Experience.GetEXP(lvl, data.PersonalInfo.EXPGrowth))
+            data.AddLine(Get(Severity.Fishy, LevelEXPThreshold));
         else
-            data.AddLine(GetValid(LLevelMetSane));
+            data.AddLine(GetValid(LevelMetSane));
     }
 
     private static bool IsMetLevelMatchEncounter(MysteryGift gift, PKM pk)
     {
-        if (gift.Level == pk.Met_Level)
+        if (gift.Level == pk.MetLevel)
             return true;
         if (!pk.HasOriginalMetLocation)
             return true;
 
         return gift switch
         {
-            WC3 wc3 when wc3.Met_Level == pk.Met_Level || wc3.IsEgg => true,
-            WC7 wc7 when wc7.MetLevel == pk.Met_Level => true,
-            PGT { IsManaphyEgg: true } when pk.Met_Level == 0 => true,
+            WC7 wc7 when wc7.MetLevel == pk.MetLevel => true,
+            PGT { IsManaphyEgg: true } when pk.MetLevel == 0 => true,
             _ => false,
         };
     }
@@ -82,26 +80,22 @@ public sealed class LevelVerifier : Verifier
         var enc = data.EncounterMatch;
         if (pk.IsEgg)
         {
-            const int elvl = 5;
-            if (elvl != pk.CurrentLevel)
-                data.AddLine(GetInvalid(string.Format(LEggFMetLevel_0, elvl)));
+            if (pk.CurrentLevel != EncounterEgg2.Level)
+                data.AddLine(GetInvalid(EggFMetLevel_0, EncounterEgg2.Level));
             return;
         }
-        if (pk.Met_Location != 0) // crystal
+        if (pk.MetLocation != 0) // crystal
         {
-            int lvl = pk.CurrentLevel;
-            if (lvl < pk.Met_Level)
-                data.AddLine(GetInvalid(LLevelMetBelow));
+            var lvl = pk.CurrentLevel;
+            if (lvl < pk.MetLevel)
+                data.AddLine(GetInvalid(LevelMetBelow, lvl));
         }
 
         if (IsTradeEvolutionRequired(data, enc))
         {
-            // Pokemon has been traded illegally between games without evolving.
+            // Pokémon has been traded illegally between games without evolving.
             // Trade evolution species IDs for Gen1 are sequential dex numbers.
-            var species = enc.Species;
-            var evolved = ParseSettings.SpeciesStrings[species + 1];
-            var unevolved = ParseSettings.SpeciesStrings[species];
-            data.AddLine(GetInvalid(string.Format(LEvoTradeReqOutsider, unevolved, evolved)));
+            data.AddLine(GetInvalid(EvoTradeReqOutsider_01, enc.Species, (ushort)(enc.Species + 1u)));
         }
     }
 
@@ -121,21 +115,24 @@ public sealed class LevelVerifier : Verifier
         if (!GBRestrictions.IsTradeEvolution1(enc.Species))
             return false;
 
-        // Context check is only applicable to gen1/2; transferring to Gen2 is a trade.
+        // Context check is only applicable to Gen1/2; transferring to Gen2 is a trade.
         // Stadium 2 can transfer across game/generation boundaries without initiating a trade.
         // Ignore this check if the environment's loaded trainer is not from Gen1/2 or is from GB Era.
-        if (ParseSettings.ActiveTrainer.Generation >= 3 || ParseSettings.AllowGBCartEra)
+        if (ParseSettings.AllowGBStadium2 || ParseSettings.ActiveTrainer is { Generation: not (1 or 2) })
             return false;
 
         var moves = data.Info.Moves;
         // Gen2 stuff can be traded between Gen2 games holding an Everstone, assuming it hasn't been transferred to Gen1 for special moves.
         if (enc.Generation == 2)
-            return MoveInfo.IsAnyFromGeneration(1, moves);
+            return MoveInfo.IsAnyFromGeneration(EntityContext.Gen1, moves);
         // Gen1 stuff can only be un-evolved if it was never traded from the OT.
-        if (MoveInfo.IsAnyFromGeneration(2, moves))
+        if (MoveInfo.IsAnyFromGeneration(EntityContext.Gen2, moves))
             return true; // traded to Gen2 for special moves
         if (pk.Format != 1)
             return true; // traded to Gen2 (current state)
-        return !ParseSettings.IsFromActiveTrainer(pk); // not with OT
+
+        if (ParseSettings.ActiveTrainer is { } tr)
+            return !tr.IsFromTrainer(pk); // not with OT
+        return false;
     }
 }

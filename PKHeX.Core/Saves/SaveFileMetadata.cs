@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace PKHeX.Core;
 
@@ -26,8 +28,17 @@ public sealed record SaveFileMetadata(SaveFile SAV)
     /// </summary>
     public string? FileFolder { get; private set; }
 
-    private byte[] Footer = Array.Empty<byte>(); // .dsv
-    private byte[] Header = Array.Empty<byte>(); // .gci
+    private Memory<byte> Footer = Memory<byte>.Empty; // .dsv
+    private Memory<byte> Header = Memory<byte>.Empty; // .gci
+    private ISaveHandler? Handler;
+
+    /// <summary>
+    /// Indicates whether the save file is a backup file matching this program's backup naming convention.
+    /// </summary>
+    /// <remarks>
+    /// Only check for ".bak" suffix; do not check for other naming conventions as they may vary between different release versions of PKHeX.
+    /// </remarks>
+    public bool IsBackup => FilePath?.EndsWith(".bak", StringComparison.Ordinal) is true;
 
     private string BAKSuffix => $" [{SAV.ShortSummary}].bak";
 
@@ -42,7 +53,18 @@ public sealed record SaveFileMetadata(SaveFile SAV)
     /// <summary>
     /// File Dialog filter to help save the file.
     /// </summary>
-    public string Filter => $"{SAV.GetType().Name}|{GetSuggestedExtension()}|All Files|*.*";
+    public string Filter
+    {
+        get
+        {
+            // Try to filter to suggested extension; otherwise default to all files.
+            const string noFilter = "All Files|*.*";
+            var other = GetSuggestedExtension();
+            if (other.Length == 0)
+                return noFilter;
+            return $"{SAV.GetType().Name}|*{other}|{noFilter}";
+        }
+    }
 
     /// <summary>
     /// Writes the input <see cref="data"/> and appends the <see cref="Header"/> and <see cref="Footer"/> if requested.
@@ -50,22 +72,37 @@ public sealed record SaveFileMetadata(SaveFile SAV)
     /// <param name="data">Finalized save file data (with fixed checksums) to be written to a file</param>
     /// <param name="setting">Toggle flags </param>
     /// <returns>Final save file data.</returns>
-    public byte[] Finalize(byte[] data, BinaryExportSetting setting)
+    public Memory<byte> Finalize(Memory<byte> data, BinaryExportSetting setting)
     {
-        if (Footer.Length > 0 && setting.HasFlag(BinaryExportSetting.IncludeFooter))
-            return ArrayUtil.ConcatAll(data, Footer);
-        if (Header.Length > 0 && setting.HasFlag(BinaryExportSetting.IncludeHeader))
-            return ArrayUtil.ConcatAll(Header, data);
+        if (HasFooter && !setting.HasFlag(BinaryExportSetting.ExcludeFooter))
+            data = (byte[])[.. data.Span, ..Footer.Span];
+        if (HasHeader && !setting.HasFlag(BinaryExportSetting.ExcludeHeader))
+            data = (byte[])[..Header.Span, ..data.Span];
+        if (!setting.HasFlag(BinaryExportSetting.ExcludeFinalize))
+            Handler?.Finalize(data.Span);
         return data;
     }
 
     /// <summary>
     /// Sets the details of any trimmed header and footer arrays to a <see cref="SaveFile"/> object.
     /// </summary>
-    public void SetExtraInfo(byte[] header, byte[] footer)
+    public void SetExtraInfo(Memory<byte> header, Memory<byte> footer, ISaveHandler handler)
     {
         Header = header;
         Footer = footer;
+        Handler = handler;
+    }
+
+    /// <inheritdoc cref="SetExtraInfo(Memory{byte}, Memory{byte}, ISaveHandler)"/>
+    public void ShareExtraInfo(SaveFileMetadata other)
+    {
+        other.Header = Header;
+        other.Footer = Footer;
+        other.Handler = Handler;
+        if (FilePath is not null)
+            other.SetAsLoadedFile(FilePath);
+        else
+            other.SetAsBlank();
     }
 
     /// <summary>
@@ -93,9 +130,67 @@ public sealed record SaveFileMetadata(SaveFile SAV)
 
     private static string GetFileName(string path, string bak)
     {
-        var bakName = Util.CleanFileName(bak);
-        var fn = Path.GetFileName(path);
-        return fn.EndsWith(bakName, StringComparison.Ordinal) ? fn[..^bakName.Length] : fn;
+        var fileName = Path.GetFileName(path);
+
+        // Trim off existing backup name if present
+        var bakName = PathUtil.CleanFileName(bak);
+        if (fileName.EndsWith(bakName, StringComparison.Ordinal))
+            fileName = fileName[..^bakName.Length];
+
+        if (fileName.StartsWith("savedata ", StringComparison.OrdinalIgnoreCase) && fileName.Contains(".bin"))
+            return fileName[..8] + ".bin";
+        if (fileName.StartsWith("main"))
+            return "main";
+
+        var extensions = CollectionsMarshal.AsSpan(CustomSaveExtensions);
+        return TrimNames(fileName, extensions);
+    }
+
+    public static readonly List<string> CustomSaveExtensions =
+    [
+        "sav", // standard
+        "dat", // VC data
+        "gci", // Dolphin GameCubeImage
+        "dsv", // DeSmuME
+        "srm", // RetroArch save files
+        "fla", // flash
+        "SaveRAM", // BizHawk
+    ];
+
+    private static string TrimNames(string fileName, ReadOnlySpan<string> extensions)
+    {
+        foreach (var ext in extensions)
+        {
+            var index = fileName.LastIndexOf(ext, StringComparison.OrdinalIgnoreCase);
+            if (index == -1)
+                continue;
+            // Check for a period before the extension
+            if (index == 0 || fileName[index - 1] != '.')
+                continue;
+
+            var result = fileName.AsSpan();
+            result = result[..(index-1)];
+
+            // Files can have (#) appended to them, so we need to trim that off
+            var open = result.LastIndexOf('(');
+            var close = result.LastIndexOf(')');
+            if (open != -1 && close != -1 && close > open && char.IsDigit(result[open + 1]))
+                result = result[..open].Trim();
+            var copy = result.IndexOf(" - Copy", StringComparison.OrdinalIgnoreCase);
+            if (copy == -1)
+                copy = result.IndexOf("_-_Copy", StringComparison.OrdinalIgnoreCase);
+            if (copy != -1)
+                result = result[..copy].Trim();
+
+            // Re-add the extension
+            return $"{result}.{ext}";
+        }
+        return fileName;
+    }
+
+    public string GetBackupFileName(string destDir)
+    {
+        return Path.Combine(destDir, PathUtil.CleanFileName(BAKName));
     }
 
     private void SetAsBlank()
@@ -110,11 +205,11 @@ public sealed record SaveFileMetadata(SaveFile SAV)
     public string GetSuggestedExtension()
     {
         var sav = SAV;
-        var fn = sav.Metadata.FileName;
-        if (fn != null)
+        var fn = FileName;
+        if (fn is not null)
             return Path.GetExtension(fn);
 
-        if ((sav.Generation is 4 or 5) && sav.Metadata.HasFooter)
+        if (HasFooter && (sav.Generation is 4 or 5))
             return ".dsv";
         return sav.Extension;
     }
@@ -123,13 +218,30 @@ public sealed record SaveFileMetadata(SaveFile SAV)
     /// Gets suggested export options for the save file.
     /// </summary>
     /// <param name="ext">Selected export extension</param>
-    public BinaryExportSetting GetSuggestedFlags(string? ext = null)
+    public BinaryExportSetting GetSuggestedFlags(ReadOnlySpan<char> ext)
     {
+        // Do everything as default
         var flags = BinaryExportSetting.None;
-        if (ext == ".dsv")
-            flags |= BinaryExportSetting.IncludeFooter;
-        if (ext == ".gci" || SAV is IGCSaveFile {MemoryCard: null})
-            flags |= BinaryExportSetting.IncludeHeader;
+
+        if (FileName is not null)
+        {
+            // Try to support a couple formats changes that the user wants to remove from the file
+            if (FileName.EndsWith(".dsv") && ext is not ".dsv")
+                flags |= BinaryExportSetting.ExcludeFooter;
+            else if (FileName.EndsWith(".gci") && ext is not ".gci")
+                flags |= BinaryExportSetting.ExcludeHeader;
+        }
         return flags;
+    }
+
+    internal SaveFileMetadata CloneInternal(SaveFile sav)
+    {
+        var clone = this with { SAV = sav };
+        // Disassociate any mutable references from this object
+        if (HasFooter)
+            clone.Footer = Footer.ToArray();
+        if (HasHeader)
+            clone.Header = Header.ToArray();
+        return clone;
     }
 }

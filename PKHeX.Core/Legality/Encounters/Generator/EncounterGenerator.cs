@@ -21,7 +21,7 @@ public static class EncounterGenerator
     {
         1 => EncounterGenerator12.Instance.GetEncounters(pk, info),
         2 => EncounterGenerator12.Instance.GetEncounters(pk, info),
-        3 => pk.Version == (int)GameVersion.CXD
+        3 => pk.Version == GameVersion.CXD
             ? EncounterGenerator3GC.Instance.GetEncounters(pk, info)
             : EncounterGenerator3.Instance.GetEncounters(pk, info),
         4 => EncounterGenerator4.Instance.GetEncounters(pk, info),
@@ -29,13 +29,16 @@ public static class EncounterGenerator
         6 => EncounterGenerator6.Instance.GetEncounters(pk, info),
         7 => EncounterGenerator7X.Instance.GetEncounters(pk, info),
         8 => EncounterGenerator8X.Instance.GetEncounters(pk, info),
-        9 => EncounterGenerator9.Instance.GetEncounters(pk, info),
+        9 => EncounterGenerator9X.Instance.GetEncounters(pk, info),
         _ => EncounterGeneratorDummy.Instance.GetEncounters(pk, info),
     };
 
-    public static IEncounterGenerator GetGenerator(GameVersion version) => GetGeneration(version, version.GetGeneration());
-
-    public static IEncounterGenerator GetGeneration(GameVersion version, int generation) => generation switch
+    /// <summary>
+    /// Gets the <see cref="IEncounterGenerator"/> for the given <see cref="GameVersion"/>.
+    /// </summary>
+    /// <param name="version">Original encounter version</param>
+    /// <param name="generation">Generation group</param>
+    public static IEncounterGenerator GetGenerator(GameVersion version, byte generation) => generation switch
     {
         1 => EncounterGenerator1.Instance,
         2 => EncounterGenerator2.Instance,
@@ -58,7 +61,12 @@ public static class EncounterGenerator
             GameVersion.BD or GameVersion.SP => EncounterGenerator8b.Instance,
             _ => EncounterGenerator8.Instance,
         },
-        9 => EncounterGenerator9.Instance,
+        9 => version switch
+        {
+            GameVersion.ZA => EncounterGenerator9a.Instance,
+            GameVersion.SL or GameVersion.VL => EncounterGenerator9.Instance,
+            _ => EncounterGeneratorDummy.Instance, // Champions
+        },
         _ => EncounterGeneratorDummy.Instance,
     };
 }

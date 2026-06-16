@@ -8,7 +8,7 @@ namespace PKHeX.Core;
 public interface IEntityRejuvenator
 {
     /// <summary>
-    /// After converting, the method will attempt to auto-fill missing properties.
+    /// After converting, the method will attempt to autofill missing properties.
     /// </summary>
     /// <param name="result">Output data after conversion</param>
     /// <param name="original">Input data prior to conversion</param>
@@ -31,20 +31,25 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
 
     private static void ResetOutboundSWSH(PKM result, PK8 pk8)
     {
-        var ver = result.Version;
-        if (ver is (int)GameVersion.BD or (int)GameVersion.SP)
+        var version = result.Version;
+        if (version is GameVersion.BD or GameVersion.SP)
             RejuvenateBDSP(result, pk8);
-        else if (ver is (int)GameVersion.PLA)
+        else if (version is GameVersion.PLA)
             RejuvenatePLA(result, pk8);
-        else if (ver is (int)GameVersion.SL or (int)GameVersion.VL)
+        else if (version is GameVersion.SL or GameVersion.VL)
             RejuvenateSV(result, pk8);
     }
 
+    /// <summary>
+    /// Updates properties then infers legality for original encounter data to restore properties that are not transferred across games.
+    /// </summary>
     private static void ResetSideways(PKM pk)
     {
         if (pk is PA8 pa8)
         {
-            // Won't work well for Alphas
+            SanitizeFutureLanguage(pk);
+
+            // Legality detection won't work well for Alphas unless we infer this first.
             if (pa8.RibbonMarkAlpha)
                 pa8.IsAlpha = true;
             var la = new LegalityAnalysis(pa8);
@@ -53,25 +58,69 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
             if (pa8.LA)
                 ResetBallPLA(pa8, enc);
         }
-        else if (pk is PB8 { BDSP: true })
+        else if (pk is PB8 bdsp)
         {
-            ResetRelearn(pk, new LegalityAnalysis(pk));
-        }
-        else if (pk is PK9 { SV: true } pk9)
-        {
-            var la = new LegalityAnalysis(pk);
-            ResetRelearn(pk, la);
+            SanitizeFutureLanguage(pk);
 
-            // Try to restore original Tera type / override instead of HOME's double override to current Type1.
-            TeraTypeUtil.ResetTeraType(pk9, la.EncounterMatch);
+            if (bdsp.BDSP)
+                ResetRelearn(pk, new LegalityAnalysis(pk));
         }
-        else if (pk is PK8 pk8 && !LocationsHOME.IsLocationSWSH(pk8.Met_Location))
+        else if (pk is PK9 pk9)
         {
+            SanitizeFutureLanguage(pk);
+
+            if (pk9.SV)
+            {
+                var la = new LegalityAnalysis(pk);
+                // Try to restore original Tera type / override instead of HOME's double override to current Type1.
+                TeraTypeUtil.ResetTeraType(pk9, la.EncounterMatch);
+                ResetRelearn(pk, la);
+            }
+            else
+            {
+                // User-friendly sanity check (not official):
+                // Fix original Tera type to current Type1, same as HOME, only if it's an illegal state.
+                // This only comes into play when the HOME data was present, but wasn't valid.
+                var pi = pk9.PersonalInfo;
+                var expect = TeraTypeUtil.GetTeraTypeImport(pi.Type1, pi.Type2);
+                if (pk9.TeraTypeOriginal != expect)
+                    pk9.TeraTypeOriginal = expect;
+                if (!TeraTypeUtil.IsOverrideValid((byte)pk9.TeraTypeOverride))
+                    pk9.TeraTypeOverride = expect;
+            }
+        }
+        else if (pk is PA9 pa9)
+        {
+            SanitizeFutureLanguage(pk);
+
+            // Legality detection won't work well for Alphas unless we infer this first.
+            if (pa9.RibbonMarkAlpha)
+                pa9.IsAlpha = true;
+
+            // Game doesn't use relearn moves, but Plus Flags are needed.
+            pa9.SetPlusFlags(pa9.PersonalInfo, PlusRecordApplicatorOption.LegalCurrent);
+        }
+        else if (pk is PK8 pk8 && !LocationsHOME.IsLocationSWSH(pk8.MetLocation))
+        {
+            SanitizeFutureLanguage(pk);
+
             // Gen8 and below (Gen6/7) need their original relearn moves
             // We can always set a Battle Version for non Gen8 origins, but most users won't be making stuff battle ready after.
             // Battle Version is always zero in this case, so be nice and give the original relearn moves.
             ResetRelearn(pk, new LegalityAnalysis(pk));
         }
+    }
+
+    /// <summary>
+    /// Clamps the language ID back to those available in Gen8.
+    /// </summary>
+    /// <param name="pk">Entity to sanitize</param>
+    private static void SanitizeFutureLanguage(PKM pk)
+    {
+        // LATAM Spanish was added in Legends: Z-A.
+        // No functional difference in Species names, so we're safe to simply reassign to Castilian Spanish.
+        if (pk.Language == (int)LanguageID.SpanishL)
+            pk.Language = (int)LanguageID.Spanish;
     }
 
     private static void ResetRelearn(PKM pk, LegalityAnalysis la)
@@ -91,8 +140,8 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
 
         // No egg encounters. Always not-egg.
         {
-            result.Met_Location = enc.Location;
-            result.Egg_Location = 0;
+            result.MetLocation = enc.Location;
+            result.EggLocation = 0;
         }
 
         // Try again with rectified locations.
@@ -104,23 +153,23 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
         ResetBallPLA(result, enc);
     }
 
-    private static void ResetBallPLA(PKM result, IEncounterable enc)
+    private static void ResetBallPLA(PKM result, IEncounterTemplate enc)
     {
         if (result.Ball is >= (int)Ball.LAPoke and <= (int)Ball.LAOrigin)
             return;
-        if (enc is IFixedBall { FixedBall: not Ball.None } f)
-            result.Ball = (int)f.FixedBall;
+        if (enc is { FixedBall: not Ball.None })
+            result.Ball = (byte)enc.FixedBall;
         else
-            result.Ball = result.Species == (int)Species.Unown ? (int)Ball.LAJet : (int)Ball.LAPoke;
+            result.Ball = result.Species == (int)Species.Unown ? (byte)Ball.LAJet : (byte)Ball.LAPoke;
     }
 
-    private static void ResetDataPLA(LegalityAnalysis la, IEncounterable enc, PA8 pa8)
+    private static void ResetDataPLA(LegalityAnalysis la, IEncounterTemplate enc, PA8 pa8)
     {
         ResetRelearn(pa8, la);
 
         pa8.ClearMoveShopFlags();
-        if (enc is IMasteryInitialMoveShop8 e)
-            e.SetInitialMastery(pa8);
+        if (enc is IMasteryInitialMoveShop8 shop)
+            shop.SetInitialMastery(pa8, enc);
         pa8.SetMoveShopFlags(pa8);
     }
 
@@ -131,15 +180,15 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
         if (enc is EncounterInvalid)
             return;
 
-        if (enc is { EggEncounter: true })
+        if (enc is { IsEgg: true })
         {
-            result.Met_Location = Locations.HatchLocation8b;
-            result.Egg_Location = Locations.LinkTrade6NPC;
+            result.MetLocation = Locations.HatchLocation8b;
+            result.EggLocation = Locations.LinkTrade6NPC;
         }
         else
         {
-            result.Met_Location = enc.Location;
-            result.Egg_Location = Locations.Default8bNone;
+            result.MetLocation = enc.Location;
+            result.EggLocation = Locations.Default8bNone;
         }
 
         // Try again with rectified locations.
@@ -154,15 +203,15 @@ public sealed class LegalityRejuvenator : IEntityRejuvenator
         if (enc is EncounterInvalid)
             return;
 
-        if (enc is { EggEncounter: true })
+        if (enc is { IsEgg: true })
         {
-            result.Met_Location = Locations.HatchLocation9;
-            result.Egg_Location = Locations.LinkTrade6NPC;
+            result.MetLocation = Locations.HatchLocation9;
+            result.EggLocation = Locations.LinkTrade6NPC;
         }
         else
         {
-            result.Met_Location = enc.Location;
-            result.Egg_Location = 0;
+            result.MetLocation = enc.Location;
+            result.EggLocation = 0;
         }
 
         // Try again with rectified locations.

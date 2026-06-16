@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using static PKHeX.Core.EventWorkDiffCompatibility;
 using static PKHeX.Core.EventWorkDiffCompatibilityExtensions;
@@ -9,45 +10,72 @@ namespace PKHeX.Core;
 /// <summary>
 /// Calculates differences in the Event Blocks between two <see cref="SaveFile"/>.
 /// </summary>
-public sealed class EventBlockDiff<T, T2> : IEventWorkDiff where T : class, IEventFlagArray, IEventWorkArray<T2> where T2 : unmanaged, IEquatable<T2>
+public sealed class EventBlockDiff<TSave, TWorkValue> : IEventWorkDiff
+    where TSave : class, IEventFlagArray, IEventWorkArray<TWorkValue>
+    where TWorkValue : unmanaged, IEquatable<TWorkValue>
 {
-    public List<int> SetFlags { get; } = new();
-    public List<int> ClearedFlags { get; } = new();
-    public List<int> WorkChanged { get; } = new();
-    public List<string> WorkDiff { get; } = new();
+    public List<int> SetFlags { get; } = [];
+    public List<int> ClearedFlags { get; } = [];
+    public List<int> WorkChanged { get; } = [];
+    public List<string> WorkDiff { get; } = [];
     public EventWorkDiffCompatibility Message { get; private set; }
 
     private const int MAX_SAVEFILE_SIZE = 0x10_0000; // 1 MB
 
-    public EventBlockDiff(T s1, T s2) => Diff(s1, s2);
+    private static bool TryGetBlock(string path, [NotNullWhen(true)] out TSave? sav, out GameVersion version)
+    {
+        version = default;
+        sav = null;
+        if (!SaveUtil.TryGetSaveFile(path, out var s))
+            return false;
+        if (s is IEventFlagProvider37 p)
+        {
+            var x = p.EventWork;
+            if (x is not TSave b)
+                return false;
+            sav = b;
+        }
+        else
+        {
+            if (s is not TSave b)
+                return false;
+            sav = b;
+        }
+        version = s.Version;
+        return true;
+    }
+
+    public EventBlockDiff(TSave s1, TSave s2) => Diff(s1, s2);
 
     public EventBlockDiff(string f1, string f2)
     {
         Message = SanityCheckFiles(f1, f2, MAX_SAVEFILE_SIZE);
         if (Message != Valid)
             return;
-        var s1 = SaveUtil.GetVariantSAV(f1);
-        var s2 = SaveUtil.GetVariantSAV(f2);
-        if (s1 == null || s2 == null || s1.GetType() != s2.GetType() || s1 is not T t1 || s2 is not T t2)
+
+        if (!TryGetBlock(f1, out var s1, out var v1) || !TryGetBlock(f2, out var s2, out var v2))
         {
             Message = DifferentGameGroup;
             return;
         }
-        Diff(t1, t2);
+        if (v1 != v2)
+        {
+            Message = DifferentVersion;
+            return;
+        }
+
+        Diff(s1, s2);
     }
 
-    private static EventWorkDiffCompatibility SanityCheckSaveInfo(T s1, T s2)
+    private static EventWorkDiffCompatibility SanityCheckSaveInfo(TSave s1, TSave s2)
     {
         if (s1.GetType() != s2.GetType())
             return DifferentGameGroup;
 
-        if (s1 is not IVersion i1 || s2 is not IVersion i2 || i1.Version != i2.Version)
-            return DifferentVersion;
-
         return Valid;
     }
 
-    private void Diff(T s1, T s2)
+    private void Diff(TSave s1, TSave s2)
     {
         Message = SanityCheckSaveInfo(s1, s2);
         if (Message != Valid)
@@ -83,14 +111,14 @@ public sealed class EventBlockDiff<T, T2> : IEventWorkDiff where T : class, IEve
         if (SetFlags.Count == 0)
             list.Add("None.");
 
-        list.Add("");
+        list.Add(string.Empty);
         list.Add("Flags: OFF");
         list.Add("==========");
         list.AddRange(fOff);
         if (ClearedFlags.Count == 0)
             list.Add("None.");
 
-        list.Add("");
+        list.Add(string.Empty);
         list.Add("Work:");
         list.Add("=====");
         if (WorkChanged.Count == 0)

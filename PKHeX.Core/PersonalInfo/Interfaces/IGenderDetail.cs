@@ -1,3 +1,5 @@
+using System;
+
 namespace PKHeX.Core;
 
 /// <summary>
@@ -28,28 +30,31 @@ public interface IGenderDetail
 
 public static class GenderDetailExtensions
 {
-    /// <summary>
-    /// Gets a random valid gender for the entry.
-    /// </summary>
-    public static int RandomGender(this IGenderDetail detail)
+    extension(IGenderDetail detail)
     {
-        if (detail.Genderless)
-            return 2;
-        if (detail.OnlyFemale)
-            return 1;
-        if (detail.OnlyMale)
-            return 0;
-        return Util.Rand.Next(2);
-    }
+        /// <summary>
+        /// Gets a random valid gender for the entry.
+        /// </summary>
+        public byte RandomGender()
+        {
+            if (detail.Genderless)
+                return 2;
+            if (detail.OnlyFemale)
+                return 1;
+            if (detail.OnlyMale)
+                return 0;
+            return (byte)Util.Rand.Next(2);
+        }
 
-    public static int FixedGender(this IGenderDetail detail)
-    {
-        if (detail.Genderless)
-            return 2;
-        if (detail.OnlyFemale)
-            return 1;
-        if (detail.OnlyMale)
-            return 0;
-        return -1;
+        public byte FixedGender()
+        {
+            if (detail.Genderless)
+                return 2;
+            if (detail.OnlyFemale)
+                return 1;
+            if (detail.OnlyMale)
+                return 0;
+            throw new ArgumentOutOfRangeException(nameof(detail));
+        }
     }
 }

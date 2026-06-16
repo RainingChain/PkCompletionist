@@ -50,8 +50,8 @@ public static class RibbonRules
         { HasVisitedBDSP: true } => true, // Max Friendship
         { HasVisitedGen9: true } => true, // Max Friendship
 
-        { HasVisitedGen6: true } when pk is not PK6 { IsUntraded: true, OT_Affection: < 255 } => true,
-        { HasVisitedGen7: true } when pk is not PK7 { IsUntraded: true, OT_Affection: < 255 } => true,
+        { HasVisitedGen6: true } when pk is not PK6 { IsUntraded: true, OriginalTrainerAffection: < 255 } => true,
+        { HasVisitedGen7: true } when pk is not PK7 { IsUntraded: true, OriginalTrainerAffection: < 255 } => true,
         _ => false,
     };
 
@@ -69,7 +69,7 @@ public static class RibbonRules
             return false;
 
         // Gen6/7: Increase level by 30 from original level
-        static bool IsWellTraveled30(PKM pk) => pk.CurrentLevel - pk.Met_Level >= 30;
+        static bool IsWellTraveled30(PKM pk) => pk.CurrentLevel - pk.MetLevel >= 30;
         if ((evos.HasVisitedGen6 || evos.HasVisitedGen7) && IsWellTraveled30(pk))
             return true;
 
@@ -89,12 +89,12 @@ public static class RibbonRules
     public static bool IsRibbonValidMasterRank(PKM pk, IEncounterTemplate enc, EvolutionHistory evos)
     {
         // Legends can compete in Ranked starting from Series 10.
-        // Past gen Pokemon can get the ribbon only if they've been reset.
+        // Past gen Pokémon can get the ribbon only if they've been reset.
         if (evos.HasVisitedSWSH && IsRibbonValidMasterRankSWSH(pk, enc))
             return true;
 
         // Legendaries can not compete in ranked yet.
-        if (evos.HasVisitedGen9 && IsRibbonValidMasterRankSV(pk))
+        if (evos.HasVisitedGen9 && IsRibbonValidMasterRankSV(pk, enc))
             return true;
 
         return false;
@@ -105,11 +105,12 @@ public static class RibbonRules
     /// </summary>
     private static bool IsRibbonValidMasterRankSWSH(PKM pk, IEncounterTemplate enc)
     {
-        if (enc.Generation < 8 && pk is IBattleVersion { BattleVersion: 0 })
+        // Transfers from prior games, as well as from GO, require the battle-ready symbol in order to participate in Ranked.
+        if ((enc.Generation < 8 || enc.Context is EntityContext.Gen7b) && pk is IBattleVersion { BattleVersion: 0 })
             return false;
 
-        // GO transfers: Capture date is global time, and not console changeable.
-        bool hasRealDate = enc.Version == GameVersion.GO || enc is IEncounterServerDate { IsDateRestricted: true };
+        // GO transfers and server gifts: Capture date is global time, and not console changeable.
+        bool hasRealDate = enc is IEncounterServerDate { IsDateRestricted: true };
         if (hasRealDate)
         {
             // Ranked is still ongoing, but the use of Mythicals was restricted to Series 13 only.
@@ -118,34 +119,54 @@ public static class RibbonRules
                 return false;
         }
 
-        // Series 13 rule-set was the first time Ranked Battles allowed the use of Mythical Pokémon.
+        // Series 13 rule-set was the first rule-set that Ranked Battles allowed the use of Mythical Pokémon.
         // All species that can exist in SW/SH can compete in ranked.
         return true;
     }
 
-    private static bool IsRibbonValidMasterRankSV(ISpeciesForm pk)
+    private static bool IsRibbonValidMasterRankSV(PKM pk, IEncounterTemplate enc)
     {
         var species = pk.Species;
-        if (species is (int)WalkingWake or (int)IronLeaves)
-            return false;
-        if (SpeciesCategory.IsLegendary(species))
-            return false;
-        if (SpeciesCategory.IsMythical(species))
-            return false;
+        if (species is (int)Greninja)
+            return pk.Form == 0; // Disallow Ash-Greninja
+
+        // GO transfers and server gifts: Capture date is global time, and not console changeable.
+        bool hasRealDate = enc is IEncounterServerDate { IsDateRestricted: true };
+        if (hasRealDate)
+        {
+            // Mythicals are only permitted under Regulation Set J
+            var met = pk.MetDate;
+            if (SpeciesCategory.IsMythical(pk.Species) && met > new DateOnly(2026, 1, 5))
+                return false;
+        }
+
         return true;
     }
 
     /// <summary>
     /// Checks if the input can receive the <see cref="IRibbonSetCommon6.RibbonTraining"/> ribbon.
     /// </summary>
-    public static bool IsRibbonValidSuperTraining(ISuperTrain pk)
+    public static bool IsRibbonValidSuperTraining(PKM pk)
     {
-        // It is assumed that the entity existed in the Gen6 game to receive the ribbon.
-        // We only enter this method if the entity implements the interface.
-        const int req = 12; // only first 12 are required to get the ribbon.
-        int count = pk.SuperTrainingMedalCount(req);
-        return count >= req;
+        if (pk is not ISuperTrain s)
+            return true; // Medal flags are wiped when the medal bitflags are wiped on transfer 7->8.
+
+        return IsSuperTrainSupremelyTrained(s.SuperTrainBitFlags);
     }
+
+    /// <summary>
+    /// Checks if all Super Training medals are set (including Secret), indicating "Supremely Trained".
+    /// </summary>
+    /// <param name="value">Stored bitflags for Gen6/7 Super Training medals.</param>
+    /// <returns><c>true</c> if all Super Training medals are set, <c>false</c> otherwise.</returns>
+    public static bool IsSuperTrainSupremelyTrained(uint value) => (value & ~0b11) == 0xFFFF_FFFC; // ignore the 2 unused low bits (18 regular, 12 secret).
+
+    /// <summary>
+    /// Forces the input to be in a state indicating "Supremely Trained" for Super Training medals.
+    /// </summary>
+    /// <param name="value">Current value</param>
+    /// <returns>Supremely Trained value</returns>
+    public static uint SetSuperTrainSupremelyTrained(uint value) => (value & 0x3) | 0xFFFF_FFFC; // set all but the 2 unused low bits.
 
     /// <summary>
     /// Checks if the entity participated in battles for the <see cref="IRibbonSetCommon8.RibbonTowerMaster"/> ribbon.
@@ -173,14 +194,13 @@ public static class RibbonRules
 
         // Can only obtain if the current level on receiving the ribbon is <= level 50.
         if (pk.Format == 3) // Stored value is not yet overwritten (G3->G4), check directly.
-            return pk.Met_Level <= 50;
+            return pk.MetLevel <= 50;
 
         // Most encounter types can be below level 50; only Shadow Dragonite & Tyranitar, and select Gen3 Event Gifts.
         // These edge cases can't be obtained below level 50, unlike some wild Pokémon which can be encountered at different locations for lower levels.
         if (enc.LevelMin <= 50)
             return true;
-
-        return enc is not (EncounterStaticShadow or WC3);
+        return false;
     }
 
     /// <summary>
@@ -228,8 +248,8 @@ public static class RibbonRules
 
     // Derived from ROM data: true for all Footprint types besides 5 (5 = no feet).
     // If true, requires gaining 30 levels to obtain ribbon. If false, can obtain ribbon at any level.
-    private static ReadOnlySpan<bool> HasFootprintBDSP => new[]
-    {
+    private static ReadOnlySpan<bool> HasFootprintBDSP =>
+    [
         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
         true, false,  true,  true, false,  true,  true,  true,  true,  true,
         true,  true,  true,  true,  true,  true,  true,  true,  true,  true,
@@ -280,7 +300,7 @@ public static class RibbonRules
         true,  true,  true,  true, false,  true, false,  true,  true,  true,
         true,  true,  true,  true,  true,  true, false,  true,  true,  true,
         true,  true,  true,  true,
-    };
+    ];
 
     /// <summary>
     /// Checks if the input can receive the <see cref="IRibbonSetEvent3.RibbonNational"/> ribbon.
@@ -294,13 +314,28 @@ public static class RibbonRules
         if (enc.Generation != 3)
             return false;
 
-        if (enc is not EncounterStaticShadow)
+        if (enc is not IShadow3)
             return false;
 
         // Ribbon is awarded when the Pokémon is purified in the game of origin.
         if (pk is IShadowCapture { IsShadow: true })
             return false;
 
+        return true;
+    }
+
+    /// <summary>
+    /// Checks if the input can receive the <see cref="IRibbonSetEvent3.RibbonEarth"/> ribbon.
+    /// </summary>
+    /// <remarks>
+    /// If returns true, can have the ribbon. If returns false, must not have the ribbon.
+    /// </remarks>
+    public static bool IsEarthRibbonAllowed(PKM pk, IEncounterTemplate enc)
+    {
+        if (enc.Generation != 3)
+            return false;
+        if (!ParseSettings.AllowGBACrossTransferXD(pk))
+            return false;
         return true;
     }
 
@@ -340,9 +375,11 @@ public static class RibbonRules
     /// <summary>
     /// Checks if the input evolution history could have participated in Generation 3 contests.
     /// </summary>
-    public static bool IsAllowedContest3(EvolutionHistory evos)
+    public static bool IsAllowedContest3(EvolutionHistory evos, PKM pk)
     {
         // Any species can enter contests in Gen3.
+        if (!ParseSettings.AllowGBACrossTransferRSE(pk))
+            return false;
         return evos.HasVisitedGen3;
     }
 
@@ -398,8 +435,8 @@ public static class RibbonRules
     /// <summary>
     /// Generation 3 &amp; 4 Battle Frontier Species banlist. When referencing this in context to generation 4, be sure to disallow <see cref="Pichu"/> with Form 1 (Spiky).
     /// </summary>
-    public static readonly HashSet<ushort> BattleFrontierBanlist = new()
-    {
+    public static readonly HashSet<ushort> BattleFrontierBanlist =
+    [
         (int)Mewtwo, (int)Mew,
         (int)Lugia, (int)HoOh, (int)Celebi,
         (int)Kyogre, (int)Groudon, (int)Rayquaza, (int)Jirachi, (int)Deoxys,
@@ -409,5 +446,5 @@ public static class RibbonRules
         (int)Cosmog, (int)Cosmoem, (int)Solgaleo, (int)Lunala, (int)Necrozma, (int)Magearna, (int)Marshadow, (int)Zeraora,
         (int)Meltan, (int)Melmetal,
         (int)Koraidon, (int)Miraidon,
-    };
+    ];
 }

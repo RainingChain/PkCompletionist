@@ -12,7 +12,7 @@ partial class SAV_Dummy : SaveFile
 
     public override ushort MaxSpeciesID => 0;
     public override string OT => "";
-    public override GameVersion Version => GameVersion.Unknown;
+    public override GameVersion Version { get => GameVersion.Unknown; set { } }
 
 
     protected override void SetChecksums(){}
@@ -27,13 +27,14 @@ partial class SAV_Dummy : SaveFile
 
     public override string ChecksumInfo => throw new NotImplementedException();
 
-    public override int Generation => throw new NotImplementedException();
+    public override byte Generation => throw new NotImplementedException();
 
     public override EntityContext Context => throw new NotImplementedException();
 
-    public override int MaxStringLengthOT => throw new NotImplementedException();
 
     public override int MaxStringLengthNickname => throw new NotImplementedException();
+
+    public override int MaxStringLengthTrainer => throw new NotImplementedException();
 
     public override ushort MaxMoveID => throw new NotImplementedException();
 
@@ -44,7 +45,7 @@ partial class SAV_Dummy : SaveFile
 
     public override int MaxBallID => throw new NotImplementedException();
 
-    public override int MaxGameID => throw new NotImplementedException();
+    public override GameVersion MaxGameID => throw new NotImplementedException();
 
     public override int BoxCount => throw new NotImplementedException();
 
@@ -52,9 +53,9 @@ partial class SAV_Dummy : SaveFile
 
     public override PKM BlankPKM => throw new NotImplementedException();
 
-    protected override int SIZE_STORED => throw new NotImplementedException();
+    public override int SIZE_STORED => throw new NotImplementedException();
 
-    protected override int SIZE_PARTY => throw new NotImplementedException();
+    public override int SIZE_PARTY => throw new NotImplementedException();
 
     public override int MaxEV => throw new NotImplementedException();
 
@@ -77,17 +78,22 @@ partial class SAV_Dummy : SaveFile
         throw new NotImplementedException();
     }
 
+    public override int LoadString(ReadOnlySpan<byte> data, Span<char> text)
+    {
+        throw new NotImplementedException();
+    }
+
     public override int SetString(Span<byte> destBuffer, ReadOnlySpan<char> value, int maxLength, StringConverterOption option)
     {
         throw new NotImplementedException();
     }
 
-    protected override PKM GetPKM(byte[] data)
+    protected override PKM GetPKM(Memory<byte> data)
     {
         throw new NotImplementedException();
     }
 
-    protected override byte[] DecryptPKM(byte[] data)
+    protected override void DecryptPKM(Span<byte> data)
     {
         throw new NotImplementedException();
     }
@@ -97,12 +103,12 @@ partial class SAV_Dummy : SaveFile
         throw new NotImplementedException();
     }
 
-    public override string GetBoxName(int box)
+    public string GetBoxName(int box)
     {
         throw new NotImplementedException();
     }
 
-    public override void SetBoxName(int box, ReadOnlySpan<char> value)
+    public void SetBoxName(int box, ReadOnlySpan<char> value)
     {
         throw new NotImplementedException();
     }

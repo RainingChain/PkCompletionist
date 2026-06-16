@@ -20,7 +20,7 @@ internal class Program
             {
                 int numBytesToRead = Convert.ToInt32(fs.Length);
                 byte[] oFileBytes = new byte[(numBytesToRead)];
-                fs.Read(oFileBytes, 0, numBytesToRead);
+                fs.ReadExactly(oFileBytes, 0, numBytesToRead);
                 return oFileBytes;
             }
         }

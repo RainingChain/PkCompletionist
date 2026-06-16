@@ -28,20 +28,20 @@ public readonly record struct RibbonResult
     public bool Equals(RibbonIndex4 index) => Type == Index4 && Value == (byte)index;
 
     /// <summary>
-    /// Property Name that the ribbon can be get/set with, or looked up for localization.
+    /// Property Name of the ribbon based on the source code's getters/setters, allowing lookup for localization.
     /// </summary>
     public string PropertyName => Type switch
     {
-        Mainline => ((RibbonIndex)Value).GetPropertyName(),
-        Index3 => ((RibbonIndex3)Value).GetPropertyName(),
-        Index4 => ((RibbonIndex4)Value).GetPropertyName(),
+        Mainline => ((RibbonIndex)Value).PropertyName,
+        Index3 => ((RibbonIndex3)Value).PropertyName,
+        Index4 => ((RibbonIndex4)Value).PropertyName,
         _ => throw new ArgumentException($"Invalid type: {Type}"),
     };
 
     /// <summary>
     /// Updates the ribbon state depending on the <see cref="args"/> and <see cref="IsMissing"/> state.
     /// </summary>
-    public void Fix(RibbonVerifierArguments args)
+    public void Fix(in RibbonVerifierArguments args)
     {
         switch (Type)
         {

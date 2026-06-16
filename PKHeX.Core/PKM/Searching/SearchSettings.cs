@@ -11,39 +11,42 @@ namespace PKHeX.Core.Searching;
 /// </summary>
 public sealed class SearchSettings
 {
-    public int Format { get; init; }
-    public int Generation { get; init; }
+    public EntityContext Context { get; init; }
+    public byte Generation { get; init; }
+
     public required ushort Species { get; init; }
+    public string Nickname { get; init; } = string.Empty;
     public int Ability { get; init; } = -1;
-    public int Nature { get; init; } = -1;
+    public Nature Nature { get; init; } = Nature.Random;
     public int Item { get; init; } = -1;
-    public int Version { get; init; } = -1;
+    public GameVersion Version { get; init; }
     public int HiddenPowerType { get; init; } = -1;
 
-    public SearchComparison SearchFormat { get; init; }
+    public SearchComparison SearchContext { get; init; }
     public SearchComparison SearchLevel { get; init; }
 
     public bool? SearchShiny { get; set; }
     public bool? SearchLegal { get; set; }
     public bool? SearchEgg { get; set; }
     public int? ESV { get; set; }
-    public int? Level { get; init; }
+    public byte? Level { get; init; }
 
     public int IVType { get; init; }
     public int EVType { get; init; }
 
     public CloneDetectionMethod SearchClones { get; set; }
     public string BatchInstructions { get; init; } = string.Empty;
-    private IReadOnlyList<StringInstruction> BatchFilters { get; set; } = Array.Empty<StringInstruction>();
+    private IReadOnlyList<StringInstruction> BatchFilters { get; set; } = [];
+    private IReadOnlyList<StringInstruction> BatchFiltersMeta { get; set; } = [];
 
-    public readonly List<ushort> Moves = new();
+    public readonly List<ushort> Moves = [];
 
     // ReSharper disable once CollectionNeverUpdated.Global
     /// <summary>
     /// Extra Filters to be checked after all other filters have been checked.
     /// </summary>
     /// <remarks>Collection is iterated right before clones are checked.</remarks>
-    public List<Func<PKM, bool>> ExtraFilters { get; } = new();
+    public List<Func<PKM, bool>> ExtraFilters { get; } = [];
 
     /// <summary>
     /// Adds a move to the required move list.
@@ -62,9 +65,11 @@ public sealed class SearchSettings
     /// <returns>Search results that match all criteria</returns>
     public IEnumerable<PKM> Search(IEnumerable<PKM> list)
     {
-        BatchFilters = StringInstruction.GetFilters(BatchInstructions);
-        var result = SearchInner(list);
+        var predicate = CreateSearchPredicate();
+        var result = SearchInner(list, predicate);
 
+        // Run cross-comparison checks.
+        // This is done after all other filters to minimize the number of comparisons needed.
         if (SearchClones != CloneDetectionMethod.None)
         {
             var method = SearchUtil.GetCloneDetectMethod(SearchClones);
@@ -81,9 +86,11 @@ public sealed class SearchSettings
     /// <returns>Search results that match all criteria</returns>
     public IEnumerable<SlotCache> Search(IEnumerable<SlotCache> list)
     {
-        BatchFilters = StringInstruction.GetFilters(BatchInstructions);
-        var result = SearchInner(list);
+        var predicate = CreateSearchPredicate();
+        var result = SearchInner(list, predicate);
 
+        // Run cross-comparison checks.
+        // This is done after all other filters to minimize the number of comparisons needed.
         if (SearchClones != CloneDetectionMethod.None)
         {
             var method = SearchUtil.GetCloneDetectMethod(SearchClones);
@@ -94,25 +101,46 @@ public sealed class SearchSettings
         return result;
     }
 
-    private IEnumerable<PKM> SearchInner(IEnumerable<PKM> list)
+    private void InitializeFilters()
+    {
+        var filters = StringInstruction.GetFilters(BatchInstructions);
+        var meta = filters.Where(z => Core.BatchFilters.FilterMeta.Any(x => x.IsMatch(z.PropertyName))).ToList();
+        if (meta.Count != 0)
+            filters.RemoveAll(meta.Contains);
+        BatchFilters = filters;
+        BatchFiltersMeta = meta;
+    }
+
+    private static IEnumerable<PKM> SearchInner(IEnumerable<PKM> list, Func<PKM, bool> predicate)
     {
         foreach (var pk in list)
         {
-            if (!IsSearchMatch(pk))
+            if (!predicate(pk))
                 continue;
             yield return pk;
         }
     }
 
-    private IEnumerable<SlotCache> SearchInner(IEnumerable<SlotCache> list)
+    private IEnumerable<SlotCache> SearchInner(IEnumerable<SlotCache> list, Func<PKM, bool> predicate)
     {
         foreach (var entry in list)
         {
             var pk = entry.Entity;
-            if (!IsSearchMatch(pk))
+            if (BatchFiltersMeta.Count != 0 && !EntityBatchEditor.IsFilterMatchMeta(BatchFiltersMeta, entry))
+                continue;
+            if (!predicate(pk))
                 continue;
             yield return entry;
         }
+    }
+
+    /// <summary>
+    /// Creates a <see cref="Func{T, TResult}"/> predicate that evaluates a <see cref="PKM"/> against this search settings instance.
+    /// </summary>
+    public Func<PKM, bool> CreateSearchPredicate()
+    {
+        InitializeFilters();
+        return IsSearchMatch;
     }
 
     private bool IsSearchMatch(PKM pk)
@@ -134,17 +162,19 @@ public sealed class SearchSettings
 
     private bool SearchSimple(PKM pk)
     {
-        if (Format > 0 && !SearchUtil.SatisfiesFilterFormat(pk, Format, SearchFormat))
+        if (SearchContext != SearchComparison.None && Context.IsValid && !SearchUtil.SatisfiesFilterContext(pk, Context, SearchContext))
             return false;
         if (Species != 0 && pk.Species != Species)
             return false;
         if (Ability > -1 && pk.Ability != Ability)
             return false;
-        if (Nature > -1 && pk.StatNature != Nature)
+        if (Nature.IsFixed && pk.StatAlignment != Nature)
             return false;
         if (Item > -1 && pk.HeldItem != Item)
             return false;
-        if (Version > -1 && pk.Version != Version)
+        if (Version.IsValidSavedVersion() && pk.Version != Version)
+            return false;
+        if (!string.IsNullOrWhiteSpace(Nickname) && !SearchUtil.SatisfiesFilterNickname(pk, Nickname))
             return false;
         return true;
     }
@@ -157,7 +187,7 @@ public sealed class SearchSettings
             return false;
         if (HiddenPowerType > -1 && pk.HPType != HiddenPowerType)
             return false;
-        if (SearchShiny != null && pk.IsShiny != SearchShiny)
+        if (SearchShiny is not null && pk.IsShiny != SearchShiny)
             return false;
 
         if (IVType > 0 && !SearchUtil.SatisfiesFilterIVs(pk, IVType))
@@ -170,11 +200,11 @@ public sealed class SearchSettings
 
     private bool SearchComplex(PKM pk)
     {
-        if (SearchEgg != null && !FilterResultEgg(pk))
+        if (SearchEgg is not null && !FilterResultEgg(pk))
             return false;
         if (Level is { } x and not 0 && !SearchUtil.SatisfiesFilterLevel(pk, SearchLevel, x))
             return false;
-        if (SearchLegal != null && new LegalityAnalysis(pk).Valid != SearchLegal)
+        if (SearchLegal is not null && new LegalityAnalysis(pk).Valid != SearchLegal)
             return false;
         if (BatchFilters.Count != 0 && !SearchUtil.SatisfiesFilterBatchInstruction(pk, BatchFilters))
             return false;
@@ -186,32 +216,32 @@ public sealed class SearchSettings
     {
         if (SearchEgg == false)
             return !pk.IsEgg;
-        if (ESV != null)
+        if (ESV is not null)
             return pk.IsEgg && pk.PSV == ESV;
         return pk.IsEgg;
     }
 
-    public IReadOnlyList<GameVersion> GetVersions(SaveFile sav) => GetVersions(sav, GetFallbackVersion(sav));
+    public ReadOnlyMemory<GameVersion> GetVersions(SaveFile sav) => GetVersions(sav, GetFallbackVersion(sav));
 
-    public IReadOnlyList<GameVersion> GetVersions(SaveFile sav, GameVersion fallback)
+    public ReadOnlyMemory<GameVersion> GetVersions(SaveFile sav, GameVersion fallback)
     {
-        if (Version > 0)
-            return new[] {(GameVersion) Version};
+        if (Version.IsValidSavedVersion())
+            return new[] {Version};
 
-        return Generation switch
+        return Context switch
         {
-            1 when !ParseSettings.AllowGen1Tradeback => new[] {RD, BU, GN, YW},
-            2 when sav is SAV2 {Korean: true} => new[] {GD, SI},
-            1 or 2 => new[] {RD, BU, GN, YW, /* */ GD, SI, C},
+            EntityContext.Gen1 when !ParseSettings.AllowGen1Tradeback => [RD, BU, GN, YW],
+            EntityContext.Gen2 when sav is SAV2 {Korean: true} => [GD, SI],
+            EntityContext.Gen1 or EntityContext.Gen2 => [RD, BU, GN, YW, /* */ GD, SI, C],
 
-            _ when fallback.GetGeneration() == Generation => GameUtil.GetVersionsWithinRange(sav, Generation).ToArray(),
+            _ when fallback.Context == Context => GameUtil.GetVersionsWithinRange(sav, Context).ToArray(),
             _ => GameUtil.GameVersions,
         };
     }
 
     private static GameVersion GetFallbackVersion(ITrainerInfo sav)
     {
-        var parent = GameUtil.GetMetLocationVersionGroup((GameVersion)sav.Game);
+        var parent = GameUtil.GetMetLocationVersionGroup(sav.Version);
         if (parent == Invalid)
             parent = GameUtil.GetMetLocationVersionGroup(GameUtil.GetVersion(sav.Generation));
         return parent;

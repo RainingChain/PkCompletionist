@@ -3,17 +3,18 @@ using System;
 namespace PKHeX.Core;
 
 /// <summary>
-/// Group that checks the source of a move in <see cref="GameVersion.Gen1"/>.
+/// Group that checks the source of a move in <see cref="EntityContext.Gen1"/>.
 /// </summary>
 public sealed class LearnGroup1 : ILearnGroup
 {
     public static readonly LearnGroup1 Instance = new();
-    private const int Generation = 1;
+    private const byte Generation = 1;
+    private const EntityContext Context = EntityContext.Gen1;
     public ushort MaxMoveID => Legal.MaxMoveID_1;
 
     public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => pk.Context switch
     {
-        EntityContext.Gen1 when enc.Generation == 1 && pk is PK1 pk1 && HasDefinitelyVisitedGen2(pk1) => LearnGroup2.Instance,
+        EntityContext.Gen1 when enc.Generation == 1 && pk is PK1 pk1 && HasPossiblyVisitedGen2(pk1) => LearnGroup2.Instance,
         EntityContext.Gen1 when enc.Generation == 2 => LearnGroup2.Instance,
         EntityContext.Gen2 => null,
         _ => enc.Generation == 1 ? LearnGroup2.Instance : null,
@@ -45,7 +46,7 @@ public sealed class LearnGroup1 : ILearnGroup
                 continue;
 
             var detail = result[i];
-            if (!detail.Valid || detail.Generation is not (1 or 2))
+            if (!detail.Valid || detail.Context is not (EntityContext.Gen1 or EntityContext.Gen2))
                 continue;
 
             var info = detail.Info;
@@ -53,7 +54,7 @@ public sealed class LearnGroup1 : ILearnGroup
             {
                 var level = info.Argument;
                 var stage = detail.EvoStage;
-                var chain = detail.Generation is 1 ? history.Gen1 : history.Gen2;
+                var chain = detail.Context is EntityContext.Gen1 ? history.Gen1 : history.Gen2;
                 var species = chain[stage].Species;
                 if (IsAnyOtherResultALowerEvolutionStageAndHigherLevel(result, i, history, level, species))
                     result[i] = MoveResult.Unobtainable();
@@ -69,7 +70,7 @@ public sealed class LearnGroup1 : ILearnGroup
             if (i == index)
                 continue;
             var detail = result[i];
-            if (!detail.Valid || detail.Generation is not (1 or 2))
+            if (!detail.Valid || detail.Context is not (EntityContext.Gen1 or EntityContext.Gen2))
                 continue;
 
             (var method, _, byte level2) = detail.Info;
@@ -77,7 +78,7 @@ public sealed class LearnGroup1 : ILearnGroup
                 continue;
 
             var stage = detail.EvoStage;
-            var chain = detail.Generation is 1 ? history.Gen1 : history.Gen2;
+            var chain = detail.Context is EntityContext.Gen1 ? history.Gen1 : history.Gen2;
             var species2 = chain[stage].Species;
             if (level2 > level && species2 < species)
                 return true;
@@ -92,7 +93,10 @@ public sealed class LearnGroup1 : ILearnGroup
             return;
 
         Span<ushort> moves = stackalloc ushort[4];
-        GetEncounterMoves(enc, moves);
+        if (enc is IMoveset m)
+            m.Moves.CopyTo(moves);
+        else
+            GetEncounterMoves(enc, moves);
 
         // Count the amount of initial moves not present in the current list.
         int count = CountMissing(current, moves);
@@ -134,23 +138,17 @@ public sealed class LearnGroup1 : ILearnGroup
             x.CopyTo(moves);
         else
             GetEncounterMoves(enc, moves);
-        LearnVerifierHistory.MarkInitialMoves(result, current, moves);
+        LearnVerifierHistory.MarkInitialMoves(result, current, moves, enc.Version == GameVersion.YW ? LearnEnvironment.YW : LearnEnvironment.RB);
 
         // Flag empty slots if never visited Gen2 move deleter.
         if (pk is not PK1 pk1)
             return;
-        if (HasDefinitelyVisitedGen2(pk1))
+        if (HasPossiblyVisitedGen2(pk1))
             return;
         FlagFishyMoveSlots(result, current, enc);
     }
 
-    private static bool HasDefinitelyVisitedGen2(PK1 pk1)
-    {
-        if (!ParseSettings.AllowGen1Tradeback)
-            return false;
-        var rate = pk1.Catch_Rate;
-        return rate is 0 || GBRestrictions.IsTradebackCatchRate(rate);
-    }
+    private static bool HasPossiblyVisitedGen2(PK1 pk1) => ParseSettings.AllowGen1Tradeback && ItemConverter.IsCatchRateHeldItem(pk1.CatchRate);
 
     private static void GetEncounterMoves(IEncounterTemplate enc, Span<ushort> moves)
     {
@@ -170,25 +168,22 @@ public sealed class LearnGroup1 : ILearnGroup
         if (!yw.TryGetPersonal(evo.Species, evo.Form, out var yp))
             return; // should never happen.
 
-        if (ParseSettings.AllowGen1Tradeback && ParseSettings.AllowGen2MoveReminder(pk))
-            evo = evo with { LevelMin = 1 };
-
         for (int i = result.Length - 1; i >= 0; i--)
         {
             ref var entry = ref result[i];
-            if (entry is { Valid: true, Generation: > 2 })
+            if (entry is { Valid: true, Context: not (EntityContext.Gen1 or EntityContext.Gen2) })
                 continue;
 
             var move = current[i];
             var chk = yw.GetCanLearn(pk, yp, evo, move, types);
             if (chk != default && GetIsPreferable(entry, chk, stage))
             {
-                entry = new(chk, (byte)stage, Generation);
+                entry = new(chk, (byte)stage, Context);
                 continue;
             }
             chk = rb.GetCanLearn(pk, rp, evo, move, types);
             if (chk != default && GetIsPreferable(entry, chk, stage))
-                entry = new(chk, (byte)stage, Generation);
+                entry = new(chk, (byte)stage, Context);
         }
     }
 
@@ -204,7 +199,7 @@ public sealed class LearnGroup1 : ILearnGroup
             if (entry.EvoStage == stage)
                 return entry.Info.Argument < chk.Argument;
         }
-        else if (entry.Info.Method.IsEggSource())
+        else if (entry.Info.Method.IsEggSource)
         {
             return true;
         }
@@ -226,9 +221,6 @@ public sealed class LearnGroup1 : ILearnGroup
 
     private static void GetAllMoves(Span<bool> result, PKM pk, EvoCriteria evo, MoveSourceType types)
     {
-        if (ParseSettings.AllowGen1Tradeback && ParseSettings.AllowGen2MoveReminder(pk))
-            evo = evo with { LevelMin = 1 };
-
         LearnSource1YW.Instance.GetAllMoves(result, pk, evo, types);
         LearnSource1RB.Instance.GetAllMoves(result, pk, evo, types);
     }
@@ -237,10 +229,7 @@ public sealed class LearnGroup1 : ILearnGroup
     {
         if (enc is IMoveset { Moves: { HasMoves: true } x })
         {
-            result[x.Move4] = true;
-            result[x.Move3] = true;
-            result[x.Move2] = true;
-            result[x.Move1] = true;
+            x.FlagMoves(result);
         }
         else
         {

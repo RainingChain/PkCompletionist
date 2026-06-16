@@ -11,4 +11,6 @@ public enum HomeGameDataFormat : byte
     PA8 = 3,
     PB8 = 4,
     PK9 = 5,
+    PC9 = 6,
+    PA9 = 7,
 }

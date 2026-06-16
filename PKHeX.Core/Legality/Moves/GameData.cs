@@ -3,11 +3,24 @@ using static PKHeX.Core.GameVersion;
 
 namespace PKHeX.Core;
 
+/// <summary>
+/// Provides access to game-specific data for Personal and LearnSource.
+/// </summary>
 public static class GameData
 {
-    public static IPersonalTable GetPersonal(GameVersion game) => Personal(game);
+    /// <summary>
+    /// Gets the Personal table for the specified game version.
+    /// </summary>
+    /// <param name="version">The game version to retrieve data for.</param>
+    /// <returns>The Personal table for the specified game version.</returns>
+    public static IPersonalTable GetPersonal(GameVersion version) => Personal(version);
 
-    public static ILearnSource GetLearnSource(GameVersion game) => game switch
+    /// <summary>
+    /// Gets the LearnSource for the specified game version.
+    /// </summary>
+    /// <param name="version">The game version to retrieve data for.</param>
+    /// <returns>The LearnSource for the specified game version.</returns>
+    public static ILearnSource GetLearnSource(GameVersion version) => version switch
     {
         RD or GN or BU or RB => LearnSource1RB.Instance,
         YW or RBY => LearnSource1YW.Instance,
@@ -15,7 +28,7 @@ public static class GameData
         C or GSC => LearnSource2C.Instance,
 
         R or S or RS or RSE => LearnSource3RS.Instance,
-        E or COLO or XD or FRLG or CXD => LearnSource3E.Instance,
+        E or COLO or XD or FRLG or CXD or EFL => LearnSource3E.Instance,
         FR => LearnSource3FR.Instance,
         LG => LearnSource3LG.Instance,
 
@@ -38,6 +51,7 @@ public static class GameData
         PLA => LearnSource8LA.Instance,
 
         SL or VL or SV => LearnSource9SV.Instance,
+        ZA => LearnSource9ZA.Instance,
 
         Gen1 => LearnSource1YW.Instance,
         Gen2 => LearnSource2C.Instance,
@@ -51,12 +65,17 @@ public static class GameData
         Gen9 => LearnSource9SV.Instance,
 
         Stadium => LearnSource1YW.Instance,
-        Stadium2 => LearnSource2GS.Instance,
+        Stadium2 => LearnSource2Stadium.Instance,
 
-        _ => throw new ArgumentOutOfRangeException(nameof(game), $"{game} is not a valid entry in the expression."),
+        _ => throw new ArgumentOutOfRangeException(nameof(version), $"{version} is not a valid entry in the expression."),
     };
 
-    private static IPersonalTable Personal(GameVersion game) => game switch
+    /// <summary>
+    /// Retrieves the personal table for the specified game version.
+    /// </summary>
+    /// <param name="version">The game version to retrieve data for.</param>
+    /// <returns>The Personal table of the specified game version.</returns>
+    private static IPersonalTable Personal(GameVersion version) => version switch
     {
         RD or GN or BU or RB => PersonalTable.RB,
         YW or RBY => PersonalTable.Y,
@@ -64,7 +83,7 @@ public static class GameData
         C or GSC => PersonalTable.C,
 
         R or S or RS or RSE => PersonalTable.RS,
-        E or COLO or XD or FRLG or CXD => PersonalTable.E,
+        E or COLO or XD or FRLG or CXD or EFL => PersonalTable.E,
         FR => PersonalTable.FR,
         LG => PersonalTable.LG,
 
@@ -87,6 +106,7 @@ public static class GameData
         PLA => PersonalTable.LA,
 
         SL or VL or SV => PersonalTable.SV,
+        ZA => PersonalTable.ZA,
 
         Gen1 => PersonalTable.Y,
         Gen2 => PersonalTable.C,
@@ -101,6 +121,6 @@ public static class GameData
         Stadium => PersonalTable.Y,
         Stadium2 => PersonalTable.GS,
 
-        _ => throw new ArgumentOutOfRangeException(nameof(game), $"{game} is not a valid entry in the expression."),
+        _ => throw new ArgumentOutOfRangeException(nameof(version), $"{version} is not a valid entry in the expression."),
     };
 }

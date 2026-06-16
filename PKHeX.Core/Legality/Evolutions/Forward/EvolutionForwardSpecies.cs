@@ -4,14 +4,15 @@ using System.Collections.Generic;
 namespace PKHeX.Core;
 
 /// <summary>
-/// Provides forward evolution pathways based only on species.
+/// Represents a forward evolution system for species, providing methods to retrieve and validate evolutions.
 /// </summary>
-public sealed class EvolutionForwardSpecies : IEvolutionForward
+/// <remarks>This class is responsible for managing forward evolutions of species, including retrieving possible
+/// evolutions and validating evolution criteria. It implements the <see cref="IEvolutionForward"/> interface to provide
+/// evolution-related functionality.</remarks>
+/// <param name="Entries">Collection of evolution methods indexed by species ID.</param>
+/// <seealso cref="EvolutionForwardSpecies"/>
+public sealed class EvolutionForwardSpecies(EvolutionMethod[][] Entries) : IEvolutionForward
 {
-    private readonly EvolutionMethod[][] Entries;
-
-    public EvolutionForwardSpecies(EvolutionMethod[][] entries) => Entries = entries;
-
     public IEnumerable<(ushort Species, byte Form)> GetEvolutions(ushort species, byte form)
     {
         var methods = GetForward(species, form);
@@ -20,10 +21,9 @@ public sealed class EvolutionForwardSpecies : IEvolutionForward
 
     public ReadOnlyMemory<EvolutionMethod> GetForward(ushort species, byte form)
     {
-        var arr = Entries;
-        if (species >= arr.Length)
-            return Array.Empty<EvolutionMethod>();
-        return arr[species];
+        if (species >= Entries.Length)
+            return ReadOnlyMemory<EvolutionMethod>.Empty;
+        return Entries[species];
     }
 
     private IEnumerable<(ushort Species, byte Form)> GetEvolutions(ReadOnlyMemory<EvolutionMethod> evos, byte form)
@@ -42,7 +42,8 @@ public sealed class EvolutionForwardSpecies : IEvolutionForward
         }
     }
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks,
+        EvolutionRuleTweak tweak, out EvoCriteria result) where T : ISpeciesForm
     {
         var methods = GetForward(head.Species, head.Form);
         foreach (var method in methods.Span)
@@ -53,7 +54,7 @@ public sealed class EvolutionForwardSpecies : IEvolutionForward
             if (next.Form != expectForm)
                 continue;
 
-            var chk = method.Check(pk, currentMaxLevel, levelMin, skipChecks);
+            var chk = method.Check(pk, currentMaxLevel, levelMin, skipChecks, tweak);
             if (chk != EvolutionCheckResult.Valid)
                 continue;
 
@@ -73,7 +74,7 @@ public sealed class EvolutionForwardSpecies : IEvolutionForward
         Method = method.Method,
 
         // Temporarily store these and overwrite them when we clean the list.
-        LevelMin = Math.Max(min, method.Level),
-        LevelUpRequired = method.RequiresLevelUp ? (byte)1 : (byte)0,
+        LevelMin = Math.Max((byte)(min + method.LevelUp), method.Level),
+        LevelUpRequired = method.LevelUp, // No need to tweak this, all games of this Type have the same default behavior.
     };
 }
