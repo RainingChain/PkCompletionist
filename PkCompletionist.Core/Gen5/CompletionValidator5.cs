@@ -29,6 +29,49 @@ internal class CompletionValidator5 : CompletionValidatorX
 
     new SAV5B2W2 sav;
 
+    private static int GetDexFormIndexBW(ushort species, byte formCount)
+    {
+        if (formCount < 1 || species > Legal.MaxSpeciesID_5)
+            return -1;
+
+        return species switch
+        {
+            201 => 000, // 28 Unown
+            386 => 028, // 4 Deoxys
+            492 => 032, // 2 Shaymin
+            487 => 034, // 2 Giratina
+            479 => 036, // 6 Rotom
+            422 => 042, // 2 Shellos
+            423 => 044, // 2 Gastrodon
+            412 => 046, // 3 Burmy
+            413 => 049, // 3 Wormadam
+            351 => 052, // 4 Castform
+            421 => 056, // 2 Cherrim
+            585 => 058, // 4 Deerling
+            586 => 062, // 4 Sawsbuck
+            648 => 066, // 2 Meloetta
+            555 => 068, // 2 Darmanitan
+            550 => 070, // 2 Basculin
+            _ => -1,
+        };
+    }
+
+    private static int GetDexFormIndexB2W2(ushort species, byte formCount)
+    {
+        if (formCount < 1 || species > Legal.MaxSpeciesID_5)
+            return -1;
+
+        return species switch
+        {
+            646 => 072, // 3 Kyurem
+            647 => 075, // 2 Keldeo
+            642 => 077, // 2 Thundurus
+            641 => 079, // 2 Tornadus
+            645 => 081, // 2 Landorus
+            _ => GetDexFormIndexBW(species, formCount),
+        };
+    }
+
     public override void GenerateAll()
     {
         base.GenerateAll(); // pokemon, item
@@ -350,7 +393,7 @@ internal class CompletionValidator5 : CompletionValidatorX
             for (int i = 0; i < specialForms.Length; i++)
             {
                 var (name, species, form) = specialForms[i];
-                int formIndex = DexFormUtil.GetDexFormIndexB2W2(species, this.sav.Personal[species].FormCount);
+                int formIndex = GetDexFormIndexB2W2(species, this.sav.Personal[species].FormCount);
                 if (formIndex < 0)
                     continue;
 
@@ -375,7 +418,7 @@ internal class CompletionValidator5 : CompletionValidatorX
             for (ushort i = 1; i <= 493; i++) // gen5 don't have language flags.
             {
                 for (int j = 0; j < 6; j++)
-                    if (!this.sav.Zukan.GetLanguageFlag(i - 1, j))
+                    if (!this.sav.Zukan.GetLanguageFlag(i, j))
                     {
                         retStr.Add("#" + i.ToString() + " (" + languages[j] + ")");
                         ret = false;
@@ -394,7 +437,7 @@ internal class CompletionValidator5 : CompletionValidatorX
         var pi = this.sav.Personal[species];
 
         var fc = pi.FormCount;
-        int f = DexFormUtil.GetDexFormIndexB2W2(species, fc);
+        int f = GetDexFormIndexB2W2(species, fc);
 
         const int NON_SHINY = 0;
         const int SHINY = 0;
@@ -611,7 +654,7 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         const int JOIN_AVENUE_BLK = 0x23C00;
         
-        var lvl = ReadUInt16LittleEndian(sav.Data.AsSpan(JOIN_AVENUE_BLK + 0x13CC));
+        var lvl = ReadUInt16LittleEndian(sav.Data[(JOIN_AVENUE_BLK + 0x13CC)..]);
 
         ow["AvenueRank100"] = lvl == 100;
 
@@ -645,9 +688,9 @@ internal class CompletionValidator5 : CompletionValidatorX
         // Note: not ideal, because it forces the player to keep the pokemon.
         foreach (var pk in sav.GetAllPKM())
         {
-            if (pk.DisplayTID == 10303 && pk.OT_Name == "Yancy")
+            if (pk.DisplayTID == 10303 && pk.OriginalTrainerName == "Yancy")
                 yancySpecies.Add(pk.Species);
-            if (pk.DisplayTID == 54118 && pk.OT_Name == "Curtis")
+            if (pk.DisplayTID == 54118 && pk.OriginalTrainerName == "Curtis")
                 curtisSpecies.Add(pk.Species);
         }
 

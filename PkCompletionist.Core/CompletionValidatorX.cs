@@ -32,7 +32,7 @@ partial class CompletionValidatorX
                 OwnedItems.Add(pkm.HeldItem);
         }
 
-        foreach (var pouch in sav.Inventory)
+        foreach (var pouch in sav.Inventory.Pouches)
         {
             foreach(var item in pouch.Items)
             {
@@ -59,7 +59,7 @@ partial class CompletionValidatorX
         var pkms = sav.GetAllPKM();
         return pkms.FirstOrDefault(pkm =>
         {
-            return pkm.PKRS_Infected || pkm.PKRS_Cured || pkm.PKRS_Days > 0 || pkm.PKRS_Strain > 0;
+            return pkm.IsPokerusInfected || pkm.IsPokerusCured || pkm.PokerusDays > 0 || pkm.PokerusStrain > 0;
         }) != null;
     }
 

@@ -101,7 +101,7 @@ internal class Program
         var sav_r = (SAV4_Ranger)Command.GetVariantSAV(savData_ranger, "")!;
 
         sav_r.Decrypt();
-        File.WriteAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before_csharp.sav", sav_r.Write());
+        File.WriteAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before_csharp.sav", sav_r.Write().ToArray());
         return true;
     }
 
@@ -139,7 +139,7 @@ internal class Program
         sav.Data[0x7238 + 1] = (byte)((wantedSameDaySeed >> 8) & 0xFF);
         sav.Data[0x7238 + 2] = (byte)((wantedSameDaySeed >> 16) & 0xFF); 
         sav.Data[0x7238 + 3] = (byte)((wantedSameDaySeed >> 24) & 0xFF);
-        File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write());
+        File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write().ToArray());
         return true;
         /*
         // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
@@ -239,7 +239,7 @@ internal class Program
                 return;
 
             var sav = Command.GetVariantSAV(savData, versionHint)!;
-            File.WriteAllBytes(args[1], sav.Write());
+            File.WriteAllBytes(args[1], sav.Write().ToArray());
             return;
         }
 
@@ -403,11 +403,11 @@ internal class Program
         {
             var kind = savA.Large[0x2B50 + i * 4 + 0];
             var state = savA.Large[0x2B50 + i * 4 + 1];
-            var dayCountdown = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(savA.Large.AsSpan(0x2B50 + i * 4 + 2));
+            var dayCountdown = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(savA.Large[(0x2B50 + i * 4 + 2)..]);
             Console.WriteLine($"kind={kind}, state={state}, dayCountdown={dayCountdown}");
         }
         savA.Large[0x2B50 + 0 * 4 + 0] = 3;
-        File.WriteAllBytes(@"C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - Copy2.sav", savA.Write());
+        File.WriteAllBytes(@"C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - Copy2.sav", savA.Write().ToArray());
     }
 
     static void StartFlagWatcher(string file)

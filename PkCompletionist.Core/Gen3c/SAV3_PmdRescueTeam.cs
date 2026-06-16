@@ -93,8 +93,8 @@ class SAV3_PmdRescueTeam : SAV_Dummy
 
     public BitBlock bitBlock_SlowCopy
     {
-        get { return new BitBlock(this.Data); }
-        set { this.Data = value.ToByteArray(); }
+        get { return new BitBlock(this.Data.ToArray()); }
+        set { this.SetData(value.ToByteArray(), 0); }
     }
 
     public RBOffsets off;

@@ -43,7 +43,7 @@ internal class Debug
         sav.Data[sav.off.MakuhitaDojoCompletedOffset] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 1] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 2] = 0xFF;
-        File.WriteAllBytes($"{file}_2.sav", sav.Write());
+        File.WriteAllBytes($"{file}_2.sav", sav.Write().ToArray());
         return;*/
         /*
         int byteStart = 0x4ED8;
@@ -62,7 +62,7 @@ internal class Debug
             }
         }
         */
-        File.WriteAllBytes($"{file}_2.sav", sav.Write());
+        File.WriteAllBytes($"{file}_2.sav", sav.Write().ToArray());
         return;
 
         /* For debug:

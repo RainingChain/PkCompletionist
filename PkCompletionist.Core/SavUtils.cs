@@ -36,7 +36,7 @@ internal class SavUtils
 
     public static bool HasItemInPouch(SaveFile sav, ushort itemId)
     {
-        var pouches = sav.Inventory;
+        var pouches = sav.Inventory.Pouches;
         foreach (var pouch in pouches)
         {
             int alreadyThereIdx = System.Array.FindIndex(pouch.Items, z => z.Index == itemId);
@@ -51,19 +51,19 @@ internal class SavUtils
         if (AddOnlyIfNotThere && HasItem(sav, itemId))
             return "Error: You already have that item.";
 
-        var pouches = sav.Inventory;
-        var pouch = pouches.FirstOrDefault(pouch =>
+        var bag = sav.Inventory;
+        var pouch = bag.Pouches.FirstOrDefault(pouch =>
         {
             return pouch.GetAllItems().Contains(itemId);
         });
         if (pouch == null)
             return "Error: No valid pouch found for that item.";
 
-        int addedCount = pouch.GiveItem(sav, itemId, 1);
+        int addedCount = pouch.GiveItem(bag, itemId, 1);
         if (addedCount <= 0)
             return "Error: Your item pouch is full.";
 
-        sav.Inventory = pouches;
+        bag.CopyTo(sav);
         return null;
     }
 
@@ -109,7 +109,7 @@ internal class SavUtils
             var alreadyOwned = allPkms.Any(pkm2 =>
             {
                 pkm2.GetIVs(ivs2);
-                return pkm.Species == pkm2.Species && pkm.Form == pkm2.Form && pkm.TID16 == pkm2.TID16 && pkm.OT_Name == pkm2.OT_Name && Enumerable.SequenceEqual(ivs1, ivs2);
+                return pkm.Species == pkm2.Species && pkm.Form == pkm2.Form && pkm.TID16 == pkm2.TID16 && pkm.OriginalTrainerName == pkm2.OriginalTrainerName && Enumerable.SequenceEqual(ivs1, ivs2);
             });
             if (alreadyOwned)
                 return "Error: You already have that pokemon.";
@@ -133,39 +133,32 @@ internal class SavUtils
         if (!gift.IsCardCompatible(sav, out string msg))
             return msg;
 
-        var gifts = sav.GiftAlbum.Gifts;
-        int index = GetLastUnfilledByType(gift, gifts);
+        if (sav is not IMysteryGiftStorage giftStorage)
+            return "Error: This save file does not support mystery gift storage.";
+
+        int index = GetLastUnfilledByType(gift, giftStorage);
         if (index == -1)
             return "Error: no empty slot. Trash existing cards to make space.";
 
-        var other = gifts[index];
+        var other = giftStorage.GetMysteryGift(index);
         if (gift is PCD { CanConvertToPGT: true } pcd && other is PGT)
         {
             gift = pcd.Gift;
         }
 
-        gifts[index] = (DataMysteryGift)gift.Clone();
-
-        var flags = sav.GiftAlbum.Flags;
-        flags[giftToAdd.CardID] = true;
-
-        if (sav.GiftAlbum is EncryptedMysteryGiftAlbum eAlbum){
-            sav.GiftAlbum = new EncryptedMysteryGiftAlbum(gifts, flags, eAlbum.Seed);
-        } else {
-            sav.GiftAlbum = new(gifts, flags);
-        }
+        giftStorage.SetMysteryGift(index, gift.Clone());
 
         return null;
     }
-    private static int GetLastUnfilledByType(DataMysteryGift gift, ReadOnlySpan<DataMysteryGift> album)
+    private static int GetLastUnfilledByType(DataMysteryGift gift, IMysteryGiftStorage album)
     {
-        if (gift is PCD { IsLockCapsule: true } && !album[11].Empty)
+        if (gift is PCD { IsLockCapsule: true } && !album.GetMysteryGift(11).IsEmpty)
             return -1;
 
-        for (int i = 0; i < album.Length; i++)
+        for (int i = 0; i < album.GiftCountMax; i++)
         {
-            var exist = album[i];
-            if (!exist.Empty)
+            var exist = album.GetMysteryGift(i);
+            if (!exist.IsEmpty)
                 continue;
             if (exist.Type != gift.Type)
                 continue;

@@ -748,7 +748,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         
         var TrainerHill = (int offset) =>
         {
-            var timer = BinaryPrimitives.ReadUInt32LittleEndian(sav.Large.AsSpan(offset, 4));
+            var timer = BinaryPrimitives.ReadUInt32LittleEndian(sav.Large.Slice(offset, 4));
             return timer != 0 && timer < 12 * 60 * 60;
         };
         ow["WinBestPrizeTrainerHillNormalMode"] = TrainerHill(0x3718 + 0);
@@ -758,7 +758,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
         var BerryBlenderRecord = (int offset) =>
         {
-            return BinaryPrimitives.ReadUInt16LittleEndian(sav.Large.AsSpan(offset, 2)) != 0;
+            return BinaryPrimitives.ReadUInt16LittleEndian(sav.Large.Slice(offset, 2)) != 0;
         };
 
         ow["SetBerryBlenderRecord2Players"] = BerryBlenderRecord(0x9BC + 0);
