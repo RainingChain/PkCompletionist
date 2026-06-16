@@ -35,31 +35,20 @@
     },
     {
       "label": "publish: wasm",
-      "type": "process",
-      "command": "robocopy",
-      "args": [
-        "${workspaceFolder}/bin/Release/net7.0/browser-wasm/AppBundle",
-        "C:/Users/Samuel/source/repos/pokemoncompletion/src/pokemonCompletion/PkCompletionist",
-        "/E",
-      ],
+      "type": "shell",
+      "command": "& \"${workspaceFolder}/publish.ps1\"",
       "problemMatcher": "$msCompile"
     },
     {
       "label": "compil & publish: wasm",
-      "type": "process",
-      "command": "robocopy",
-      "args": [
-        "${workspaceFolder}/bin/Release/net7.0/browser-wasm/AppBundle",
-        "C:/Users/Samuel/source/repos/pokemoncompletion/src/pokemonCompletion/PkCompletionist",
-        "/E",
-      ],
-      "dependsOn": "compile: wasm",
+      "type": "shell",
+      "command": "& \"${workspaceFolder}/publish.ps1\"",
       "problemMatcher": "$msCompile"
     },
     {
       "label": "run: exe Validate",
       "type": "process",
-      "command": "${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe",
+      "command": "${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe",
       "args": ["validate",  "C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav"],
       "dependsOn": "compile: exe",
       "problemMatcher": []
@@ -67,7 +56,7 @@
     {
       "label": "run: exe any",
       "type": "shell",
-      "command": "\"${workspaceFolder}/bin/Debug/net7.0/win-x64/publish/PkCompletionist.exe\" ${input:exeAnyInput}",
+      "command": "\"${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe\" ${input:exeAnyInput}",
       "dependsOn": "compile: exe",
       "problemMatcher": []
     }

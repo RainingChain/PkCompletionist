@@ -142,7 +142,7 @@ internal class Program
         File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write());
         return true;
         /*
-        // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
+        // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
         // usage: use it once, load savefile, game says it's corrupted. save in-game. run the .exe again. load savefile => works
         if (args[0] == "platinum_setBattleTowerSeeds")
         {
@@ -189,7 +189,7 @@ internal class Program
         var versionHint = "PmdRescueTeam";
 
         /*
-        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
+        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
         if (args[0] == "overwriteFlags")
         {
