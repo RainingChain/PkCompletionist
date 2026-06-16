@@ -2,9 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net7.0</TargetFramework>
-		<!-- can't use net8.0 because they changed the way .js files are fetched, meaning overwriting window.fetch doesn't work.
-	   the .wasm fetched other file by an unknown mean.-->
+		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>$(NoWarn);CA1416</NoWarn>

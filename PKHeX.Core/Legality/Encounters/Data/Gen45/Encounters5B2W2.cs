@@ -168,7 +168,7 @@ public static class Encounters5B2W2
         new(0xFF00001F) { Species = 570, Level = 25, Location = 010, Ability = OnlyFirst,  Nature = Nature.Hasty, Gift = true }, // N's Zorua @ Driftveil City
     };
 
-    private static readonly EncounterStatic5[] Encounter_B2W2 = ArrayUtil.ConcatAll(Encounter_B2W2_Regular, Encounter_B2W2_N, Encounter_DreamRadar);
+    private static readonly EncounterStatic5[] Encounter_B2W2 = Encounter_B2W2_Regular;
     #endregion
     #region Trade Tables
     private static readonly EncounterTrade5[] TradeGift_B2W2_Regular =

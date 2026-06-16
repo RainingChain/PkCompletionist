@@ -127,7 +127,7 @@ internal static class Encounters4DPPt
         new(DPPt, 0x0000045C, 129, 01) { Ability = OnlyFirst,  TID16 = 53277, SID16 = 00000, OTGender = 0, Gender = 1, IVs = new(15,25,15,20,25,15) }, // Finneon -> Magikarp
     };
 
-    internal static readonly EncounterTrade4[] TradeGift_DPPt = ArrayUtil.ConcatAll(TradeGift_DPPtIngame, RanchGifts);
+    internal static readonly EncounterTrade4[] TradeGift_DPPt = TradeGift_DPPtIngame;
 
     private const string tradeDPPt = "tradedppt";
     private static readonly string[][] TradeDPPt = Util.GetLanguageStrings8(tradeDPPt);

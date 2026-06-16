@@ -801,9 +801,7 @@ internal static class Encounters8
 
     internal static readonly EncounterTrade8[] TradeGift_SWSH = ArrayUtil.ConcatAll(TradeGift_Regular, TradeGift_R1);
 
-    internal static readonly EncounterStatic[] StaticSW = ArrayUtil.ConcatAll(Nest_SW, Nest_SH, Dist_SW, Dist_SH, DynAdv_SWSH, Crystal_SWSH,
-        GetEncounters(new EncounterStatic[][] { Encounter_SWSH_0, Encounter_SWSH_Strong0, Encounter_SWSH_Strong1, Encounter_SWSH_Strong2 }, SH));
+    internal static readonly EncounterStatic[] StaticSW = Nest_SW;
 
-    internal static readonly EncounterStatic[] StaticSH = ArrayUtil.ConcatAll(Nest_SW, Nest_SH, Dist_SW, Dist_SH, DynAdv_SWSH, Crystal_SWSH,
-        GetEncounters(new EncounterStatic[][] { Encounter_SWSH_0, Encounter_SWSH_Strong0, Encounter_SWSH_Strong1, Encounter_SWSH_Strong2 }, SW));
+    internal static readonly EncounterStatic[] StaticSH = Nest_SW;
 }
