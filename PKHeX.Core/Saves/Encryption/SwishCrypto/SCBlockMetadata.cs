@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 
@@ -11,13 +12,14 @@ namespace PKHeX.Core;
 /// </summary>
 public sealed class SCBlockMetadata
 {
-    private readonly Dictionary<IDataIndirect, string> BlockList;
+    private readonly Dictionary<string, IDataIndirect> BlockList;
     private readonly Dictionary<uint, string> ValueList;
     private readonly SCBlockAccessor Accessor;
 
     /// <summary>
     /// Creates a new instance of <see cref="SCBlockMetadata"/> by loading properties and constants declared via reflection.
     /// </summary>
+    [RequiresUnreferencedCode("Uses reflection to enumerate save block accessor properties and constants.")]
     public SCBlockMetadata(SCBlockAccessor accessor, IEnumerable<string> extraKeyNames, params string[] exclusions)
     {
         var aType = accessor.GetType();
@@ -25,8 +27,8 @@ public sealed class SCBlockMetadata
         BlockList = aType.GetAllPropertiesOfType<IDataIndirect>(accessor);
         ValueList = aType.GetAllConstantsOfType<uint>();
         AddExtraKeyNames(ValueList, extraKeyNames);
-        if (exclusions.Length > 0)
-            ValueList = ValueList.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary(z => z.Key, z => z.Value);
+        if (exclusions.Length != 0)
+            ValueList = ValueList.Where(z => !exclusions.Any(z.Value.Contains)).ToDictionary();
         Accessor = accessor;
     }
 
@@ -35,7 +37,7 @@ public sealed class SCBlockMetadata
     /// </summary>
     public IEnumerable<ComboItem> GetSortedBlockKeyList() => Accessor.BlockInfo
         .Select((z, i) => new ComboItem(GetBlockHint(z, i), (int)z.Key))
-        .OrderBy(z => !(z.Text.Length != 0 && z.Text[0] == '*'))
+        .OrderBy(z => !z.Text.StartsWith('*'))
         .ThenBy(z => GetSortKey(z));
 
     /// <summary>
@@ -60,10 +62,27 @@ public sealed class SCBlockMetadata
         }
     }
 
+    /// <inheritdoc cref="AddExtraKeyNames(Dictionary{uint,string}, IEnumerable{string})"/>
+    public static void AddExtraKeyNames64(Dictionary<ulong, string> names, IEnumerable<string> lines)
+    {
+        foreach (ReadOnlySpan<char> line in lines)
+        {
+            var split = line.IndexOf('\t');
+            if (split < 0)
+                continue;
+            var hex = line[..split];
+            if (!ulong.TryParse(hex, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out var value))
+                continue;
+
+            var name = line[(split + 1)..].ToString();
+            names.TryAdd(value, name);
+        }
+    }
+
     private static string GetSortKey(in ComboItem item)
     {
         var text = item.Text;
-        if (text.Length != 0 && text[0] == '*')
+        if (text.StartsWith('*'))
             return text;
         // key:X8, " - ", "####", " ", type
         return text[(8 + 3 + 4 + 1)..];
@@ -74,7 +93,7 @@ public sealed class SCBlockMetadata
         var blockName = GetBlockName(z, out _);
         var isBool = z.Type.IsBoolean();
         var type = (isBool ? "Bool" : z.Type.ToString());
-        if (blockName != null)
+        if (blockName is not null)
             return $"*{type} {blockName}";
         var result = $"{z.Key:X8} - {index:0000} {type}";
         if (z.Type is SCTypeCode.Object or SCTypeCode.Array)
@@ -95,11 +114,12 @@ public sealed class SCBlockMetadata
         // See if we have a Block object for this block
         if (block.Data.Length != 0)
         {
-            var obj = BlockList.FirstOrDefault(z => ReferenceEquals(z.Key.Data, block.Data));
+            static bool SameBackingBuffer(IDataIndirect d, ReadOnlyMemory<byte> data) => d.Equals(data);
+            var obj = BlockList.FirstOrDefault(z => SameBackingBuffer(z.Value, block.Raw));
             if (obj is not (null, null))
             {
-                saveBlock = obj.Key;
-                return obj.Value;
+                saveBlock = obj.Value;
+                return obj.Key;
             }
         }
 
@@ -114,7 +134,7 @@ public sealed class SCBlockMetadata
     }
 
     /// <summary>
-    /// Returns an object that wraps the block with a Value property to get/set via a PropertyGrid/etc control.
+    /// Returns an object that wraps the block with a Value property to get/set via a PropertyGrid/etc. control.
     /// </summary>
     /// <returns>Returns null if no wrapping is supported.</returns>
     public static object? GetEditableBlockObject(SCBlock block) => block.Type switch
@@ -135,26 +155,19 @@ public sealed class SCBlockMetadata
         _ => null,
     };
 
-    private sealed class WrappedValueView<T> where T : struct
+    private sealed class WrappedValueView<T>(SCBlock Parent, object currentValue) where T : struct
     {
-        private readonly SCBlock Parent;
-        private T _value;
-
         [Description("Stored Value for this Block")]
         public T Value
         {
-            get => _value;
-            set => Parent.SetValue(_value = value);
-        }
+            get;
+            set => Parent.SetValue(field = value);
+        } = (T)Convert.ChangeType(currentValue, typeof(T));
 
         // ReSharper disable once UnusedMember.Local
         [Description("Type of Value this Block stores")]
+#pragma warning disable CA1822
         public string ValueType => typeof(T).Name;
-
-        public WrappedValueView(SCBlock block, object currentValue)
-        {
-            Parent = block;
-            _value = (T)Convert.ChangeType(currentValue, typeof(T));
-        }
+#pragma warning restore CA1822
     }
 }

@@ -3,8 +3,15 @@ using static PKHeX.Core.CheckIdentifier;
 
 namespace PKHeX.Core.Bulk;
 
+/// <summary>
+/// Checks for duplicate Trainer IDs among Pokémon in a bulk legality analysis.
+/// </summary>
 public sealed class DuplicateTrainerChecker : IBulkAnalyzer
 {
+    /// <summary>
+    /// Analyzes the provided <see cref="BulkAnalysis"/> for duplicate Trainer IDs.
+    /// </summary>
+    /// <param name="input">The bulk analysis data to check.</param>
     public void Analyze(BulkAnalysis input) => CheckIDReuse(input);
 
     private static void CheckIDReuse(BulkAnalysis input)
@@ -16,18 +23,20 @@ public sealed class DuplicateTrainerChecker : IBulkAnalyzer
                 continue; // already flagged
             var cs = input.AllData[i];
             var ca = input.AllAnalysis[i];
-            Verify(input, dict, cs, ca);
+            var cr = new CombinedReference(cs, ca, i);
+            Verify(input, dict, cr);
         }
     }
 
-    private static void Verify(BulkAnalysis input, IDictionary<uint, CombinedReference> dict, SlotCache cs, LegalityAnalysis ca)
+    private static void Verify(BulkAnalysis input, Dictionary<uint, CombinedReference> dict, CombinedReference cr)
     {
+        var ca = cr.Analysis;
+        var cs = cr.Slot;
         var id = cs.Entity.ID32;
 
         if (!dict.TryGetValue(id, out var pr))
         {
-            var r = new CombinedReference(cs, ca);
-            dict.Add(id, r);
+            dict.Add(id, cr);
             return;
         }
 
@@ -37,21 +46,23 @@ public sealed class DuplicateTrainerChecker : IBulkAnalyzer
         if (ca.Info.Generation <= 2 && pa.Info.Generation <= 2)
             return;
 
-        var ps = pr.Slot;
-        if (VerifyIDReuse(input, ps, pa, cs, ca))
+        if (VerifyIDReuse(input, pr, cr))
             return;
 
         // egg encounters can be traded before hatching
         // store the current loop pk if it's a better reference
-        if (ps.Entity.WasTradedEgg && !cs.Entity.WasTradedEgg)
-            dict[id] = new CombinedReference(cs, ca);
+        var ps = pr.Slot;
+        if (ps.Entity.WasTradedEgg && !ca.Entity.WasTradedEgg)
+            dict[id] = cr;
     }
 
-    private static bool VerifyIDReuse(BulkAnalysis input, SlotCache ps, LegalityAnalysis pa, SlotCache cs, LegalityAnalysis ca)
+    private static bool VerifyIDReuse(BulkAnalysis input, CombinedReference pr, CombinedReference cr)
     {
-        if (pa.EncounterMatch is MysteryGift { EggEncounter: false })
-            return false;
-        if (ca.EncounterMatch is MysteryGift { EggEncounter: false })
+        var pa = pr.Analysis;
+        var ps = pr.Slot;
+        var ca = cr.Analysis;
+        var cs = cr.Slot;
+        if (IsNotPlayerDetails(pa.EncounterMatch) || IsNotPlayerDetails(ca.EncounterMatch))
             return false;
 
         const CheckIdentifier ident = Trainer;
@@ -63,19 +74,26 @@ public sealed class DuplicateTrainerChecker : IBulkAnalyzer
         // Trainer-ID-SID16 should only occur for one version
         if (IsSharedVersion(pp, pa, cp, ca))
         {
-            input.AddLine(ps, cs, "TID sharing across versions detected.", ident);
+            input.AddLine(ps, cs, ident, pr.Index, cr.Index, LegalityCheckResultCode.BulkSharingTrainerVersion);
             return true;
         }
 
         // ID-SID16 should only occur for one Trainer name
-        if (pp.OT_Name != cp.OT_Name)
+        if (pp.OriginalTrainerName != cp.OriginalTrainerName)
         {
             var severity = ca.Info.Generation == 4 ? Severity.Fishy : Severity.Invalid;
-            input.AddLine(ps, cs, "TID sharing across different trainer names detected.", ident, severity);
+            input.AddLine(ps, cs, ident, pr.Index, cr.Index, LegalityCheckResultCode.BulkSharingTrainerIDs, s: severity);
         }
 
         return false;
     }
+
+    private static bool IsNotPlayerDetails(IEncounterTemplate enc) => enc switch
+    {
+        IFixedTrainer { IsFixedTrainer: true } => true,
+        MysteryGift { IsEgg: false } => true,
+        _ => false,
+    };
 
     private static bool IsSharedVersion(PKM pp, LegalityAnalysis pa, PKM cp, LegalityAnalysis ca)
     {
@@ -88,13 +106,14 @@ public sealed class DuplicateTrainerChecker : IBulkAnalyzer
 
         // Gen3/4 traded eggs do not have an Egg Location, and do not update the Version upon hatch.
         // These eggs can obtain another trainer's TID16/SID16/OT and be valid with a different version ID.
-        if (pa.EncounterMatch.EggEncounter && IsTradedEggVersionNoUpdate(pp, pa))
+        if (pa.EncounterMatch.IsEgg && IsTradedEggVersionNoUpdate(pp, pa))
             return false; // version doesn't update on trade
-        if (ca.EncounterMatch.EggEncounter && IsTradedEggVersionNoUpdate(cp, ca))
+        if (ca.EncounterMatch.IsEgg && IsTradedEggVersionNoUpdate(cp, ca))
             return false; // version doesn't update on trade
 
         static bool IsTradedEggVersionNoUpdate(PKM pk, LegalityAnalysis la) => la.Info.Generation switch
         {
+            2 => true, // No version stored, just ignore.
             3 => true, // No egg location, assume can be traded. Doesn't update version upon hatch.
             4 => pk.WasTradedEgg, // Gen4 traded eggs do not update version upon hatch.
             _ => false, // Gen5+ eggs have an egg location, and update the version upon hatch.

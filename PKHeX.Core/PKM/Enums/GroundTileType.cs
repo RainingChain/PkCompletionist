@@ -24,7 +24,7 @@ public enum GroundTileType : byte
     Building = 09,
     Marsh    = 10,
     Bridge   = 11, // No encounters from this tile type
-    Max_DP   = 12, // Unspecific, catch-all for DP undefined tiles.
+    Max_DP   = 12, // Unspecific, catch-all for D/P undefined tiles.
 
     // added tile types in Pt
     // no encounters from these tile types
@@ -46,10 +46,13 @@ public enum GroundTileType : byte
 
 public static class GroundTileTypeExtensions
 {
-    public static bool IsObtainable(this GroundTileType type) => ((0b_1_10000000_00010110_10110111 >> (int) type) & 1) == 1;
-
-    public static ReadOnlySpan<byte> ValidTileTypes => new[]
+    extension(GroundTileType type)
     {
+        public bool IsObtainable => ((0b_1_10000000_00010110_10110111 >> (int) type) & 1) == 1;
+    }
+
+    public static ReadOnlySpan<byte> ValidTileTypes =>
+    [
         (byte)None, (byte)Sand, (byte)Grass, (byte)Rock, (byte)Cave, (byte)Water, (byte)Building, (byte)Marsh, (byte)Max_DP, (byte)Distortion, (byte)Max_Pt,
-    };
+    ];
 }

@@ -20,7 +20,7 @@ public static class ItemRestrictions
     }
 
     /// <summary>
-    /// Checks if an <see cref="item"/> is available to be held in <see cref="context"/>.
+    /// Checks if an item is available to be held in <see cref="context"/>.
     /// </summary>
     /// <param name="item">Held Item ID</param>
     /// <param name="context">Entity context to check</param>
@@ -45,11 +45,13 @@ public static class ItemRestrictions
         EntityContext.Gen9 => ReleasedHeldItems_9,
 
         EntityContext.Gen8b => ReleasedHeldItems_8b,
-        _ => Array.Empty<bool>(), // lgp/e, pla, etc
+        EntityContext.Gen9a => ReleasedHeldItems_9a,
+        _ => [], // lgp/e, pla, etc
     };
 
+    // Combined bitflags for released held items across generations.
     private static readonly bool[] ReleasedHeldItems_2 = GetPermitList(MaxItemID_2, HeldItems_GSC);
-    private static readonly bool[] ReleasedHeldItems_3 = GetPermitList(MaxItemID_3, HeldItems_RS, ItemStorage3RS.Unreleased); // Safari Ball
+    private static readonly bool[] ReleasedHeldItems_3 = GetPermitList(MaxItemID_3_RS, HeldItems_RS, ItemStorage3RS.Unreleased); // Safari Ball
     private static readonly bool[] ReleasedHeldItems_4 = GetPermitList(MaxItemID_4_HGSS, HeldItems_HGSS, ItemStorage4.Unreleased);
     private static readonly bool[] ReleasedHeldItems_5 = GetPermitList(MaxItemID_5_B2W2, HeldItems_BW, ItemStorage5.Unreleased);
     private static readonly bool[] ReleasedHeldItems_6 = GetPermitList(MaxItemID_6_AO, HeldItems_AO, ItemStorage6XY.Unreleased);
@@ -57,6 +59,7 @@ public static class ItemRestrictions
     private static readonly bool[] ReleasedHeldItems_8 = GetPermitList(MaxItemID_8, HeldItems_SWSH, ItemStorage8SWSH.Unreleased, ItemStorage8SWSH.DynamaxCrystalBCAT);
     private static readonly bool[] ReleasedHeldItems_8b = GetPermitList(MaxItemID_8b, HeldItems_BS, ItemStorage8BDSP.Unreleased, ItemStorage8BDSP.DisallowHeldTreasure);
     private static readonly bool[] ReleasedHeldItems_9 = GetPermitList(MaxItemID_9, HeldItems_SV, ItemStorage9SV.Unreleased);
+    private static readonly bool[] ReleasedHeldItems_9a = GetPermitList(MaxItemID_9a, HeldItems_ZA, ItemStorage9ZA.Unreleased);
 
     /// <summary>
     /// Gets a permit list with the permitted indexes, then un-flags the indexes that are not permitted.
@@ -102,8 +105,7 @@ public static class ItemRestrictions
         var result = GetPermitList(max, allowed);
         foreach (var index in disallow1)
             result[index] = false;
-        for (int i = disallow2.Start.Value; i < disallow2.End.Value; i++)
-            result[i] = false;
+        result.AsSpan()[disallow2].Clear();
         return result;
     }
 }

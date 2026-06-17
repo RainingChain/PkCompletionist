@@ -4,33 +4,33 @@ using System.Linq;
 namespace PKHeX.Core;
 
 /// <summary>
-/// Provides a summary for an <see cref="IEncounterTemplate"/> object.
+/// Provides a summary for <see cref="IEncounterTemplate"/> objects.
 /// </summary>
-public record EncounterSummary
+public sealed record EncounterSummary
 {
     private readonly GameVersion Version;
     private readonly string LocationName;
 
-    private EncounterSummary(IEncounterTemplate z)
+    private EncounterSummary(IEncounterTemplate enc)
     {
-        Version = z.Version;
-        LocationName = GetLocationName(z);
+        Version = enc.Version;
+        LocationName = GetLocationName(enc);
     }
 
-    private static string GetLocationName(IEncounterTemplate z)
+    private static string GetLocationName(IEncounterTemplate enc)
     {
-        var gen = z.Generation;
-        var version = z.Version;
-        if (gen < 0 && version > 0)
-            gen = version.GetGeneration();
+        var generation = enc.Generation;
+        var version = enc.Version;
+        if (generation == 0 && version > 0)
+            generation = version.Generation;
 
-        if (z is not ILocation l)
-            return $"[Gen{gen}]\t";
-        var loc = l.GetEncounterLocation(gen, (int)version);
+        if (enc is not ILocation l)
+            return $"[Gen{generation}]\t";
+        var loc = l.GetEncounterLocation(generation, version);
 
         if (string.IsNullOrWhiteSpace(loc))
-            return $"[Gen{gen}]\t";
-        return $"[Gen{gen}]\t{loc}: ";
+            return $"[Gen{generation}]\t";
+        return $"[Gen{generation}]\t{loc}: ";
     }
 
     public static IEnumerable<string> SummarizeGroup(IEnumerable<IEncounterTemplate> items, string header = "", bool advanced = false)

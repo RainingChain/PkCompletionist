@@ -7,12 +7,12 @@ namespace PKHeX.Core;
 /// </summary>
 public static class RibbonVerifierOnly3
 {
-    public static void Parse(this IRibbonSetOnly3 r, RibbonVerifierArguments args, ref RibbonResultList list)
+    public static void Parse(this IRibbonSetOnly3 r, in RibbonVerifierArguments args, ref RibbonResultList list)
     {
         if (r.RibbonWorld)
             list.Add(RibbonIndex.World);
 
-        if (!RibbonRules.IsAllowedContest3(args.History))
+        if (!RibbonRules.IsAllowedContest3(args.History, args.Entity))
             FlagContestAny(r, ref list);
         else
             FlagContest(r, ref list);

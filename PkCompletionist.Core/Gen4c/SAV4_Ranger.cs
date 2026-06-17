@@ -48,7 +48,7 @@ class SAV4_Ranger : SAV_Dummy
         var size = bytes.Length / sizeof(int);
         var ints = new UInt32[size];
         for (var index = 0; index < size; index++)
-            ints[index] = BitConverter.ToUInt32(bytes, index * sizeof(int));
+            ints[index] = BitConverter.ToUInt32(bytes.Slice(index * sizeof(int), sizeof(int)));
 
         var saveinfo = new ArraySegment<uint>(ints, 0xC / 4, 0x1F4 / 4);
         if (saveinfo[1] >> 16 != 0)

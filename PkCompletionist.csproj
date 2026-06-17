@@ -1,35 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-<Choose>
-	<!-- Change to Condition="'1' == '0' to generate a regular .exe instead of wasm"-->
-	<When Condition="'1' == '1'">
-		<PropertyGroup>
-			<OutputType>Exe</OutputType>
-			<TargetFramework>net7.0</TargetFramework>
-			<!-- can't use net8.0 because they changed the way .js files are fetched, meaning overwriting window.fetch doesn't work.
-		   the .wasm fetched other file by an unknown mean.-->
-			<Nullable>enable</Nullable>
-			<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<NoWarn>$(NoWarn);CA1416</NoWarn>
+		<DefaultItemExcludes>$(DefaultItemExcludes);PkCompletionist.Core\bin\**;PkCompletionist.Core\obj\**;PKHeX.Core\bin\**;PKHeX.Core\obj\**</DefaultItemExcludes>
+	</PropertyGroup>
 
-			<RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-			<WasmMainJSPath>main.js</WasmMainJSPath>
-			<InvariantGlobalization>true</InvariantGlobalization>
-			<WasmEmitSymbolMap>false</WasmEmitSymbolMap>
-		</PropertyGroup>
-	</When>
-	<When Condition="'1' == '1'">
-		<PropertyGroup>
-			<OutputType>Exe</OutputType>
-			<TargetFramework>net7.0</TargetFramework>
-			<Nullable>enable</Nullable>
-			<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		</PropertyGroup>
-	</When>
-	</Choose>
+	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
+		<WasmMainJSPath>main.js</WasmMainJSPath>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<WasmEmitSymbolMap>false</WasmEmitSymbolMap>
+	</PropertyGroup>
 	
     <ItemGroup>
 		<None Remove="**\Resources\**" />
 		<EmbeddedResource Include="**\Resources\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Remove="PKHeX.Core\Resources\legality\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\localize\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\text\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\levelup\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\personal\**" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_y" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_c" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_e" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_pt" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_b2w2" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\zukan_research\**" />
 	</ItemGroup>
 
 	<ItemGroup>

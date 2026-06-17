@@ -115,17 +115,26 @@ internal class EventSimulator3 : EventSimulatorX
         return SavUtils.AddItem(sav, 371, true /*OnlyIfNotOwned*/);
     }
 
-    public static string? PokemonFestaRibbons(SAV3 sav)
+    public static string? PokemonFestaRibbons(SaveFile sav)
     {
         if (sav.PartyData.Count == 0)
             return "Your party is empty.";
 
-        var pkm = sav.PartyData[0] as G3PKM;
+        var pkm = sav.PartyData[0];
+        
+        if (pkm is G3PKM pkm3){
+            pkm3.RibbonCountry = true;
+            pkm3.RibbonWorld = true;
+        } else if (pkm is G4PKM pkm4){
+            pkm4.RibbonCountry = true;
+            pkm4.RibbonWorld = true;
+        } else if (pkm is PK5 pkm5){
+            pkm5.RibbonCountry = true;
+            pkm5.RibbonWorld = true;
+        }
+
         if (pkm == null)
             return "Pokemon is not generation 3.";
-
-        pkm.RibbonCountry = true;
-        pkm.RibbonWorld = true;
 
         sav.SetPartySlotAtIndex(pkm, 0);
 

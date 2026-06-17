@@ -55,7 +55,7 @@ partial class Command
         if (pmdSky != null)
             return pmdSky;
 
-        return SaveUtil.GetVariantSAV(data);
+        return SaveUtil.GetSaveFile(data);
     }
 
     public SaveFile? SetSavA(byte[] data, string VersionHint)
@@ -86,7 +86,7 @@ partial class Command
     {
         if (LastCommand?.savA == null)
             return System.Array.Empty<byte>();
-        return LastCommand.savA.Write();
+        return LastCommand.savA.Write().ToArray();
     }
 
     [JSExport]
@@ -94,7 +94,7 @@ partial class Command
     {
         if (LastCommand?.savB == null)
             return System.Array.Empty<byte>();
-        return LastCommand.savB.Write();
+        return LastCommand.savB.Write().ToArray();
     }
 
 }

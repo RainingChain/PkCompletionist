@@ -1,22 +1,24 @@
 using System;
+using static PKHeX.Core.EntityContext;
 
 namespace PKHeX.Core;
 
 /// <summary>
-/// Group that checks the source of a move in <see cref="GameVersion.Gen7"/>.
+/// Group that checks the source of a move in <see cref="EntityContext.Gen7"/>.
 /// </summary>
 public sealed class LearnGroup7 : ILearnGroup
 {
     public static readonly LearnGroup7 Instance = new();
-    private const int Generation = 7;
-    public ushort MaxMoveID => Legal.MaxMoveID_7;
+    private const EntityContext Context = Gen7;
+    private const byte Generation = 7;
+    public ushort MaxMoveID => Legal.MaxMoveID_7_USUM;
 
-    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => enc.Generation switch
+    public ILearnGroup? GetPrevious(PKM pk, EvolutionHistory history, IEncounterTemplate enc, LearnOption option) => enc.Context switch
     {
-        Generation => null,
-        1 => history.HasVisitedGen1 ? LearnGroup1.Instance : null,
-     <= 2 => history.HasVisitedGen2 ? LearnGroup2.Instance : null,
-        _ => history.HasVisitedGen6 ? LearnGroup6.Instance : null,
+        Gen1 => LearnGroup1.Instance,
+        Gen2 => LearnGroup2.Instance,
+        (Gen3 or Gen4 or Gen5 or Gen6) => LearnGroup6.Instance,
+        _ => null,
     };
 
     public bool HasVisited(PKM pk, EvolutionHistory history) => history.HasVisitedGen7;
@@ -24,18 +26,18 @@ public sealed class LearnGroup7 : ILearnGroup
     public bool Check(Span<MoveResult> result, ReadOnlySpan<ushort> current, PKM pk, EvolutionHistory history, IEncounterTemplate enc,
         MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
     {
-        var mode = GetCheckMode(pk);
+        var mode = GetCheckMode(enc, pk);
         var evos = history.Gen7;
         for (var i = 0; i < evos.Length; i++)
             Check(result, current, pk, evos[i], i, types, option, mode);
 
-        if (option.IsPast() && types.HasFlag(MoveSourceType.Encounter) && enc is EncounterEgg { Generation: Generation } egg)
+        if (option.IsPast() && types.HasFlag(MoveSourceType.Encounter) && enc is EncounterEgg7 egg)
             CheckEncounterMoves(result, current, egg);
 
         return MoveResult.AllParsed(result);
     }
 
-    private static void CheckEncounterMoves(Span<MoveResult> result, ReadOnlySpan<ushort> current, EncounterEgg egg)
+    private static void CheckEncounterMoves(Span<MoveResult> result, ReadOnlySpan<ushort> current, EncounterEgg7 egg)
     {
         ILearnSource inst = egg.Version > GameVersion.MN ? LearnSource7USUM.Instance : LearnSource7SM.Instance;
         var eggMoves = inst.GetEggMoves(egg.Species, egg.Form);
@@ -47,18 +49,18 @@ public sealed class LearnGroup7 : ILearnGroup
                 continue;
             var move = current[i];
             if (eggMoves.Contains(move))
-                result[i] = new(LearnMethod.EggMove);
+                result[i] = new(LearnMethod.EggMove, inst.Environment);
             else if (levelMoves.Contains(move))
-                result[i] = new(LearnMethod.InheritLevelUp);
+                result[i] = new(LearnMethod.InheritLevelUp, inst.Environment);
             else if (move is (int)Move.VoltTackle && egg.CanHaveVoltTackle)
-                result[i] = new(LearnMethod.SpecialEgg);
+                result[i] = new(LearnMethod.SpecialEgg, inst.Environment);
         }
     }
 
-    private static CheckMode GetCheckMode(PKM pk)
+    private static CheckMode GetCheckMode(IEncounterTemplate enc, PKM pk)
     {
         // We can check if it has visited specific sources. We won't check the games it hasn't visited.
-        if (!pk.IsUntraded)
+        if (enc.Context != Gen7 || !pk.IsUntraded)
             return CheckMode.Both;
         if (pk.USUM)
             return CheckMode.USUM;
@@ -119,7 +121,7 @@ public sealed class LearnGroup7 : ILearnGroup
             var chk = uu.GetCanLearn(pk, uu_pi, evo, move, types, option);
             if (chk != default)
             {
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
                 continue;
             }
 
@@ -127,7 +129,7 @@ public sealed class LearnGroup7 : ILearnGroup
                 continue;
             chk = sm.GetCanLearn(pk, uu_pi, evo, move, types & MoveSourceType.LevelUp, option);
             if (chk != default)
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
         }
     }
 
@@ -145,16 +147,16 @@ public sealed class LearnGroup7 : ILearnGroup
             var move = current[i];
             var chk = game.GetCanLearn(pk, pi, evo, move, types, option);
             if (chk != default)
-                result[i] = new(chk, (byte)stage, Generation);
+                result[i] = new(chk, (byte)stage, Context);
         }
     }
 
     public void GetAllMoves(Span<bool> result, PKM pk, EvolutionHistory history, IEncounterTemplate enc, MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
     {
-        if (types.HasFlag(MoveSourceType.Encounter) && enc.Generation == Generation)
+        if (types.HasFlag(MoveSourceType.Encounter) && enc.Context == Context)
             FlagEncounterMoves(enc, result);
 
-        var mode = GetCheckMode(pk);
+        var mode = GetCheckMode(enc, pk);
         foreach (var evo in history.Gen7)
             GetAllMoves(result, pk, evo, types, option, mode);
     }
@@ -201,18 +203,8 @@ public sealed class LearnGroup7 : ILearnGroup
     private static void FlagEncounterMoves(IEncounterTemplate enc, Span<bool> result)
     {
         if (enc is IMoveset { Moves: { HasMoves: true } x })
-        {
-            result[x.Move4] = true;
-            result[x.Move3] = true;
-            result[x.Move2] = true;
-            result[x.Move1] = true;
-        }
+            x.FlagMoves(result);
         if (enc is IRelearn { Relearn: { HasMoves: true } r })
-        {
-            result[r.Move4] = true;
-            result[r.Move3] = true;
-            result[r.Move2] = true;
-            result[r.Move1] = true;
-        }
+            r.FlagMoves(result);
     }
 }

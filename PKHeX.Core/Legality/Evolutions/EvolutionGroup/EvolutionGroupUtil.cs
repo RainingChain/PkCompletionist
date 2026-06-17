@@ -1,9 +1,10 @@
+using System;
 using static PKHeX.Core.EntityContext;
 
 namespace PKHeX.Core;
 
 /// <summary>
-/// Utility logic for getting an <see cref="IEvolutionGroup"/> based on the input.
+/// Utility logic for getting the <see cref="IEvolutionGroup"/> based on the input.
 /// </summary>
 public static class EvolutionGroupUtil
 {
@@ -21,6 +22,9 @@ public static class EvolutionGroupUtil
         Gen7 => EvolutionGroup7.Instance,
         Gen7b => EvolutionGroup7b.Instance,
 
-        _ => EvolutionGroupHOME.Instance,
+        Gen8 or Gen8a or Gen8b or Gen9 => EvolutionGroupHOME.Instance,
+        Gen9a => EvolutionGroupHOME2.Instance,
+
+        _ => throw new ArgumentOutOfRangeException(nameof(context), context, null),
     };
 }

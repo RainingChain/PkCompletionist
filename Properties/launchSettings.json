@@ -2,31 +2,31 @@
   "profiles": {
     "Overwrite flags /cmp": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe",
       "commandLineArgs": "overwriteFlags \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\before.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\after.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\" \"0,0,0,0\""
     },
     "Validate": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe",
       "commandLineArgs": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\""
     },
     "Validate2": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe",
       "commandLineArgs": "validate \"C:\\Users\\Samuel\\AppData\\Roaming\\Azahar\\sdmc\\Nintendo 3DS\\00000000000000000000000000000000\\00000000000000000000000000000000\\title\\00040000\\00141000\\data\\00000001\\savedata.bin\""
     },
     "Event": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe",
       "commandLineArgs": "event ArceusRowap_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Platinum2.sav\""
     },
     "Debug.OnStart()": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe"
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe"
     },
     "Event2": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net7.0\\PkCompletionist.exe",
+      "executablePath": "C:\\Users\\samuel\\source\\repos\\PkCompletionist\\bin\\Debug\\net10.0\\PkCompletionist.exe",
       "commandLineArgs": "event Victini_BW_Event \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav\""
     }
   }

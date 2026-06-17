@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using static PKHeX.Core.GameVersion;
 using static PKHeX.Core.EvolutionUtil;
 
 namespace PKHeX.Core;
@@ -14,18 +13,23 @@ public sealed class EvolutionGroupHOME : IEvolutionGroup
     private static readonly EvolutionEnvironment8b BDSP = new();
     private static readonly EvolutionEnvironment9 SV = new();
 
-    public IEvolutionGroup? GetNext(PKM pk, EvolutionOrigin enc) => null;
+    public IEvolutionGroup? GetNext(PKM pk, EvolutionOrigin enc)
+    {
+        if (pk is { Format: <= 9, Context: not EntityContext.Gen9a })
+            return null;
+        return EvolutionGroupHOME2.Instance;
+    }
 
     public IEvolutionGroup? GetPrevious(PKM pk, EvolutionOrigin enc)
     {
         if (enc.Generation >= 8)
             return null;
-        if ((GameVersion)enc.Version is GP or GE or GG or GO)
+        if (enc.Context is EntityContext.Gen7b)
             return EvolutionGroup7b.Instance;
         return EvolutionGroup7.Instance;
     }
 
-    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk)
+    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc)
     {
         if (pk.SV)
             Discard(result, PersonalTable.SV);
@@ -45,7 +49,16 @@ public sealed class EvolutionGroupHOME : IEvolutionGroup
     /// </summary>
     /// <returns>True if we should check all adjacent evolution sources.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool CheckAllAdjacent(PKM pk, EvolutionOrigin enc) => enc.SkipChecks || pk is IHomeTrack { HasTracker: true } || !ParseSettings.IgnoreTransferIfNoTracker;
+    private static bool CheckAllAdjacent(PKM pk, EvolutionOrigin enc)
+    {
+        if (enc.SkipChecks)
+            return true;
+        if (IsOutsideContext(pk.Context))
+            return true; // transferred through HOME already
+        return pk is IHomeTrack { HasTracker: true } || !ParseSettings.IgnoreTransferIfNoTracker;
+    }
+
+    private static bool IsOutsideContext(EntityContext context) => context is not (EntityContext.Gen8 or EntityContext.Gen8a or EntityContext.Gen8b or EntityContext.Gen9);
 
     public int Devolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc)
     {
@@ -56,10 +69,21 @@ public sealed class EvolutionGroupHOME : IEvolutionGroup
 
     public int Evolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc, EvolutionHistory history)
     {
+        if (IsUnavailableEvoChain(pk.Species, pk.Form))
+            result = result[..1]; // Only allow the highest (current).
         if (CheckAllAdjacent(pk, enc))
             return EvolveMulti(result, pk, enc, history);
         return EvolveSingle(result, pk, enc, history);
     }
+
+    private static bool IsUnavailableEvoChain(ushort species, byte form) => species switch
+    {
+        // Split-evolution Alolans can't be reached in any game Gen8+. Must have been via Gen7.
+        (int)Species.Raichu when form == 1 => true,
+        (int)Species.Exeggutor when form == 1 => true,
+        (int)Species.Marowak when form == 1 => true,
+        _ => false,
+    };
 
     private int DevolveMulti(Span<EvoCriteria> result, PKM pk, in EvolutionOrigin enc)
     {
@@ -170,6 +194,8 @@ public sealed class EvolutionGroupHOME : IEvolutionGroup
             evo = evo with { Form = 0 }; // Normal
         else if (evo is { Species: (ushort)Species.Palkia, Form: not 0 })
             evo = evo with { Form = 0 }; // Normal
+        else if (evo is { Species: (ushort)Species.Arceus, Form: not 0 })
+            evo = evo with { Form = 0 }; // Normal
         else if (evo is { Species: (ushort)Species.Silvally, Form: not 0 })
             evo = evo with { Form = 0 }; // Normal
     }
@@ -208,22 +234,33 @@ public sealed class EvolutionGroupHOME : IEvolutionGroup
         PA8 => LA,
         PB8 => BDSP,
         PK9 => SV,
-        _ => throw new ArgumentOutOfRangeException(nameof(pk), pk, null),
+        _ => pk.Version switch // transferred to another game (Z-A)
+        {
+            GameVersion.PLA => LA,
+            GameVersion.SW or GameVersion.SH => SWSH,
+            GameVersion.BD or GameVersion.SP => BDSP,
+            GameVersion.SL or GameVersion.VL => SV,
+            _ => throw new ArgumentOutOfRangeException(nameof(pk), pk, null),
+        },
     };
 }
 
+/// <summary>
+/// Evolution environment for <see cref="EntityContext.Gen8"/>.
+/// </summary>
 public sealed class EvolutionEnvironment8 : IEvolutionEnvironment
 {
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves8;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Level100;
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
     }
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        var b = Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        var b = Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
         return b && !IsEvolutionBanned(pk, head);
     }
 
@@ -237,45 +274,48 @@ public sealed class EvolutionEnvironment8 : IEvolutionEnvironment
     };
 }
 
+/// <summary>
+/// Evolution environment for <see cref="EntityContext.Gen8a"/>.
+/// </summary>
 public sealed class EvolutionEnvironment8a : IEvolutionEnvironment
 {
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves8a;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Default;
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-        => Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 }
 
+/// <summary>
+/// Evolution environment for <see cref="EntityContext.Gen8b"/>.
+/// </summary>
 public sealed class EvolutionEnvironment8b : IEvolutionEnvironment
 {
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves8b;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Level100;
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-        => Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 }
 
+/// <summary>
+/// Evolution environment for <see cref="EntityContext.Gen9"/>.
+/// </summary>
 public sealed class EvolutionEnvironment9 : IEvolutionEnvironment
 {
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves9;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Level100;
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
-    {
-        var b = Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
-        return b && !IsEvolutionBanned(head);
-    }
-
-    // Unreleased Item
-    private static bool IsEvolutionBanned(in ISpeciesForm head) => head.Species switch
-    {
-        (int)Species.Slowpoke => head.Form == 1,
-        _ => false,
-    };
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
+        => Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
 }
+

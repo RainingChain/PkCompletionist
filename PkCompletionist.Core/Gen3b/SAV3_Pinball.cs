@@ -25,7 +25,7 @@ partial class SAV3_Pinball : SAV_Dummy
         return new SAV3_Pinball(data);
     }
     public override ushort MaxSpeciesID => 205;
-    public override GameVersion Version => GameVersion.Unknown;
+    public override GameVersion Version { get => GameVersion.Unknown; set { } }
 
     static public int OFF_SAVE_START = 0x4;
     static public int OFF_POKEDEX_START = 0x4;
@@ -36,23 +36,23 @@ partial class SAV3_Pinball : SAV_Dummy
 
     protected override void SetChecksums()
     {
-        var dbg_oldChecksum = BinaryPrimitives.ReadUInt16LittleEndian(Data.AsSpan(OFF_CHECKSUM, 2));
+        var dbg_oldChecksum = BinaryPrimitives.ReadUInt16LittleEndian(Data[OFF_CHECKSUM..]);
 
         // update checksum for save1
-        BinaryPrimitives.WriteUInt16LittleEndian(Data.AsSpan(OFF_CHECKSUM, 2), 0);
+        BinaryPrimitives.WriteUInt16LittleEndian(Data.Slice(OFF_CHECKSUM, 2), 0);
 
         uint checksum = 0;
         for (var i = 0; i < SZ_SAVE; i += 2)
         {
             var off = OFF_SAVE_START + i;
-            var val = BinaryPrimitives.ReadUInt16LittleEndian(Data.AsSpan(off, 2));
+            var val = BinaryPrimitives.ReadUInt16LittleEndian(Data.Slice(off, 2));
             checksum += val;
         }
         checksum = (checksum & 0xFFFF) + (checksum >> 16);
         checksum = ~((checksum >> 16) + checksum);
 
         ushort checksum_u16 = (ushort)checksum;
-        BinaryPrimitives.WriteUInt16LittleEndian(Data.AsSpan(OFF_CHECKSUM, 2), checksum_u16);
+        BinaryPrimitives.WriteUInt16LittleEndian(Data.Slice(OFF_CHECKSUM, 2), checksum_u16);
 
         // copy save1 to saveBackup
         for (var i = 0; i < SZ_SAVE; i++)

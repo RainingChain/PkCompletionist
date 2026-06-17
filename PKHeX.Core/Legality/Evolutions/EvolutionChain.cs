@@ -15,7 +15,7 @@ public static class EvolutionChain
     public static EvolutionHistory GetEvolutionChainsAllGens(PKM pk, IEncounterTemplate enc)
     {
         var min = GetMinLevel(pk, enc);
-        var origin = new EvolutionOrigin(pk.Species, (byte)enc.Version, (byte)enc.Generation, min, (byte)pk.CurrentLevel);
+        var origin = new EvolutionOrigin(pk.Species, enc.Context, enc.Generation, min, pk.CurrentLevel);
         if (!pk.IsEgg && enc is not EncounterInvalid)
             return GetEvolutionChainsSearch(pk, origin, enc.Context, enc.Species);
 
@@ -37,15 +37,15 @@ public static class EvolutionChain
 
     private static byte GetMinLevel(PKM pk, IEncounterTemplate enc) => enc.Generation switch
     {
-        2 => pk is ICaughtData2 c2 ? Math.Max((byte)c2.Met_Level, enc.LevelMin) : enc.LevelMin,
+        2 => pk is ICaughtData2 c2 ? Math.Max(c2.MetLevel, enc.LevelMin) : enc.LevelMin,
         <= 4 when pk.Format != enc.Generation => enc.LevelMin,
-        _ => Math.Max((byte)pk.Met_Level, enc.LevelMin),
+        _ => Math.Max(pk.MetLevel, enc.LevelMin),
     };
 
     private static EvolutionHistory EvolutionChainsSearch(PKM pk, EvolutionOrigin enc, EntityContext context, ushort encSpecies, Span<EvoCriteria> chain)
     {
         var history = new EvolutionHistory();
-        var length = GetOriginChain(chain, pk, enc, encSpecies, false);
+        var length = GetOriginChain(chain, pk, enc, encSpecies, enc.IsDiscardRequired(pk.Format));
         if (length == 0)
             return history;
         chain = chain[..length];
@@ -55,11 +55,12 @@ public static class EvolutionChain
             EvolutionUtil.ConditionBaseChainForward(chain, encSpecies);
         if (context == EntityContext.Gen2)
         {
+            // Handle the evolution case for Gen2->Gen1
             EvolutionGroup2.Instance.Evolve(chain, pk, enc, history);
             EvolutionGroup1.Instance.Evolve(chain, pk, enc, history);
-            if (pk.Format > 2)
+            if (pk.Format > 2) // Skip forward to Gen7
                 context = EntityContext.Gen7;
-            else
+            else // no more possible contexts; done.
                 return history;
         }
 
@@ -67,10 +68,10 @@ public static class EvolutionChain
         while (true)
         {
             group.Evolve(chain, pk, enc, history);
-            var previous = group.GetNext(pk, enc);
-            if (previous is null)
+            var next = group.GetNext(pk, enc);
+            if (next is null)
                 break;
-            group = previous;
+            group = next;
         }
         return history;
     }
@@ -87,9 +88,11 @@ public static class EvolutionChain
         Span<EvoCriteria> result = stackalloc EvoCriteria[EvolutionTree.MaxEvolutions];
         int count = GetOriginChain(result, pk, enc, encSpecies, discard);
         if (count == 0)
-            return Array.Empty<EvoCriteria>();
+            return [];
 
         var chain = result[..count];
+        if (IsMetLost(pk, enc)) // Original met level lost, need to be more permissive on evos.
+            EvolutionUtil.ConditionEncounterNoMet(chain);
         return chain.ToArray();
     }
 
@@ -120,6 +123,13 @@ public static class EvolutionChain
         return count;
     }
 
+    private static bool IsMetLost(PKM pk, EvolutionOrigin enc) => enc.Generation switch
+    {
+        >= 5 => false,
+        <= 2 => pk is not ICaughtData2 { MetLevel: not 0 },
+           _ => enc.Generation != pk.Format,
+    };
+
     private static int DevolveFrom(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc, EntityContext context, ushort encSpecies, bool discard)
     {
         var group = EvolutionGroupUtil.GetGroup(context);
@@ -133,7 +143,7 @@ public static class EvolutionChain
         }
 
         if (discard)
-            group.DiscardForOrigin(result, pk);
+            group.DiscardForOrigin(result, pk, enc);
         if (encSpecies != 0)
             return EvolutionUtil.IndexOf(result, encSpecies) + 1;
         return GetCount(result);

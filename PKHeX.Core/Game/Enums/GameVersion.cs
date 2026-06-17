@@ -7,7 +7,6 @@ public enum GameVersion : byte
 {
     #region Indicators for method empty arguments & result indication. Not stored values.
     Any = 0,
-    Unknown = byte.MaxValue - 1,
     Invalid = byte.MaxValue,
     #endregion
 
@@ -70,6 +69,11 @@ public enum GameVersion : byte
     /// Pokémon SoulSilver (NDS)
     /// </summary>
     SS = 8,
+
+    /// <summary>
+    /// Pokémon Battle Revolution (Wii)
+    /// </summary>
+    BATREV = 16,
     #endregion
 
     #region Gen5
@@ -229,6 +233,16 @@ public enum GameVersion : byte
     /// Pokémon Violet (NX)
     /// </summary>
     VL = 51,
+
+    /// <summary>
+    /// Pokémon Legends: (Z-A) (NX)
+    /// </summary>
+    ZA = 52,
+
+    /// <summary>
+    /// Pokémon Champions (NX)
+    /// </summary>
+    CP = 53,
     #endregion
 
     // The following values are not actually stored values in pk data,
@@ -268,7 +282,7 @@ public enum GameVersion : byte
     GSC,
 
     /// <summary>
-    /// Pokémon Ruby &amp; Sapphire [<see cref="SAV3"/>] identifier.
+    /// Pokémon Ruby &amp; Sapphire [<see cref="SAV3RS"/>] identifier.
     /// </summary>
     /// <see cref="R"/>
     /// <see cref="S"/>
@@ -283,7 +297,7 @@ public enum GameVersion : byte
     RSE,
 
     /// <summary>
-    /// Pokémon FireRed/LeafGreen [<see cref="SAV3"/>] identifier.
+    /// Pokémon FireRed/LeafGreen [<see cref="SAV3FRLG"/>] identifier.
     /// </summary>
     /// <see cref="FR"/>
     /// <see cref="LG"/>
@@ -309,7 +323,7 @@ public enum GameVersion : byte
     XD,
 
     /// <summary>
-    /// Pokémon Diamond &amp; Pearl [<see cref="SAV4"/>] identifier.
+    /// Pokémon Diamond &amp; Pearl [<see cref="SAV4DP"/>] identifier.
     /// </summary>
     /// <see cref="D"/>
     /// <see cref="P"/>
@@ -325,16 +339,11 @@ public enum GameVersion : byte
     DPPt,
 
     /// <summary>
-    /// Pokémon HeartGold &amp; SoulSilver [<see cref="SAV4"/>] identifier.
+    /// Pokémon HeartGold &amp; SoulSilver [<see cref="SAV4HGSS"/>] identifier.
     /// </summary>
     /// <see cref="HG"/>
     /// <see cref="SS"/>
     HGSS,
-
-    /// <summary>
-    /// Pokémon Battle Revolution [<see cref="SAV4BR"/>] identifier.
-    /// </summary>
-    BATREV,
 
     /// <summary>
     /// Pokémon Black &amp; White version group.
@@ -361,7 +370,7 @@ public enum GameVersion : byte
     XY,
 
     /// <summary>
-    /// Pokémon Omega Ruby &amp; Alpha Sapphire Demo [<see cref="SAV6"/>] identifier.
+    /// Pokémon Omega Ruby &amp; Alpha Sapphire Demo [<see cref="SAV6AODemo"/>] identifier.
     /// </summary>
     /// <see cref="ORAS"/>
     ORASDEMO,
@@ -504,5 +513,11 @@ public enum GameVersion : byte
     /// Pokémon Stadium 2 data origin identifier
     /// </summary>
     Stadium2,
+
+    /// <summary>
+    /// Emerald &amp; FireRed &amp; LeafGreen version group.
+    /// </summary>
+    EFL,
+    Unknown,
     #endregion
 }

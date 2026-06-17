@@ -18,7 +18,7 @@ public sealed class MemoryStrings
     {
         s = strings;
         memories = new Lazy<List<ComboItem>>(GetMemories);
-        none = new Lazy<List<ComboItem>>(() => Util.GetCBList(new[] {string.Empty}));
+        none = new Lazy<List<ComboItem>>(() => Util.GetCBList([string.Empty]));
         species = new Lazy<List<ComboItem>>(() => Util.GetCBList(s.specieslist));
         item6 = new Lazy<List<ComboItem>>(() => GetItems(EntityContext.Gen6));
         item8 = new Lazy<List<ComboItem>>(() => GetItems(EntityContext.Gen8));
@@ -48,7 +48,7 @@ public sealed class MemoryStrings
 
     private List<ComboItem> GetMemories()
     {
-        var mems = s.memories.AsSpan(0);
+        var mems = s.memories.AsSpan();
         var list = new List<ComboItem> {new(mems[0], 0)}; // none at top
         Util.AddCBWithOffset(list, mems[1..], 1); // sorted the rest
         return list;

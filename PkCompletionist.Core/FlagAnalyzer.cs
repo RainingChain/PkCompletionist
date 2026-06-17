@@ -42,8 +42,8 @@ partial class FlagAnalyzer : Command
         if (savA == null || savB == null)
             return false;
 
-        byte[] savAData = savA.Data;
-        byte[] savBData = savB.Data;
+        byte[] savAData = savA.Data.ToArray();
+        byte[] savBData = savB.Data.ToArray();
 
         if (savAData.Length != savBData.Length)
         {

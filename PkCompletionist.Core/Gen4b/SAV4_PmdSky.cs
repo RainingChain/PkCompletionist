@@ -64,8 +64,8 @@ class SAV4_PmdSky : SAV_Dummy
 
     public BitBlock bitBlock_SlowCopy
     {
-        get { return new BitBlock(this.Data); }
-        set { this.Data = value.ToByteArray(); }
+        get { return new BitBlock(this.Data.ToArray()); }
+        set { this.SetData(value.ToByteArray(), 0); }
     }
 
     public List<int> GetStoredPokemon(int baseOffset)

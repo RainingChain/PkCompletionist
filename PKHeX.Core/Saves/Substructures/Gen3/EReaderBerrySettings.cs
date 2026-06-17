@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System;
 using static PKHeX.Core.EReaderBerryMatch;
 
 namespace PKHeX.Core;
@@ -9,13 +9,10 @@ namespace PKHeX.Core;
 public static class EReaderBerrySettings
 {
     /// <summary> e-Reader Berry is Enigma or special berry (from e-Reader data)</summary>
-    public static bool IsEnigma { get; set; } = true;
+    public static bool IsEnigma { get; private set; } = true;
 
     /// <summary> e-Reader Berry Name </summary>
-    private static string Name { get; set; } = string.Empty;
-
-    /// <summary> e-Reader Berry Name formatted in Title Case </summary>
-    public static string DisplayName => string.Format(LegalityCheckStrings.L_XEnigmaBerry_0, Util.ToTitleCase(Name));
+    public static string Name { get; private set; } = string.Empty;
 
     private static int Language { get; set; }
 
@@ -27,8 +24,8 @@ public static class EReaderBerrySettings
         if (IsEnigma) // no e-Reader Berry data provided, can't hold berry.
             return NoData;
 
-        var name = Name;
-        if (EReaderBerriesNames_USA.Contains(name))
+        ReadOnlySpan<char> name = Name;
+        if (IsEReaderBerriesNameUSA(name))
         {
             return Language switch
             {
@@ -37,7 +34,7 @@ public static class EReaderBerrySettings
                 _ => InvalidUSA,
             };
         }
-        if (EReaderBerriesNames_JP.Contains(name))
+        if (IsEReaderBerriesNameJPN(name))
         {
             return Language switch
             {
@@ -49,35 +46,30 @@ public static class EReaderBerrySettings
         return NoMatch;
     }
 
-    private static readonly HashSet<string> EReaderBerriesNames_USA = new()
-    {
-        // USA Series 1
-        "PUMKIN",
-        "DRASH",
-        "EGGANT",
-        "STRIB",
-        "CHILAN",
-        "NUTPEA",
-    };
+    public static bool IsEReaderBerriesNameUSA(ReadOnlySpan<char> name) => name is
+        "PUMKIN" or
+        "DRASH" or
+        "EGGANT" or
+        "STRIB" or
+        "CHILAN" or
+        "NUTPEA"
+    ;
 
-    private static readonly HashSet<string> EReaderBerriesNames_JP = new()
-    {
-        // JP Series 1
-        "カチャ", // PUMKIN
-        "ブ－カ", // DRASH
-        "ビスナ", // EGGANT
-        "エドマ", // STRIB
-        "ホズ", // CHILAN
-        "ラッカ", // NUTPEA
-        "クオ", // KU
+    public static bool IsEReaderBerriesNameJPN(ReadOnlySpan<char> name) => name is
+        "カチャ" or // PUMKIN
+        "ブ－カ" or // DRASH
+        "ビスナ" or // EGGANT
+        "エドマ" or // STRIB
+        "ホズ" or // CHILAN
+        "ラッカ" or // NUTPEA
         // JP Series 2
-        "ギネマ", // GINEMA
-        "クオ", // KUO
-        "ヤゴ", // YAGO
-        "トウガ", // TOUGA
-        "ニニク", // NINIKU
-        "トポ", // TOPO
-    };
+        "ギネマ" or // GINEMA
+        "クオ" or // KUO
+        "ヤゴ" or // YAGO
+        "トウガ" or // TOUGA
+        "ニニク" or // NINIKU
+        "トポ" // TOPO
+    ;
 
     public static void LoadFrom(SAV3 sav3)
     {

@@ -6,7 +6,7 @@ namespace PKHeX.Core;
 /// <summary>
 /// Side game data for <see cref="PB8"/> data transferred into HOME.
 /// </summary>
-public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSplitAbility, IPokerusStatus
+public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSplitAbility, IPokerusStatus, IGameDataSidePP
 {
     private const HomeGameDataFormat ExpectFormat = HomeGameDataFormat.PB8;
     private const int SIZE = HomeCrypto.SIZE_2GAME_PB8;
@@ -24,14 +24,14 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     public ushort Move3 { get => ReadUInt16LittleEndian(Data[0x04..]); set => WriteUInt16LittleEndian(Data[0x04..], value); }
     public ushort Move4 { get => ReadUInt16LittleEndian(Data[0x06..]); set => WriteUInt16LittleEndian(Data[0x06..], value); }
 
-    public int Move1_PP { get => Data[0x08]; set => Data[0x08] = (byte)value; }
-    public int Move2_PP { get => Data[0x09]; set => Data[0x09] = (byte)value; }
-    public int Move3_PP { get => Data[0x0A]; set => Data[0x0A] = (byte)value; }
-    public int Move4_PP { get => Data[0x0B]; set => Data[0x0B] = (byte)value; }
-    public int Move1_PPUps { get => Data[0x0C]; set => Data[0x0C] = (byte)value; }
-    public int Move2_PPUps { get => Data[0x0D]; set => Data[0x0D] = (byte)value; }
-    public int Move3_PPUps { get => Data[0x0E]; set => Data[0x0E] = (byte)value; }
-    public int Move4_PPUps { get => Data[0x0F]; set => Data[0x0F] = (byte)value; }
+    public byte Move1_PP { get => Data[0x08]; set => Data[0x08] = value; }
+    public byte Move2_PP { get => Data[0x09]; set => Data[0x09] = value; }
+    public byte Move3_PP { get => Data[0x0A]; set => Data[0x0A] = value; }
+    public byte Move4_PP { get => Data[0x0B]; set => Data[0x0B] = value; }
+    public byte Move1_PPUps { get => Data[0x0C]; set => Data[0x0C] = value; }
+    public byte Move2_PPUps { get => Data[0x0D]; set => Data[0x0D] = value; }
+    public byte Move3_PPUps { get => Data[0x0E]; set => Data[0x0E] = value; }
+    public byte Move4_PPUps { get => Data[0x0F]; set => Data[0x0F] = value; }
 
     public ushort RelearnMove1 { get => ReadUInt16LittleEndian(Data[0x10..]); set => WriteUInt16LittleEndian(Data[0x10..], value); }
     public ushort RelearnMove2 { get => ReadUInt16LittleEndian(Data[0x12..]); set => WriteUInt16LittleEndian(Data[0x12..], value); }
@@ -41,15 +41,15 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     private Span<byte> RecordFlag => Data.Slice(0x18, 14);
     public bool GetMoveRecordFlag(int index) => FlagUtil.GetFlag(RecordFlag, index >> 3, index & 7);
     public void SetMoveRecordFlag(int index, bool value) => FlagUtil.SetFlag(RecordFlag, index >> 3, index & 7, value);
-    public bool GetMoveRecordFlagAny() => RecordFlag.IndexOfAnyExcept<byte>(0) >= 0;
+    public bool GetMoveRecordFlagAny() => RecordFlag.ContainsAnyExcept<byte>(0);
     public void ClearMoveRecordFlags() => RecordFlag.Clear();
 
-    public int Ball { get => Data[0x26]; set => Data[0x26] = (byte)value; }
-    public int Egg_Location { get => ReadUInt16LittleEndian(Data[0x27..]); set => WriteUInt16LittleEndian(Data[0x27..], (ushort)value); }
-    public int Met_Location { get => ReadUInt16LittleEndian(Data[0x29..]); set => WriteUInt16LittleEndian(Data[0x29..], (ushort)value); }
+    public byte Ball { get => Data[0x26]; set => Data[0x26] = value; }
+    public ushort EggLocation { get => ReadUInt16LittleEndian(Data[0x27..]); set => WriteUInt16LittleEndian(Data[0x27..], value); }
+    public ushort MetLocation { get => ReadUInt16LittleEndian(Data[0x29..]); set => WriteUInt16LittleEndian(Data[0x29..], value); }
 
     // Rev2 Additions
-    public byte PKRS { get => Data[0x2B]; set => Data[0x2B] = value; }
+    public byte PokerusState { get => Data[0x2B]; set => Data[0x2B] = value; }
     public ushort Ability { get => ReadUInt16LittleEndian(Data[0x2C..]); set => WriteUInt16LittleEndian(Data[0x2C..], value); }
     public byte AbilityNumber { get => Data[0x2E]; set => Data[0x2E] = value; }
 
@@ -63,7 +63,7 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     {
         this.CopyTo(pk);
         // Move Records are not settable in PB8; do not copy even if nonzero (illegal).
-        pk.PKRS = PKRS;
+        pk.PokerusState = PokerusState;
         pk.AbilityNumber = AbilityNumber;
         pk.Ability = Ability;
     }
@@ -72,7 +72,7 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     {
         this.CopyFrom(pk);
         // Move Records are not settable in PB8; do not copy even if nonzero (illegal).
-        PKRS = pk.PKRS;
+        PokerusState = pk.PokerusState;
         AbilityNumber = (byte)pk.AbilityNumber;
         Ability = (ushort)pk.Ability;
     }
@@ -94,7 +94,7 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     public static GameDataPB8? TryCreate(PKH pkh)
     {
         var side = GetNearestNeighbor(pkh);
-        if (side == null)
+        if (side is null)
             return null;
 
         var result = new GameDataPB8();
@@ -102,19 +102,17 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
         return result;
     }
 
-    private static IGameDataSide? GetNearestNeighbor(PKH pkh) => pkh.DataPK9 as IGameDataSide
-                                                              ?? pkh.DataPK8 as IGameDataSide
-                                                              ?? pkh.DataPB7 as IGameDataSide
-                                                              ?? pkh.DataPA8;
+    private static IGameDataSide? GetNearestNeighbor(PKH pkh)
+        => pkh.DataPA9 ?? pkh.DataPK9 ?? pkh.DataPK8 ?? pkh.DataPB7 ?? pkh.DataPA8 as IGameDataSide;
 
     public void InitializeFrom(IGameDataSide side, PKH pkh)
     {
         Ball = side.Ball;
-        Met_Location = side.Met_Location == 0 ? Locations.Default8bNone : side.Met_Location;
-        Egg_Location = side.Egg_Location == 0 ? Locations.Default8bNone : side.Egg_Location;
+        MetLocation = side.MetLocation == 0 ? Locations.Default8bNone : side.MetLocation;
+        EggLocation = side.EggLocation == 0 ? Locations.Default8bNone : side.EggLocation;
 
         if (side is IPokerusStatus p)
-            PKRS = p.PKRS;
+            PokerusState = p.PokerusState;
         if (side is IGameDataSplitAbility a)
             AbilityNumber = a.AbilityNumber;
         else
@@ -126,7 +124,10 @@ public sealed class GameDataPB8 : HomeOptional1, IGameDataSide<PB8>, IGameDataSp
     private void PopulateFromCore(PKH pkh)
     {
         var pi = PersonalTable.BDSP.GetFormEntry(pkh.Species, pkh.Form);
-        Ability = (ushort)pi.GetAbilityAtIndex(AbilityNumber >> 1);
+        var index = AbilityNumber >> 1;
+        if (index >= pi.AbilityCount)
+            index = 0;
+        Ability = (ushort)pi.GetAbilityAtIndex(index);
 
         var level = Experience.GetLevel(pkh.EXP, pi.EXPGrowth);
         this.ResetMoves(pkh.Species, pkh.Form, level, LearnSource8BDSP.Instance, EntityContext.Gen8b);

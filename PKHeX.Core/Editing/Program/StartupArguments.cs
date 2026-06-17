@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace PKHeX.Core;
 
@@ -12,33 +13,23 @@ public sealed class StartupArguments
 {
     public PKM? Entity { get; private set; }
     public SaveFile? SAV { get; private set; }
-
-    // ReSharper disable once UnassignedGetOnlyAutoProperty
-    public Exception? Error { get; }
-    // ReSharper disable once CollectionNeverQueried.Global
-    public readonly List<object> Extra = new();
+    public Exception? Error { get; internal set; }
+    public readonly List<object> Extra = [];
 
     /// <summary>
     /// Step 1: Reads in command line arguments.
     /// </summary>
-    public void ReadArguments(IEnumerable<string> args)
+    public void ReadArguments(ReadOnlySpan<string> args)
     {
-        foreach (string path in args)
+        foreach (var path in args)
         {
             var other = FileUtil.GetSupportedFile(path, SAV);
             if (other is SaveFile s)
-            {
-                s.Metadata.SetExtraInfo(path);
-                SAV = s;
-            }
+                (SAV = s).Metadata.SetExtraInfo(path);
             else if (other is PKM pk)
-            {
                 Entity = pk;
-            }
             else if (other is not null)
-            {
                 Extra.Add(other);
-            }
         }
     }
 
@@ -52,8 +43,10 @@ public sealed class StartupArguments
 
         if (Entity is { } x)
             SAV = ReadSettingsDefinedPKM(startup, x) ?? GetBlank(x);
+        else if (Extra.OfType<SAV3GCMemoryCard>().FirstOrDefault() is { } mc && SaveUtil.TryGetSaveFile(mc, out var mcSav))
+            SAV = mcSav;
         else
-            SAV = ReadSettingsAnyPKM(startup) ?? GetBlankSaveFile(startup.DefaultSaveVersion, SAV);
+            SAV = ReadSettingsAnyPKM(startup) ?? BlankSaveFile.Get(startup.DefaultSaveVersion, SAV);
     }
 
     // step 3
@@ -74,15 +67,15 @@ public sealed class StartupArguments
 
     private static SaveFile? ReadSettingsDefinedPKM(IStartupSettings startup, PKM pk) => startup.AutoLoadSaveOnStartup switch
     {
-        AutoLoadSetting.RecentBackup => SaveFinder.DetectSaveFiles().FirstOrDefault(z => z.IsCompatiblePKM(pk)),
-        AutoLoadSetting.LastLoaded => GetMostRecentlyLoaded(startup.RecentlyLoaded).FirstOrDefault(z => z.IsCompatiblePKM(pk)),
+        SaveFileLoadSetting.RecentBackup => SaveFinder.DetectSaveFiles(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token).FirstOrDefault(z => z.IsCompatiblePKM(pk)),
+        SaveFileLoadSetting.LastLoaded => GetMostRecentlyLoaded(startup.RecentlyLoaded).FirstOrDefault(z => z.IsCompatiblePKM(pk)),
         _ => null,
     };
 
     private static SaveFile? ReadSettingsAnyPKM(IStartupSettings startup) => startup.AutoLoadSaveOnStartup switch
     {
-        AutoLoadSetting.RecentBackup => SaveFinder.DetectSaveFiles().FirstOrDefault(),
-        AutoLoadSetting.LastLoaded => GetMostRecentlyLoaded(startup.RecentlyLoaded).FirstOrDefault(),
+        SaveFileLoadSetting.RecentBackup => SaveFinder.DetectSaveFiles(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token).FirstOrDefault(),
+        SaveFileLoadSetting.LastLoaded => GetMostRecentlyLoaded(startup.RecentlyLoaded).FirstOrDefault(),
         _ => null,
     };
 
@@ -90,25 +83,11 @@ public sealed class StartupArguments
     private static SaveFile GetBlank(PKM pk)
     {
         var ctx = pk.Context;
-        var ver = ctx.GetSingleGameVersion();
+        var version = ctx.GetSingleGameVersion();
         if (pk is { Format: 1, Japanese: true })
-            ver = GameVersion.BU;
+            version = GameVersion.BU;
 
-        return SaveUtil.GetBlankSAV(ver, pk.OT_Name, (LanguageID)pk.Language);
-    }
-
-    private static SaveFile GetBlankSaveFile(GameVersion version, SaveFile? current)
-    {
-        var lang = SaveUtil.GetSafeLanguage(current);
-        var tr = SaveUtil.GetSafeTrainerName(current, lang);
-        var sav = SaveUtil.GetBlankSAV(version, tr, lang);
-        if (sav.Version == GameVersion.Invalid) // will fail to load
-        {
-            var max = GameInfo.VersionDataSource.MaxBy(z => z.Value) ?? throw new Exception();
-            var ver = (GameVersion)max.Value;
-            sav = SaveUtil.GetBlankSAV(ver, tr, lang);
-        }
-        return sav;
+        return BlankSaveFile.Get(version, pk.OriginalTrainerName, (LanguageID)pk.Language);
     }
 
     private static IEnumerable<SaveFile> GetMostRecentlyLoaded(IEnumerable<string> paths)
@@ -118,11 +97,8 @@ public sealed class StartupArguments
             if (!File.Exists(path))
                 continue;
 
-            var sav = SaveUtil.GetVariantSAV(path);
-            if (sav is null)
-                continue;
-
-            yield return sav;
+            if (SaveUtil.TryGetSaveFile(path, out var sav))
+                yield return sav;
         }
     }
     #endregion

@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using static PKHeX.Core.LearnMethod;
 using static PKHeX.Core.LearnEnvironment;
-using static PKHeX.Core.LearnSource2;
+using static PKHeX.Core.PersonalInfo2;
 
 namespace PKHeX.Core;
 
@@ -13,12 +13,14 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
 {
     public static readonly LearnSource2C Instance = new();
     private static readonly PersonalTable2 Personal = PersonalTable.C;
-    private static readonly EggMoves2[] EggMoves = EggMoves2.GetArray(Util.GetBinaryResource("eggmove_c.pkl"), Legal.MaxSpeciesID_2);
-    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(Util.GetBinaryResource("lvlmove_c.pkl"), Legal.MaxSpeciesID_2);
+    private static readonly MoveSource[] EggMoves = MoveSource.GetArray(BinLinkerAccessor16.Get(Util.GetBinaryResource("eggmove_c.pkl"), "c\0"u8));
+    private static readonly Learnset[] Learnsets = LearnsetReader.GetArray(BinLinkerAccessor16.Get(Util.GetBinaryResource("lvlmove_c.pkl"), "c\0"u8));
     private const int MaxSpecies = Legal.MaxSpeciesID_2;
     private const LearnEnvironment Game = C;
 
-    public Learnset GetLearnset(ushort species, byte form) => Learnsets[species];
+    public LearnEnvironment Environment => Game;
+
+    public Learnset GetLearnset(ushort species, byte form) => Learnsets[species < Learnsets.Length ? species : 0];
 
     public bool TryGetPersonal(ushort species, byte form, [NotNullWhen(true)] out PersonalInfo2? pi)
     {
@@ -33,17 +35,19 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
 
     public bool GetIsEggMove(ushort species, byte form, ushort move)
     {
-        if (species > MaxSpecies)
+        var arr = EggMoves;
+        if (species >= arr.Length)
             return false;
-        var moves = EggMoves[species];
-        return moves.GetHasEggMove(move);
+        var moves = arr[species];
+        return moves.GetHasMove(move);
     }
 
     public ReadOnlySpan<ushort> GetEggMoves(ushort species, byte form)
     {
-        if (species > MaxSpecies)
-            return ReadOnlySpan<ushort>.Empty;
-        return EggMoves[species].Moves;
+        var arr = EggMoves;
+        if (species >= arr.Length)
+            return [];
+        return arr[species].Moves;
     }
 
     public MoveLearnInfo GetCanLearn(PKM pk, PersonalInfo2 pi, EvoCriteria evo, ushort move, MoveSourceType types = MoveSourceType.All, LearnOption option = LearnOption.Current)
@@ -60,9 +64,8 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
         if (types.HasFlag(MoveSourceType.LevelUp))
         {
             var learn = GetLearnset(evo.Species, evo.Form);
-            var level = learn.GetLevelLearnMove(move);
-            if (level != -1 && evo.LevelMin <= level && level <= evo.LevelMax)
-                return new(LevelUp, Game, (byte)level);
+            if (learn.TryGetLevelLearnMove(move, out var level) && evo.InsideLevelRange(level))
+                return new(LevelUp, Game, level);
         }
 
         return default;
@@ -72,7 +75,7 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
     {
         if (!ParseSettings.AllowGen2Crystal(pk))
             return false;
-        var tutor = Tutors_GSC.IndexOf(move);
+        var tutor = TutorMoves.IndexOf(move);
         if (tutor == -1)
             return false;
         var info = PersonalTable.C[species];
@@ -81,7 +84,7 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
 
     private static bool GetIsTM(PersonalInfo2 info, byte move)
     {
-        var index = TMHM_GSC.IndexOf(move);
+        var index = MachineMoves.IndexOf(move);
         if (index == -1)
             return false;
         return info.GetIsLearnTM(index);
@@ -95,9 +98,8 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
         bool removeVC = pk.Format == 1 || pk.VC1;
         if (types.HasFlag(MoveSourceType.LevelUp))
         {
-            var learn = GetLearnset(evo.Species, evo.Form);
-            var min = ParseSettings.AllowGen2MoveReminder(pk) ? 1 : evo.LevelMin;
-            var span = learn.GetMoveRange(evo.LevelMax, min);
+            var learn = Learnsets[evo.Species];
+            var span = learn.GetMoveRange(evo.LevelMax, evo.LevelMin);
             foreach (var move in span)
             {
                 if (!removeVC || move <= Legal.MaxMoveID_1)
@@ -106,16 +108,19 @@ public sealed class LearnSource2C : ILearnSource<PersonalInfo2>, IEggSource
         }
 
         if (types.HasFlag(MoveSourceType.Machine))
-            pi.SetAllLearnTM(result, TMHM_GSC);
+            pi.SetAllLearnTM(result, MachineMoves);
 
         if (types.HasFlag(MoveSourceType.SpecialTutor))
-            pi.SetAllLearnTutorType(result, Tutors_GSC);
+            pi.SetAllLearnTutorType(result, TutorMoves);
     }
 
-    public static void GetEncounterMoves(IEncounterTemplate enc, Span<ushort> init)
+    public static void GetEncounterMoves(PKM pk, IEncounterTemplate enc, Span<ushort> init)
     {
         var species = enc.Species;
         var learn = Learnsets[species];
-        learn.SetEncounterMoves(enc.LevelMin, init);
+        var level = enc.LevelMin;
+        if (pk is ICaughtData2 { CaughtData: not 0 })
+            level = Math.Max(level, pk.MetLevel); // ensure the met level is somewhat accurate
+        learn.SetEncounterMoves(level, init);
     }
 }

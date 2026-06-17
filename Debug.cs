@@ -15,7 +15,7 @@ internal class Debug
         var vanilla = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_vanilla.bin")!;
         var modded = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_modded.bin")!;
         var pixel = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_pixel.bin")!;
-        var dest = @"C:\Users\Samuel\AppData\Roaming\Azahar\sdmc\Nintendo 3DS\00000000000000000000000000000000\00000000000000000000000000000000\title\00040000\00141000\data\00000001\savedata.bin";
+        //var dest = @"C:\Users\Samuel\AppData\Roaming\Azahar\sdmc\Nintendo 3DS\00000000000000000000000000000000\00000000000000000000000000000000\title\00040000\00141000\data\00000001\savedata.bin";
 
 
         for (int i = 0; i < pixel.Length; i++)
@@ -43,7 +43,7 @@ internal class Debug
         sav.Data[sav.off.MakuhitaDojoCompletedOffset] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 1] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 2] = 0xFF;
-        File.WriteAllBytes($"{file}_2.sav", sav.Write());
+        File.WriteAllBytes($"{file}_2.sav", sav.Write().ToArray());
         return;*/
         /*
         int byteStart = 0x4ED8;
@@ -62,7 +62,7 @@ internal class Debug
             }
         }
         */
-        File.WriteAllBytes($"{file}_2.sav", sav.Write());
+        File.WriteAllBytes($"{file}_2.sav", sav.Write().ToArray());
         return;
 
         /* For debug:

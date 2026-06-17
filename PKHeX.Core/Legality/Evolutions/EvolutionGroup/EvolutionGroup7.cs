@@ -6,8 +6,9 @@ public sealed class EvolutionGroup7 : IEvolutionGroup
 {
     public static readonly EvolutionGroup7 Instance = new();
     private static readonly EvolutionTree Tree = EvolutionTree.Evolves7;
-    private const int Generation = 7;
+    private const byte Generation = 7;
     private static PersonalTable7 Personal => PersonalTable.USUM;
+    private static EvolutionRuleTweak Tweak => EvolutionRuleTweak.Default;
 
     public IEvolutionGroup? GetNext(PKM pk, EvolutionOrigin enc) => pk.Format > Generation ? EvolutionGroupHOME.Instance : null;
     public IEvolutionGroup? GetPrevious(PKM pk, EvolutionOrigin enc)
@@ -19,7 +20,7 @@ public sealed class EvolutionGroup7 : IEvolutionGroup
         return null;
     }
 
-    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk) => EvolutionUtil.Discard(result, Personal);
+    public void DiscardForOrigin(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc) => EvolutionUtil.Discard(result, Personal);
 
     public int Devolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc)
     {
@@ -51,7 +52,7 @@ public sealed class EvolutionGroup7 : IEvolutionGroup
     public int Evolve(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc, EvolutionHistory history)
     {
         if (enc.Generation <= 2) // VC Transfer
-            EvolutionUtil.UpdateFloor(result, (byte)pk.Met_Level, enc.LevelMax);
+            EvolutionUtil.UpdateFloor(result, pk.MetLevel, enc.LevelMax);
 
         int present = 1;
         for (int i = result.Length - 1; i >= 1; i--)
@@ -73,14 +74,14 @@ public sealed class EvolutionGroup7 : IEvolutionGroup
         return present;
     }
 
-    public bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        return Tree.Reverse.TryDevolve(head, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
     }
 
-    public bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result)
+    public bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm
     {
-        var b = Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, out result);
+        var b = Tree.Forward.TryEvolve(head, next, pk, currentMaxLevel, levelMin, skipChecks, Tweak, out result);
         return b && !IsEvolutionBanned(pk, result);
     }
 

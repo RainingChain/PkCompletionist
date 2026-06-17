@@ -3,7 +3,7 @@
 using System;
 using System.Collections.Generic;
 using static PKHeX.Core.LegalityAnalyzers;
-using static PKHeX.Core.LegalityCheckStrings;
+using static PKHeX.Core.LegalityCheckResultCode;
 
 namespace PKHeX.Core;
 
@@ -26,6 +26,27 @@ public sealed class LegalityAnalysis
     /// </summary>
     public IReadOnlyList<CheckResult> Results => Parse;
 
+    public bool HasResult(LegalityCheckResultCode code)
+    {
+        foreach (var result in Parse)
+        {
+            if (result.Result == code)
+                return true;
+        }
+        return false;
+    }
+
+    public int IndexOfResult(LegalityCheckResultCode code)
+    {
+        for (var i = 0; i < Parse.Count; i++)
+        {
+            var result = Parse[i];
+            if (result.Result == code)
+                return i;
+        }
+        return -1;
+    }
+
     /// <summary>
     /// Matched encounter data for the <see cref="Entity"/>.
     /// </summary>
@@ -43,7 +64,7 @@ public sealed class LegalityAnalysis
     /// <summary>
     /// Indicates where the <see cref="Entity"/> originated.
     /// </summary>
-    public readonly SlotOrigin SlotOrigin;
+    public readonly StorageSlotType SlotOrigin;
 
     /// <summary>
     /// Indicates if all checks ran to completion.
@@ -61,20 +82,24 @@ public sealed class LegalityAnalysis
     /// </summary>
     public readonly LegalInfo Info;
 
+    private const StorageSlotType Ignore = StorageSlotType.None;
+
+    internal bool IsStoredSlot(StorageSlotType type) => SlotOrigin == type || SlotOrigin is Ignore;
+
     /// <summary>
     /// Checks the input <see cref="PKM"/> data for legality. This is the best method for checking with context, as some games do not have all Alternate Form data available.
     /// </summary>
     /// <param name="pk">Input data to check</param>
     /// <param name="table"><see cref="SaveFile"/> specific personal data</param>
     /// <param name="source">Details about where the <see cref="Entity"/> originated from.</param>
-    public LegalityAnalysis(PKM pk, IPersonalTable table, SlotOrigin source = SlotOrigin.Party) : this(pk, table.GetFormEntry(pk.Species, pk.Form), source) { }
+    public LegalityAnalysis(PKM pk, IPersonalTable table, StorageSlotType source = Ignore) : this(pk, table.GetFormEntry(pk.Species, pk.Form), source) { }
 
     /// <summary>
     /// Checks the input <see cref="PKM"/> data for legality.
     /// </summary>
     /// <param name="pk">Input data to check</param>
     /// <param name="source">Details about where the <see cref="Entity"/> originated from.</param>
-    public LegalityAnalysis(PKM pk, SlotOrigin source = SlotOrigin.Party) : this(pk, pk.PersonalInfo, source) { }
+    public LegalityAnalysis(PKM pk, StorageSlotType source = Ignore) : this(pk, pk.PersonalInfo, source) { }
 
     /// <summary>
     /// Checks the input <see cref="PKM"/> data for legality.
@@ -82,7 +107,7 @@ public sealed class LegalityAnalysis
     /// <param name="pk">Input data to check</param>
     /// <param name="pi">Personal info to parse with</param>
     /// <param name="source">Details about where the <see cref="Entity"/> originated from.</param>
-    public LegalityAnalysis(PKM pk, IPersonalInfo pi, SlotOrigin source = SlotOrigin.Party)
+    public LegalityAnalysis(PKM pk, IPersonalInfo pi, StorageSlotType source = Ignore)
     {
         Entity = pk;
         PersonalInfo = pi;
@@ -95,15 +120,24 @@ public sealed class LegalityAnalysis
         {
             EncounterFinder.FindVerifiedEncounter(pk, Info);
             if (!pk.IsOriginValid)
-                AddLine(Severity.Invalid, LEncConditionBadSpecies, CheckIdentifier.GameOrigin);
+                AddLine(Severity.Invalid, EncConditionBadSpecies, CheckIdentifier.GameOrigin);
             GetParseMethod()();
+
+            foreach (var ext in ExternalLegalityCheck.ExternalCheckers.Values)
+                ext.Verify(this);
 
             Valid = Parse.TrueForAll(chk => chk.Valid)
                     && MoveResult.AllValid(Info.Moves)
                     && MoveResult.AllValid(Info.Relearn);
 
-            if (!Valid && IsPotentiallyMysteryGift(Info, pk))
-                AddLine(Severity.Invalid, LFatefulGiftMissing, CheckIdentifier.Fateful);
+            if (!Valid)
+            {
+                if (Info.EncounterMatch is EncounterInvalid && pk.IsUntraded && EvolutionTree.GetEvolutionTree(pk.Context).Reverse.GetReverse(pk.Species, pk.Form).First.Method.Method.IsTrade)
+                    AddLine(Severity.Invalid, EvoInvalid, CheckIdentifier.Evolution);
+                if (IsPotentiallyMysteryGift(Info, pk))
+                    AddLine(Severity.Invalid, FatefulGiftMissing, CheckIdentifier.Fateful);
+            }
+
             Parsed = true;
         }
 #if SUPPRESS
@@ -114,23 +148,19 @@ public sealed class LegalityAnalysis
             Valid = false;
 
             // Moves and Relearn arrays can potentially be empty on error.
-            var moves = Info.Moves;
-            for (var i = 0; i < moves.Length; i++)
+            foreach (ref var p in Info.Moves.AsSpan())
             {
-                ref var p = ref moves[i];
                 if (!p.IsParsed)
                     p = MoveResult.Unobtainable();
             }
 
-            moves = Info.Relearn;
-            for (var i = 0; i < moves.Length; i++)
+            foreach (ref var p in Info.Relearn.AsSpan())
             {
-                ref var p = ref moves[i];
                 if (!p.IsParsed)
                     p = MoveResult.Unobtainable();
             }
 
-            AddLine(Severity.Invalid, L_AError, CheckIdentifier.Misc);
+            AddLine(Severity.Invalid, Error, CheckIdentifier.Misc);
         }
 #endif
     }
@@ -140,7 +170,7 @@ public sealed class LegalityAnalysis
         if (info.EncounterOriginal is not EncounterInvalid enc)
             return false;
         if (enc.Generation <= 3)
-            return true;
+            return pk.Format <= 3;
         if (!pk.FatefulEncounter)
             return false;
         if (enc.Generation < 6)
@@ -176,8 +206,8 @@ public sealed class LegalityAnalysis
 
     private int GetParseFormat()
     {
-        int gen = Entity.Generation;
-        if (gen > 0)
+        var gen = Entity.Generation;
+        if (gen != 0)
             return gen;
         if (Entity is PK9 { IsUnhatchedEgg: true })
             return 9;
@@ -189,8 +219,10 @@ public sealed class LegalityAnalysis
         Nickname.Verify(this);
         Level.Verify(this);
         Level.VerifyG1(this);
-        Trainer.VerifyOTG1(this);
-        MiscValues.VerifyMiscG1(this);
+        Trainer.VerifyOTGB(this);
+        MiscValues.VerifyMiscG12(this);
+        MovePP.Verify(this);
+        EVs.Verify(this);
         if (Entity.Format == 2)
             Item.Verify(this);
     }
@@ -201,11 +233,8 @@ public sealed class LegalityAnalysis
         if (Entity.Format > 3)
             Transfer.VerifyTransferLegalityG3(this);
 
-        if (Entity.Version == (int)GameVersion.CXD)
+        if (Entity.Version == GameVersion.CXD)
             CXD.Verify(this);
-
-        if (Info.EncounterMatch is WC3 {NotDistributed: true})
-            AddLine(Severity.Invalid, LEncUnreleased, CheckIdentifier.Encounter);
 
         if (Entity.Format >= 8)
             Transfer.VerifyTransferLegalityG8(this);
@@ -223,7 +252,6 @@ public sealed class LegalityAnalysis
     private void ParsePK5()
     {
         UpdateChecks();
-        NHarmonia.Verify(this);
         if (Entity.Format >= 8)
             Transfer.VerifyTransferLegalityG8(this);
     }
@@ -255,7 +283,7 @@ public sealed class LegalityAnalysis
     private void ParsePK9()
     {
         UpdateChecks();
-        Transfer.VerifyTransferLegalityG9(this);
+        Transfer.VerifyTransferLegalityG8(this);
     }
 
     /// <summary>
@@ -264,13 +292,13 @@ public sealed class LegalityAnalysis
     /// <param name="s">Check severity</param>
     /// <param name="c">Check comment</param>
     /// <param name="i">Check type</param>
-    internal void AddLine(Severity s, string c, CheckIdentifier i) => AddLine(new CheckResult(s, i, c));
+    internal void AddLine(Severity s, LegalityCheckResultCode c, CheckIdentifier i) => AddLine(CheckResult.Get(s, i, c));
 
     /// <summary>
     /// Adds a new Check parse value.
     /// </summary>
     /// <param name="chk">Check result to add.</param>
-    internal void AddLine(CheckResult chk) => Parse.Add(chk);
+    public void AddLine(CheckResult chk) => Parse.Add(chk);
 
     private void UpdateVCTransferInfo()
     {
@@ -287,8 +315,8 @@ public sealed class LegalityAnalysis
     private void UpdateChecks()
     {
         PIDEC.Verify(this);
-        Nickname.Verify(this);
         LanguageIndex.Verify(this);
+        Nickname.Verify(this);
         Trainer.Verify(this);
         TrainerID.Verify(this);
         IVs.Verify(this);
@@ -299,6 +327,7 @@ public sealed class LegalityAnalysis
         BallIndex.Verify(this);
         FormValues.Verify(this);
         MiscValues.Verify(this);
+        MovePP.Verify(this);
         GenderValues.Verify(this);
         Item.Verify(this);
         Contest.Verify(this);
@@ -308,6 +337,7 @@ public sealed class LegalityAnalysis
         if (format is 4 or 5 or 6) // Gen 6->7 transfer removes this property.
             Gen4GroundTile.Verify(this);
 
+        SlotType.Verify(this);
         if (format < 6)
             return;
 
@@ -324,12 +354,11 @@ public sealed class LegalityAnalysis
             return;
 
         HyperTraining.Verify(this);
-        MiscValues.VerifyVersionEvolution(this);
 
+        Trash.Verify(this);
         if (format < 8)
             return;
 
         Mark.Verify(this);
-        Arceus.Verify(this);
     }
 }

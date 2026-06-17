@@ -1,5 +1,5 @@
 using System;
-using static PKHeX.Core.LegalityCheckStrings;
+using static PKHeX.Core.LegalityCheckResultCode;
 
 namespace PKHeX.Core;
 
@@ -45,7 +45,8 @@ public static class EncounterFinder
 
             // Looks like we might have a good enough match. Check if this is really a good match.
             info.EncounterMatch = enc;
-            info.Parse.Add(e);
+            if (e.Result != Valid)
+                info.Parse.Add(e);
             if (!VerifySecondaryChecks(pk, info, encounter))
                 continue;
 
@@ -54,7 +55,7 @@ public static class EncounterFinder
                 break;
 
             var match = mx.GetMatchRating(pk);
-            if (match != EncounterMatchRating.PartialMatch)
+            if (match < EncounterMatchRating.PartialMatch)
                 break;
 
             // Reaching here implies the encounter wasn't valid. Try stepping to the next encounter.
@@ -62,14 +63,18 @@ public static class EncounterFinder
                 continue;
 
             // We ran out of possible encounters without finding a suitable match; add a message indicating that the encounter is not a complete match.
-            info.Parse.Add(new CheckResult(Severity.Invalid, CheckIdentifier.Encounter, LEncInvalid));
+            info.Parse.Add(CheckResult.Get(Severity.Invalid, CheckIdentifier.Encounter, EncInvalid));
             break;
         }
 
-        if (info is { FrameMatches: false, EncounterMatch: EncounterSlot }) // if false, all valid RNG frame matches have already been consumed
-            info.Parse.Add(new CheckResult(ParseSettings.RNGFrameNotFound, CheckIdentifier.PID, LEncConditionBadRNGFrame)); // todo for further confirmation
-        if (!info.PIDIVMatches) // if false, all valid PIDIV matches have already been consumed
-            info.Parse.Add(new CheckResult(Severity.Invalid, CheckIdentifier.PID, LPIDTypeMismatch));
+        var manual = info.ManualFlag;
+        if (manual != EncounterYieldFlag.None)
+        {
+            if (!info.FrameMatches) // if false, all valid RNG frame matches have already been consumed
+                info.Parse.Add(CheckResult.Get(ParseSettings.Settings.FramePattern.GetSeverity(info.Generation), CheckIdentifier.PID, EncConditionBadRNGFrame));
+            else if (!info.PIDIVMatches) // if false, all valid PID/IV matches have already been consumed
+                info.Parse.Add(CheckResult.Get(Severity.Invalid, CheckIdentifier.PID, PIDTypeMismatch));
+        }
     }
 
     /// <summary>
@@ -77,16 +82,16 @@ public static class EncounterFinder
     /// </summary>
     /// <remarks>
     /// When an encounter is initially validated, only encounter-related checks are performed.
-    /// By checking Moves, Evolution, and <see cref="PIDIV"/> data, a best match encounter can be found.
+    /// By checking Moves, Evolution, and <see cref="PIDIV"/> data, the best match encounter can be found.
     /// If the encounter is not valid, the method will not reject it unless another encounter is available to check.
     /// </remarks>
     /// <param name="pk">Source data to check the match for</param>
     /// <param name="info">Information containing the matched encounter</param>
     /// <param name="iterator">Peekable iterator </param>
-    /// <returns>Indication whether or not the encounter passes secondary checks</returns>
+    /// <returns>Indication whether the encounter passes secondary checks</returns>
     private static bool VerifySecondaryChecks(PKM pk, LegalInfo info, PeekEnumerator<IEncounterable> iterator)
     {
-        var relearn = info.Relearn.AsSpan();
+        var relearn = info.Relearn;
         if (pk.Format >= 6)
         {
             LearnVerifierRelearn.Verify(relearn, info.EncounterOriginal, pk);
@@ -96,10 +101,10 @@ public static class EncounterFinder
         else
         {
             // Dummy to something valid.
-            relearn.Fill(MoveResult.Relearn);
+            relearn.AsSpan().Fill(MoveResult.Relearn);
         }
 
-        var moves = info.Moves.AsSpan();
+        var moves = info.Moves;
         LearnVerifier.Verify(moves, pk, info.EncounterMatch, info.EvoChainsAllGens);
         if (!MoveResult.AllValid(moves) && iterator.PeekIsNext())
             return false;
@@ -114,28 +119,34 @@ public static class EncounterFinder
         // Memories of Knowing a move which is later forgotten can be problematic with encounters that have special moves.
         if (pk is ITrainerMemories m)
         {
-            if (m is IMemoryOT o && MemoryPermissions.IsMemoryOfKnownMove(o.OT_Memory))
+            if (m is IMemoryOT o && MemoryPermissions.IsMemoryOfKnownMove(o.OriginalTrainerMemory))
             {
                 var mem = MemoryVariableSet.Read(m, 0);
-                if (!MemoryPermissions.CanKnowMove(pk, mem, info.EncounterMatch.Context, info))
+                bool valid = MemoryPermissions.CanKnowMove(pk, mem, info.EncounterMatch.Context, info);
+                if (!valid && iterator.PeekIsNext())
                     return false;
             }
-            if (m is IMemoryHT h && MemoryPermissions.IsMemoryOfKnownMove(h.HT_Memory) && !pk.HasMove(h.HT_TextVar))
+            if (m is IMemoryHT h && MemoryPermissions.IsMemoryOfKnownMove(h.HandlingTrainerMemory) && !pk.HasMove(h.HandlingTrainerMemoryVariable))
             {
                 var mem = MemoryVariableSet.Read(m, 1);
-                var context = Memories.GetContextHandler(pk.Context);
-                if (!MemoryPermissions.CanKnowMove(pk, mem, context, info))
+
+                var sources = MemoryRules.GetPossibleSources(info.EvoChainsAllGens);
+                sources = MemoryRules.ReviseSourcesHandler(pk, sources, info.EncounterOriginal);
+
+                bool valid = (sources.HasFlag(MemorySource.Gen6) && MemoryPermissions.CanKnowMove(pk, mem, EntityContext.Gen6, info))
+                          || (sources.HasFlag(MemorySource.Gen8) && MemoryPermissions.CanKnowMove(pk, mem, EntityContext.Gen8, info));
+                if (!valid && iterator.PeekIsNext())
                     return false;
             }
         }
         else if (pk is PK1 pk1)
         {
-            var hasGen2 = MoveInfo.IsAnyFromGeneration(2, info.Moves);
+            var hasGen2 = MoveInfo.IsAnyFromGeneration(EntityContext.Gen2, info.Moves);
             if (hasGen2)
             {
                 if (!ParseSettings.AllowGen1Tradeback)
                     return false;
-                if (!PK1.IsCatchRateHeldItem(pk1.Catch_Rate))
+                if (!ItemConverter.IsCatchRateHeldItem(pk1.CatchRate))
                     return false;
             }
         }
@@ -153,47 +164,47 @@ public static class EncounterFinder
     private static void VerifyWithoutEncounter(PKM pk, LegalInfo info)
     {
         info.EncounterMatch = new EncounterInvalid(pk);
-        string hint = GetHintWhyNotFound(pk, info.EncounterMatch.Generation);
+        var hint = GetHintWhyNotFound(pk, info.EncounterMatch.Generation);
 
-        info.Parse.Add(new CheckResult(Severity.Invalid, CheckIdentifier.Encounter, hint));
+        info.Parse.Add(CheckResult.Get(Severity.Invalid, CheckIdentifier.Encounter, hint));
         LearnVerifierRelearn.Verify(info.Relearn, info.EncounterOriginal, pk);
         LearnVerifier.Verify(info.Moves, pk, info.EncounterMatch, info.EvoChainsAllGens);
     }
 
-    private static string GetHintWhyNotFound(PKM pk, int gen)
+    private static LegalityCheckResultCode GetHintWhyNotFound(PKM pk, byte generation)
     {
-        if (WasGiftEgg(pk, gen, (ushort)pk.Egg_Location))
-            return LEncGift;
-        if (WasEventEgg(pk, gen))
-            return LEncGiftEggEvent;
-        if (WasEvent(pk, gen))
-            return LEncGiftNotFound;
-        return LEncInvalid;
+        if (WasGiftEgg(pk, generation, pk.EggLocation))
+            return EncGift;
+        if (WasEventEgg(pk, generation))
+            return EncGiftEggEvent;
+        if (WasEvent(pk, generation))
+            return EncGiftNotFound;
+        return EncInvalid;
     }
 
-    private static bool WasGiftEgg(PKM pk, int gen, ushort loc) => !pk.FatefulEncounter && gen switch
+    private static bool WasGiftEgg(PKM pk, byte generation, ushort eggLocation) => !pk.FatefulEncounter && generation switch
     {
-        3 => pk.IsEgg && (byte)pk.Met_Location == 253, // Gift Egg, indistinguishable from normal eggs after hatch
-        4 => (uint)(loc - 2009) <= (2014 - 2009) || (pk.Format != 4 && (loc == Locations.Faraway4 && pk.HGSS)),
-        5 => loc is Locations.Breeder5,
-        _ => loc is Locations.Breeder6,
+        3 => pk.IsEgg && (byte)pk.MetLocation == 253, // Gift Egg, indistinguishable from normal eggs after hatch
+        4 => eggLocation - 2009u <= (2014 - 2009) || (pk.Format != 4 && (eggLocation == Locations.Faraway4 && pk.HGSS)),
+        5 => eggLocation is Locations.Breeder5,
+        _ => eggLocation is Locations.Breeder6,
     };
 
-    private static bool WasEventEgg(PKM pk, int gen) => gen switch
+    private static bool WasEventEgg(PKM pk, byte generation) => generation switch
     {
         // Event Egg, indistinguishable from normal eggs after hatch
         // can't tell after transfer
-        3 => pk is { Context: EntityContext.Gen3, IsEgg: true } && Locations.IsEventLocation3(pk.Met_Location),
+        3 => pk is { Context: EntityContext.Gen3, IsEgg: true } && Locations.IsEventLocation3(pk.MetLocation),
 
         // Manaphy was the only generation 4 released event egg
-        _ => pk.FatefulEncounter && pk.Egg_Day != 0,
+        _ => pk.FatefulEncounter && pk.EggDay != 0,
     };
 
-    private static bool WasEvent(PKM pk, int gen) => pk.FatefulEncounter || gen switch
+    private static bool WasEvent(PKM pk, byte generation) => pk.FatefulEncounter || generation switch
     {
-        3 => Locations.IsEventLocation3(pk.Met_Location) && pk.Format == 3,
-        4 => Locations.IsEventLocation4(pk.Met_Location) && pk.Format == 4,
-        >=5 => Locations.IsEventLocation5(pk.Met_Location),
+        3 => Locations.IsEventLocation3(pk.MetLocation) && pk.Format == 3,
+        4 => Locations.IsEventLocation4(pk.MetLocation) && pk.Format == 4,
+      >=5 => Locations.IsEventLocation5(pk.MetLocation),
         _ => false,
     };
 }

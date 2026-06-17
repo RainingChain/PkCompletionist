@@ -39,7 +39,7 @@ public interface IEvolutionGroup
     /// <summary>
     /// Discards all entries that do not exist in the group.
     /// </summary>
-    void DiscardForOrigin(Span<EvoCriteria> result, PKM pk);
+    void DiscardForOrigin(Span<EvoCriteria> result, PKM pk, EvolutionOrigin enc);
 }
 
 /// <summary>
@@ -51,11 +51,11 @@ public interface IEvolutionEnvironment
     /// Attempts to devolve the provided <see cref="head"/> to the previous evolution.
     /// </summary>
     /// <returns>True if the de-evolution was successful and <see cref="result"/> should be used.</returns>
-    bool TryDevolve(ISpeciesForm head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result);
+    bool TryDevolve<T>(T head, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm;
 
     /// <summary>
     /// Attempts to evolve the provided <see cref="head"/> to the next evolution.
     /// </summary>
     /// <returns>True if the evolution was successful and <see cref="result"/> should be used.</returns>
-    bool TryEvolve(ISpeciesForm head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result);
+    bool TryEvolve<T>(T head, ISpeciesForm next, PKM pk, byte currentMaxLevel, byte levelMin, bool skipChecks, out EvoCriteria result) where T : ISpeciesForm;
 }

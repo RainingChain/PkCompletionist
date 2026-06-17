@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 
 namespace PKHeX.Core;
 
@@ -10,7 +11,8 @@ public sealed class SlotPublisher<T>
     /// <summary>
     /// All <see cref="ISlotViewer{T}"/> instances that provide a view on individual <see cref="ISlotInfo"/> content.
     /// </summary>
-    public List<ISlotViewer<T>> Subscribers { get; } = new();
+    private List<ISlotViewer<T>> Subscribers { get; } = [];
+    private Func<PKM, bool>? Filter { get; set; }
 
     public ISlotInfo? Previous { get; private set; }
     public SlotTouchType PreviousType { get; private set; } = SlotTouchType.None;
@@ -33,7 +35,7 @@ public sealed class SlotPublisher<T>
 
     private void ResetView(ISlotViewer<T> sub, ISlotInfo slot, SlotTouchType type, PKM pk)
     {
-        if (Previous != null)
+        if (Previous is not null)
             sub.NotifySlotOld(Previous);
 
         if (slot is not SlotInfoBox b || sub.ViewIndex == b.Box)
@@ -42,8 +44,18 @@ public sealed class SlotPublisher<T>
 
     public void ResetView(ISlotViewer<T> sub)
     {
-        if (Previous == null || PreviousEntity == null)
+        if (Previous is null || PreviousEntity is null)
             return;
         ResetView(sub, Previous, PreviousType, PreviousEntity);
+    }
+
+    public void Subscribe(ISlotViewer<T> sub) => Subscribers.Add(sub);
+    public bool Unsubscribe(ISlotViewer<T> sub) => Subscribers.Remove(sub);
+
+    public void UpdateFilter(Func<PKM, bool>? searchFilter, bool reload = true)
+    {
+        Filter = searchFilter;
+        foreach (var sub in Subscribers)
+            sub.ApplyNewFilter(Filter, reload);
     }
 }

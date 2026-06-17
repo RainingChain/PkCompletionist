@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "compile: exe",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}/PkCompletionist.csproj",
+        "--configuration",
+        "Debug",
+        "--runtime",
+        "win-x64",
+        "--self-contained",
+        "false"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "compile: wasm",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "publish",
+        "${workspaceFolder}/PkCompletionist.csproj",
+        "--configuration",
+        "Release",
+        "--runtime",
+        "browser-wasm"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "publish: wasm",
+      "type": "shell",
+      "command": "& \"${workspaceFolder}/publish.ps1\"",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "compil & publish: wasm",
+      "type": "shell",
+      "command": "& \"${workspaceFolder}/publish.ps1\"",
+      "dependsOn": "compile: wasm",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "run: exe Validate",
+      "type": "process",
+      "command": "${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe",
+      "args": ["validate",  "C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav"],
+      "dependsOn": "compile: exe",
+      "problemMatcher": []
+    },
+    {
+      "label": "run: exe any",
+      "type": "shell",
+      "command": "\"${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe\" ${input:exeAnyInput}",
+      "dependsOn": "compile: exe",
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "exeAnyInput",
+      "type": "promptString",
+      "description": "Input for PkCompletionist.exe",
+      "default": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav\""
+    }
+  ]
+}

@@ -7,10 +7,7 @@ namespace PKHeX.Core;
 /// <summary> Generation 3 <see cref="PKM"/> format. </summary>
 public sealed class PK3 : G3PKM, ISanityChecksum
 {
-    public override ReadOnlySpan<ushort> ExtraBytes => new ushort[]
-    {
-        0x2A, 0x2B,
-    };
+    public override ReadOnlySpan<ushort> ExtraBytes => [0x2A, 0x2B];
 
     public override int SIZE_PARTY => PokeCrypto.SIZE_3PARTY;
     public override int SIZE_STORED => PokeCrypto.SIZE_3STORED;
@@ -18,13 +15,19 @@ public sealed class PK3 : G3PKM, ISanityChecksum
     public override PersonalInfo3 PersonalInfo => PersonalTable.RS[Species];
 
     public PK3() : base(PokeCrypto.SIZE_3PARTY) { }
-    public PK3(byte[] data) : base(DecryptParty(data)) { }
+    public PK3(Memory<byte> data) : base(DecryptParty(data)) { }
+    protected override void EncryptStored(Span<byte> stored) => PokeCrypto.Encrypt3(stored);
+    protected override void EncryptParty(Span<byte> party) { }
 
-    private static byte[] DecryptParty(byte[] data)
+    private static Memory<byte> DecryptParty(Memory<byte> data)
     {
-        PokeCrypto.DecryptIfEncrypted3(ref data);
-        Array.Resize(ref data, PokeCrypto.SIZE_3PARTY);
-        return data;
+        PokeCrypto.DecryptIfEncrypted3(data.Span);
+        if (data.Length >= PokeCrypto.SIZE_3PARTY)
+            return data;
+
+        var result = new byte[PokeCrypto.SIZE_3PARTY];
+        data.Span.CopyTo(result);
+        return result;
     }
 
     public override PK3 Clone()
@@ -32,43 +35,45 @@ public sealed class PK3 : G3PKM, ISanityChecksum
         // Don't use the byte[] constructor, the DecryptIfEncrypted call is based on checksum.
         // An invalid checksum will shuffle the data; we already know it's un-shuffled. Set up manually.
         PK3 pk = new();
-        Data.CopyTo(pk.Data, 0);
+        Data.CopyTo(pk.Data);
         return pk;
     }
 
     private const string EggNameJapanese = "タマゴ";
 
     // Trash Bytes
-    public override Span<byte> Nickname_Trash => Data.AsSpan(0x08, 10); // no inaccessible terminator
-    public override Span<byte> OT_Trash => Data.AsSpan(0x14, 7); // no inaccessible terminator
+    public override Span<byte> NicknameTrash => Data.Slice(0x08, 10); // no inaccessible terminator
+    public override Span<byte> OriginalTrainerTrash => Data.Slice(0x14, 7); // no inaccessible terminator
+    public override int TrashCharCountTrainer => 7;
+    public override int TrashCharCountNickname => 10;
 
     // At top for System.Reflection execution order hack
 
     // 0x20 Intro
-    public override uint PID { get => ReadUInt32LittleEndian(Data.AsSpan(0x00)); set => WriteUInt32LittleEndian(Data.AsSpan(0x00), value); }
-    public override uint ID32 { get => ReadUInt32LittleEndian(Data.AsSpan(0x04)); set => WriteUInt32LittleEndian(Data.AsSpan(0x04), value); }
-    public override ushort TID16 { get => ReadUInt16LittleEndian(Data.AsSpan(0x04)); set => WriteUInt16LittleEndian(Data.AsSpan(0x04), value); }
-    public override ushort SID16 { get => ReadUInt16LittleEndian(Data.AsSpan(0x06)); set => WriteUInt16LittleEndian(Data.AsSpan(0x06), value); }
+    public override uint PID { get => ReadUInt32LittleEndian(Data); set => WriteUInt32LittleEndian(Data, value); }
+    public override uint ID32 { get => ReadUInt32LittleEndian(Data[0x04..]); set => WriteUInt32LittleEndian(Data[0x04..], value); }
+    public override ushort TID16 { get => ReadUInt16LittleEndian(Data[0x04..]); set => WriteUInt16LittleEndian(Data[0x04..], value); }
+    public override ushort SID16 { get => ReadUInt16LittleEndian(Data[0x06..]); set => WriteUInt16LittleEndian(Data[0x06..], value); }
     public override string Nickname
     {
-        get => StringConverter3.GetString(Nickname_Trash, Japanese);
-        set => StringConverter3.SetString(Nickname_Trash, IsEgg ? EggNameJapanese : value, 10, Japanese, StringConverterOption.None);
+        get => StringConverter3.GetString(NicknameTrash, Language);
+        set => StringConverter3.SetString(NicknameTrash, IsEgg ? EggNameJapanese : value, 10, Language, StringConverterOption.None);
     }
     public override int Language { get => Data[0x12]; set => Data[0x12] = (byte)value; }
     public bool FlagIsBadEgg   { get => (Data[0x13] & 1) != 0; set => Data[0x13] = (byte)((Data[0x13] & ~1) | (value ? 1 : 0)); }
     public bool FlagHasSpecies { get => (Data[0x13] & 2) != 0; set => Data[0x13] = (byte)((Data[0x13] & ~2) | (value ? 2 : 0)); }
     public bool FlagIsEgg      { get => (Data[0x13] & 4) != 0; set => Data[0x13] = (byte)((Data[0x13] & ~4) | (value ? 4 : 0)); }
-    public override string OT_Name
+    public override string OriginalTrainerName
     {
-        get => StringConverter3.GetString(OT_Trash, Japanese);
-        set => StringConverter3.SetString(OT_Trash, value, 7, Japanese, StringConverterOption.None);
+        get => StringConverter3.GetString(OriginalTrainerTrash, Language);
+        set => StringConverter3.SetString(OriginalTrainerTrash, value, 7, Language, StringConverterOption.None);
     }
-    public override int MarkValue { get => SwapBits(Data[0x1B], 1, 2); set => Data[0x1B] = (byte)SwapBits(value, 1, 2); }
-    public ushort Checksum { get => ReadUInt16LittleEndian(Data.AsSpan(0x1C)); set => WriteUInt16LittleEndian(Data.AsSpan(0x1C), value); }
-    public ushort Sanity { get => ReadUInt16LittleEndian(Data.AsSpan(0x1E)); set => WriteUInt16LittleEndian(Data.AsSpan(0x1E), value); }
+    public override byte MarkingValue { get => (byte)SwapBits(Data[0x1B], 1, 2); set => Data[0x1B] = (byte)SwapBits(value, 1, 2); }
+    public ushort Checksum { get => ReadUInt16LittleEndian(Data[0x1C..]); set => WriteUInt16LittleEndian(Data[0x1C..], value); }
+    public ushort Sanity { get => ReadUInt16LittleEndian(Data[0x1E..]); set => WriteUInt16LittleEndian(Data[0x1E..], value); }
 
     #region Block A
-    public override ushort SpeciesInternal { get => ReadUInt16LittleEndian(Data.AsSpan(0x20)); set => WriteUInt16LittleEndian(Data.AsSpan(0x20), value); } // raw access
+    public override ushort SpeciesInternal { get => ReadUInt16LittleEndian(Data[0x20..]); set => WriteUInt16LittleEndian(Data[0x20..], value); } // raw access
 
     public override ushort Species
     {
@@ -81,23 +86,23 @@ public sealed class PK3 : G3PKM, ISanityChecksum
     }
 
     public override int SpriteItem => ItemConverter.GetItemFuture3((ushort)HeldItem);
-    public override int HeldItem { get => ReadUInt16LittleEndian(Data.AsSpan(0x22)); set => WriteUInt16LittleEndian(Data.AsSpan(0x22), (ushort)value); }
+    public override int HeldItem { get => ReadUInt16LittleEndian(Data[0x22..]); set => WriteUInt16LittleEndian(Data[0x22..], (ushort)value); }
 
-    public override uint EXP { get => ReadUInt32LittleEndian(Data.AsSpan(0x24)); set => WriteUInt32LittleEndian(Data.AsSpan(0x24), value); }
+    public override uint EXP { get => ReadUInt32LittleEndian(Data[0x24..]); set => WriteUInt32LittleEndian(Data[0x24..], value); }
     private byte PPUps { get => Data[0x28]; set => Data[0x28] = value; }
     public override int Move1_PPUps { get => (PPUps >> 0) & 3; set => PPUps = (byte)((PPUps & ~(3 << 0)) | (value << 0)); }
     public override int Move2_PPUps { get => (PPUps >> 2) & 3; set => PPUps = (byte)((PPUps & ~(3 << 2)) | (value << 2)); }
     public override int Move3_PPUps { get => (PPUps >> 4) & 3; set => PPUps = (byte)((PPUps & ~(3 << 4)) | (value << 4)); }
     public override int Move4_PPUps { get => (PPUps >> 6) & 3; set => PPUps = (byte)((PPUps & ~(3 << 6)) | (value << 6)); }
-    public override int OT_Friendship { get => Data[0x29]; set => Data[0x29] = (byte)value; }
+    public override byte OriginalTrainerFriendship { get => Data[0x29]; set => Data[0x29] = value; }
     // Unused 0x2A 0x2B
     #endregion
 
     #region Block B
-    public override ushort Move1 { get => ReadUInt16LittleEndian(Data.AsSpan(0x2C)); set => WriteUInt16LittleEndian(Data.AsSpan(0x2C), value); }
-    public override ushort Move2 { get => ReadUInt16LittleEndian(Data.AsSpan(0x2E)); set => WriteUInt16LittleEndian(Data.AsSpan(0x2E), value); }
-    public override ushort Move3 { get => ReadUInt16LittleEndian(Data.AsSpan(0x30)); set => WriteUInt16LittleEndian(Data.AsSpan(0x30), value); }
-    public override ushort Move4 { get => ReadUInt16LittleEndian(Data.AsSpan(0x32)); set => WriteUInt16LittleEndian(Data.AsSpan(0x32), value); }
+    public override ushort Move1 { get => ReadUInt16LittleEndian(Data[0x2C..]); set => WriteUInt16LittleEndian(Data[0x2C..], value); }
+    public override ushort Move2 { get => ReadUInt16LittleEndian(Data[0x2E..]); set => WriteUInt16LittleEndian(Data[0x2E..], value); }
+    public override ushort Move3 { get => ReadUInt16LittleEndian(Data[0x30..]); set => WriteUInt16LittleEndian(Data[0x30..], value); }
+    public override ushort Move4 { get => ReadUInt16LittleEndian(Data[0x32..]); set => WriteUInt16LittleEndian(Data[0x32..], value); }
     public override int Move1_PP { get => Data[0x34]; set => Data[0x34] = (byte)value; }
     public override int Move2_PP { get => Data[0x35]; set => Data[0x35] = (byte)value; }
     public override int Move3_PP { get => Data[0x36]; set => Data[0x36] = (byte)value; }
@@ -111,27 +116,27 @@ public sealed class PK3 : G3PKM, ISanityChecksum
     public override int EV_SPE { get => Data[0x3B]; set => Data[0x3B] = (byte)value; }
     public override int EV_SPA { get => Data[0x3C]; set => Data[0x3C] = (byte)value; }
     public override int EV_SPD { get => Data[0x3D]; set => Data[0x3D] = (byte)value; }
-    public override byte CNT_Cool   { get => Data[0x3E]; set => Data[0x3E] = value; }
-    public override byte CNT_Beauty { get => Data[0x3F]; set => Data[0x3F] = value; }
-    public override byte CNT_Cute   { get => Data[0x40]; set => Data[0x40] = value; }
-    public override byte CNT_Smart  { get => Data[0x41]; set => Data[0x41] = value; }
-    public override byte CNT_Tough  { get => Data[0x42]; set => Data[0x42] = value; }
-    public override byte CNT_Sheen  { get => Data[0x43]; set => Data[0x43] = value; }
+    public override byte ContestCool   { get => Data[0x3E]; set => Data[0x3E] = value; }
+    public override byte ContestBeauty { get => Data[0x3F]; set => Data[0x3F] = value; }
+    public override byte ContestCute   { get => Data[0x40]; set => Data[0x40] = value; }
+    public override byte ContestSmart  { get => Data[0x41]; set => Data[0x41] = value; }
+    public override byte ContestTough  { get => Data[0x42]; set => Data[0x42] = value; }
+    public override byte ContestSheen  { get => Data[0x43]; set => Data[0x43] = value; }
     #endregion
 
     #region Block D
-    private byte PKRS { get => Data[0x44]; set => Data[0x44] = value; }
-    public override int PKRS_Days { get => PKRS & 0xF; set => PKRS = (byte)((PKRS & ~0xF) | value); }
-    public override int PKRS_Strain { get => PKRS >> 4; set => PKRS = (byte)((PKRS & 0xF) | (value << 4)); }
-    public override int Met_Location { get => Data[0x45]; set => Data[0x45] = (byte)value; }
+    public byte PokerusState { get => Data[0x44]; set => Data[0x44] = value; }
+    public override int PokerusDays { get => PokerusState & 0xF; set => PokerusState = (byte)((PokerusState & ~0xF) | value); }
+    public override int PokerusStrain { get => PokerusState >> 4; set => PokerusState = (byte)((PokerusState & 0xF) | (value << 4)); }
+    public override ushort MetLocation { get => Data[0x45]; set => Data[0x45] = (byte)value; }
     // Origins
-    private ushort Origins { get => ReadUInt16LittleEndian(Data.AsSpan(0x46)); set => WriteUInt16LittleEndian(Data.AsSpan(0x46), value); }
-    public override int Met_Level { get => Origins & 0x7F; set => Origins = (ushort)((Origins & ~0x7F) | value); }
-    public override int Version { get => (Origins >> 7) & 0xF; set => Origins = (ushort)((Origins & ~0x780) | ((value & 0xF) << 7)); }
-    public override int Ball { get => (Origins >> 11) & 0xF; set => Origins = (ushort)((Origins & ~0x7800) | ((value & 0xF) << 11)); }
-    public override int OT_Gender { get => (Origins >> 15) & 1; set => Origins = (ushort)((Origins & ~(1 << 15)) | ((value & 1) << 15)); }
+    private ushort Origins { get => ReadUInt16LittleEndian(Data[0x46..]); set => WriteUInt16LittleEndian(Data[0x46..], value); }
+    public override byte MetLevel { get => (byte)(Origins & 0x7F); set => Origins = (ushort)((Origins & ~0x7F) | value); }
+    public override GameVersion Version { get => (GameVersion)((Origins >> 7) & 0xF); set => Origins = (ushort)((Origins & ~0x780) | (((byte)value & 0xF) << 7)); }
+    public override byte Ball { get => (byte)((Origins >> 11) & 0xF); set => Origins = (ushort)((Origins & ~0x7800) | ((value & 0xF) << 11)); }
+    public override byte OriginalTrainerGender { get => (byte)((Origins >> 15) & 1); set => Origins = (ushort)((Origins & ~(1 << 15)) | ((value & 1) << 15)); }
 
-    private uint IV32 { get => ReadUInt32LittleEndian(Data.AsSpan(0x48)); set => WriteUInt32LittleEndian(Data.AsSpan(0x48), value); }
+    public uint IV32 { get => ReadUInt32LittleEndian(Data[0x48..]); set => WriteUInt32LittleEndian(Data[0x48..], value); }
     public override int IV_HP  { get => (int)(IV32 >> 00) & 0x1F; set => IV32 = (IV32 & ~(0x1Fu << 00)) | ((value > 31 ? 31u : (uint)value) << 00); }
     public override int IV_ATK { get => (int)(IV32 >> 05) & 0x1F; set => IV32 = (IV32 & ~(0x1Fu << 05)) | ((value > 31 ? 31u : (uint)value) << 05); }
     public override int IV_DEF { get => (int)(IV32 >> 10) & 0x1F; set => IV32 = (IV32 & ~(0x1Fu << 10)) | ((value > 31 ? 31u : (uint)value) << 10); }
@@ -156,7 +161,7 @@ public sealed class PK3 : G3PKM, ISanityChecksum
 
     public override bool AbilityBit { get => IV32 >> 31 == 1; set => IV32 = (IV32 & 0x7FFFFFFF) | (value ? 1u << 31 : 0u); }
 
-    private uint RIB0 { get => ReadUInt32LittleEndian(Data.AsSpan(0x4C)); set => WriteUInt32LittleEndian(Data.AsSpan(0x4C), value); }
+    private uint RIB0 { get => ReadUInt32LittleEndian(Data[0x4C..]); set => WriteUInt32LittleEndian(Data[0x4C..], value); }
     public override byte RibbonCountG3Cool        { get => (byte)((RIB0 >> 00) & 7); set => RIB0 = ((RIB0 & ~(7u << 00)) | ((uint)(value & 7) << 00)); }
     public override byte RibbonCountG3Beauty      { get => (byte)((RIB0 >> 03) & 7); set => RIB0 = ((RIB0 & ~(7u << 03)) | ((uint)(value & 7) << 03)); }
     public override byte RibbonCountG3Cute        { get => (byte)((RIB0 >> 06) & 7); set => RIB0 = ((RIB0 & ~(7u << 06)) | ((uint)(value & 7) << 06)); }
@@ -184,25 +189,19 @@ public sealed class PK3 : G3PKM, ISanityChecksum
     #endregion
 
     #region Battle Stats
-    public override int Status_Condition { get => ReadInt32LittleEndian(Data.AsSpan(0x50)); set => WriteInt32LittleEndian(Data.AsSpan(0x50), value); }
-    public override int Stat_Level { get => Data[0x54]; set => Data[0x54] = (byte)value; }
+    public override int Status_Condition { get => ReadInt32LittleEndian(Data[0x50..]); set => WriteInt32LittleEndian(Data[0x50..], value); }
+    public override byte Stat_Level { get => Data[0x54]; set => Data[0x54] = value; }
     public sbyte HeldMailID { get => (sbyte)Data[0x55]; set => Data[0x55] = (byte)value; }
-    public override int Stat_HPCurrent { get => ReadUInt16LittleEndian(Data.AsSpan(0x56)); set => WriteUInt16LittleEndian(Data.AsSpan(0x56), (ushort)value); }
-    public override int Stat_HPMax { get => ReadUInt16LittleEndian(Data.AsSpan(0x58)); set => WriteUInt16LittleEndian(Data.AsSpan(0x58), (ushort)value); }
-    public override int Stat_ATK { get => ReadUInt16LittleEndian(Data.AsSpan(0x5A)); set => WriteUInt16LittleEndian(Data.AsSpan(0x5A), (ushort)value); }
-    public override int Stat_DEF { get => ReadUInt16LittleEndian(Data.AsSpan(0x5C)); set => WriteUInt16LittleEndian(Data.AsSpan(0x5C), (ushort)value); }
-    public override int Stat_SPE { get => ReadUInt16LittleEndian(Data.AsSpan(0x5E)); set => WriteUInt16LittleEndian(Data.AsSpan(0x5E), (ushort)value); }
-    public override int Stat_SPA { get => ReadUInt16LittleEndian(Data.AsSpan(0x60)); set => WriteUInt16LittleEndian(Data.AsSpan(0x60), (ushort)value); }
-    public override int Stat_SPD { get => ReadUInt16LittleEndian(Data.AsSpan(0x62)); set => WriteUInt16LittleEndian(Data.AsSpan(0x62), (ushort)value); }
+    public override int Stat_HPCurrent { get => ReadUInt16LittleEndian(Data[0x56..]); set => WriteUInt16LittleEndian(Data[0x56..], (ushort)value); }
+    public override int Stat_HPMax { get => ReadUInt16LittleEndian(Data[0x58..]); set => WriteUInt16LittleEndian(Data[0x58..], (ushort)value); }
+    public override int Stat_ATK { get => ReadUInt16LittleEndian(Data[0x5A..]); set => WriteUInt16LittleEndian(Data[0x5A..], (ushort)value); }
+    public override int Stat_DEF { get => ReadUInt16LittleEndian(Data[0x5C..]); set => WriteUInt16LittleEndian(Data[0x5C..], (ushort)value); }
+    public override int Stat_SPE { get => ReadUInt16LittleEndian(Data[0x5E..]); set => WriteUInt16LittleEndian(Data[0x5E..], (ushort)value); }
+    public override int Stat_SPA { get => ReadUInt16LittleEndian(Data[0x60..]); set => WriteUInt16LittleEndian(Data[0x60..], (ushort)value); }
+    public override int Stat_SPD { get => ReadUInt16LittleEndian(Data[0x62..]); set => WriteUInt16LittleEndian(Data[0x62..], (ushort)value); }
     #endregion
 
-    protected override byte[] Encrypt()
-    {
-        RefreshChecksum();
-        return PokeCrypto.EncryptArray3(Data);
-    }
-
-    private ushort CalculateChecksum() => Checksums.Add16(Data.AsSpan()[0x20..PokeCrypto.SIZE_3STORED]);
+    private ushort CalculateChecksum() => Checksums.Add16(Data[0x20..PokeCrypto.SIZE_3STORED]);
 
     public override void RefreshChecksum()
     {
@@ -224,8 +223,8 @@ public sealed class PK3 : G3PKM, ISanityChecksum
             Gender = EntityGender.GetFromPID(Species, PID),
             Form = Form,
             // IsEgg = false, -- already false
-            OT_Friendship = 70,
-            MarkValue = MarkValue & 0b1111,
+            OriginalTrainerFriendship = 70,
+            MarkingValue = (byte)(MarkingValue & 0b1111),
             Language = Language,
             EV_HP = EV_HP,
             EV_ATK = EV_ATK,
@@ -233,12 +232,12 @@ public sealed class PK3 : G3PKM, ISanityChecksum
             EV_SPA = EV_SPA,
             EV_SPD = EV_SPD,
             EV_SPE = EV_SPE,
-            CNT_Cool = CNT_Cool,
-            CNT_Beauty = CNT_Beauty,
-            CNT_Cute = CNT_Cute,
-            CNT_Smart = CNT_Smart,
-            CNT_Tough = CNT_Tough,
-            CNT_Sheen = CNT_Sheen,
+            ContestCool = ContestCool,
+            ContestBeauty = ContestBeauty,
+            ContestCute = ContestCute,
+            ContestSmart = ContestSmart,
+            ContestTough = ContestTough,
+            ContestSheen = ContestSheen,
             Move1 = Move1,
             Move2 = Move2,
             Move3 = Move3,
@@ -247,21 +246,15 @@ public sealed class PK3 : G3PKM, ISanityChecksum
             Move2_PPUps = Move2_PPUps,
             Move3_PPUps = Move3_PPUps,
             Move4_PPUps = Move4_PPUps,
-            IV_HP = IV_HP,
-            IV_ATK = IV_ATK,
-            IV_DEF = IV_DEF,
-            IV_SPA = IV_SPA,
-            IV_SPD = IV_SPD,
-            IV_SPE = IV_SPE,
+            IV32 = IV32 & 0x3FFFFFFF, // keep low 30 bits for all IVs to copy. Nickname set later.
             Ability = Ability,
             Version = Version,
             Ball = Ball,
-            PKRS_Strain = PKRS_Strain,
-            PKRS_Days = PKRS_Days,
-            OT_Gender = OT_Gender,
-            MetDate = DateOnly.FromDateTime(DateTime.Now),
-            Met_Level = CurrentLevel,
-            Met_Location = Locations.Transfer3, // Pal Park
+            PokerusState = PokerusState,
+            OriginalTrainerGender = OriginalTrainerGender,
+            MetDate = EncounterDate.GetDateNDS(),
+            MetLevel = CurrentLevel,
+            MetLocation = Locations.Transfer3, // Pal Park
 
             RibbonChampionG3 = RibbonChampionG3,
             RibbonWinning = RibbonWinning,
@@ -305,28 +298,39 @@ public sealed class PK3 : G3PKM, ISanityChecksum
             FatefulEncounter = FatefulEncounter,
         };
 
+        // Transfer into D/P.
         // Yay for reusing string buffers! The game allocates a buffer and reuses it when creating strings.
         // Trash from the {unknown source} is currently in buffer. Set it to the Nickname region.
         var trash = StringConverter345.GetTrashBytes(pk4.Language);
-        var nickTrash = pk4.Nickname_Trash[4..]; // min of 1 char and terminator, ignore first 2.
-        trash.CopyTo(nickTrash);
-        pk4.Nickname = IsEgg ? SpeciesName.GetSpeciesNameGeneration(pk4.Species, pk4.Language, 4) : Nickname;
-        pk4.IsNicknamed = !IsEgg && IsNicknamed;
+        var nickTrash = pk4.NicknameTrash;
+        trash.CopyTo(nickTrash[4..]); // min of 1 char and terminator, ignore first 2.
+
+        if (IsEgg)
+        {
+            // Force hatch.
+            pk4.Nickname = SpeciesName.GetSpeciesNameGeneration(pk4.Species, pk4.Language, 4);
+        }
+        else
+        {
+            pk4.IsNicknamed = IsNicknamed;
+            StringConverter345.TransferGlyphs34(NicknameTrash, Language, Japanese ? 5 : 10, nickTrash);
+        }
 
         // Trash from the current string (Nickname) is in our string buffer. Slap the OT name over-top.
-        var destOT = pk4.OT_Trash;
+        var destOT = pk4.OriginalTrainerTrash;
         nickTrash[..destOT.Length].CopyTo(destOT);
-        pk4.OT_Name = OT_Name;
+        StringConverter345.TransferGlyphs34(OriginalTrainerTrash, Language, Japanese ? 5 : 7, destOT);
 
-        if (HeldItem > 0)
+        var item = (ushort)HeldItem;
+        if (item != 0)
         {
-            ushort item = ItemConverter.GetItemFuture3((ushort)HeldItem);
+            item = ItemConverter.GetItemFuture3(item);
             if (ItemConverter.IsItemTransferable34(item))
                 pk4.HeldItem = item;
         }
 
         // Remove HM moves
-        ReadOnlySpan<ushort> banned = LearnSource3.HM_3;
+        var banned = PersonalInfo3.MachineMovesHidden;
         if (banned.Contains(Move1)) pk4.Move1 = 0;
         if (banned.Contains(Move2)) pk4.Move2 = 0;
         if (banned.Contains(Move3)) pk4.Move3 = 0;
@@ -338,12 +342,20 @@ public sealed class PK3 : G3PKM, ISanityChecksum
         return pk4;
     }
 
+    // Use Japanese since the JPN GC/GBA string conversion table is less lossy than INT
+    private const GCRegion GCRegionTemp = GCRegion.NTSC_J;
+
     public XK3 ConvertToXK3()
     {
         var pk = ConvertTo<XK3>();
         // Set these even if the settings don't SetPKM
-        pk.CurrentRegion = 2; // NTSC-U
-        pk.OriginalRegion = 2; // NTSC-U
+        pk.CurrentRegion = GCRegionTemp;
+        pk.OriginalRegion = GCRegionTemp;
+
+        StringConverter3GC.RemapGlyphs3GC(NicknameTrash, GCRegionTemp, Language, pk.NicknameTrash);
+        StringConverter3GC.RemapGlyphs3GC(OriginalTrainerTrash, GCRegionTemp, Language, pk.OriginalTrainerTrash);
+        pk.ResetNicknameDisplay();
+
         pk.ResetPartyStats();
         return pk;
     }
@@ -352,9 +364,45 @@ public sealed class PK3 : G3PKM, ISanityChecksum
     {
         var pk = ConvertTo<CK3>();
         // Set these even if the settings don't SetPKM
-        pk.CurrentRegion = 2; // NTSC-U
-        pk.OriginalRegion = 2; // NTSC-U
+        pk.CurrentRegion = GCRegionTemp;
+        pk.OriginalRegion = GCRegionTemp;
+
+        StringConverter3GC.RemapGlyphs3GC(NicknameTrash, GCRegionTemp, Language, pk.NicknameTrash);
+        StringConverter3GC.RemapGlyphs3GC(OriginalTrainerTrash, GCRegionTemp, Language, pk.OriginalTrainerTrash);
+        pk.ResetNicknameDisplay();
+
         pk.ResetPartyStats();
         return pk;
+    }
+
+    public override string GetString(ReadOnlySpan<byte> data)
+        => StringConverter3.GetString(data, Language);
+    public override int LoadString(ReadOnlySpan<byte> data, Span<char> destBuffer)
+        => StringConverter3.LoadString(data, destBuffer, Language);
+    public override int SetString(Span<byte> destBuffer, ReadOnlySpan<char> value, int maxLength, StringConverterOption option)
+    {
+        int result = StringConverter3.SetString(destBuffer, value, maxLength, Language, option);
+        if (result == 0 && IsEgg) // Might be the user tried creating a non-JPN egg. Try using the international table (be nice).
+            result = StringConverter3.SetString(destBuffer, value, maxLength, (int)LanguageID.English, option);
+        // There are other cases like force-hatching an egg, which will have the wrong OT name encoding, or situations where one language has one but not all.
+        // Let the user figure it out.
+        return result;
+    }
+
+    public override int GetStringTerminatorIndex(ReadOnlySpan<byte> data)
+        => TrashBytes8.GetTerminatorIndex(data);
+    public override int GetStringLength(ReadOnlySpan<byte> data)
+        => TrashBytes8.GetStringLength(data);
+    public override int GetBytesPerChar() => 1;
+
+    public override void PrepareNickname() => GetNicknamePrefillRegion().Fill(StringConverter3.TerminatorByte);
+
+    public Span<byte> GetNicknamePrefillRegion()
+    {
+        // Japanese only fills the first 5+1 bytes; everything else is trash.
+        // International games are 10 chars (full buffer) max; implicit terminator if full.
+        if (Japanese)
+            return NicknameTrash[..6];
+        return NicknameTrash;
     }
 }

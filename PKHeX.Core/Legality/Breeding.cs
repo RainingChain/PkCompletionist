@@ -1,4 +1,3 @@
-using static PKHeX.Core.GameVersion;
 using static PKHeX.Core.Species;
 
 namespace PKHeX.Core;
@@ -8,25 +7,6 @@ namespace PKHeX.Core;
 /// </summary>
 public static class Breeding
 {
-    /// <summary>
-    /// Checks if the game has a Daycare, and returns true if it does.
-    /// </summary>
-    /// <param name="game">Version ID to check for.</param>
-    public static bool CanGameGenerateEggs(GameVersion game) => game switch
-    {
-        R or S or E or FR or LG => true,
-        D or P or Pt or HG or SS => true,
-        B or W or B2 or W2 => true,
-        X or Y or OR or AS => true,
-        SN or MN or US or UM => true,
-        GD or SI or C => true,
-        SW or SH or BD or SP => true,
-        SL or VL => true,
-
-        GS => true,
-        _ => false,
-    };
-
     /// <summary>
     /// Species that have special handling for breeding.
     /// </summary>
@@ -38,20 +18,42 @@ public static class Breeding
         (int)Volbeat => true,
         (int)Illumise => true,
 
-        (int)Indeedee => true, // male/female
+        (int)Indeedee => true, // male/female form
 
         _ => false,
     };
 
     /// <summary>
+    /// Species that are determined when the egg is received.
+    /// </summary>
+    public static bool IsGenderSpeciesDetermination(ushort species) => species switch
+    {
+        (int)NidoranF => true,
+        (int)NidoranM => true,
+
+        (int)Volbeat => true,
+        (int)Illumise => true,
+
+        _ => false,
+    };
+
+    /// <summary>
+    /// Checks if the species <see cref="encryptionConstant"/> is valid for the <see cref="gender"/> if originated from Gen3/4 daycare eggs.
+    /// </summary>
+    /// <remarks>Only applies to species that satisfy <see cref="IsGenderSpeciesDetermination"/>.</remarks>
+    /// <param name="encryptionConstant">Encryption Constant</param>
+    /// <param name="gender">Gender</param>
+    /// <returns>True if valid</returns>
+    public static bool IsValidSpeciesBit34(uint encryptionConstant, byte gender) => gender != (encryptionConstant & 0x8000) >> 15; // 1 = Male, 0 = Female, valid if different from Gender value.
+
+    /// <summary>
     /// Checks if the <see cref="species"/> can be born with inherited moves from the parents.
     /// </summary>
     /// <param name="species">Entity species ID</param>
-    /// <returns>True if can inherit moves, false if cannot.</returns>
+    /// <returns>True if it can inherit moves, false if cannot.</returns>
     internal static bool GetCanInheritMoves(ushort species)
     {
-        var pi = PKX.Personal[species];
-        if (pi is { Genderless: false, OnlyMale: false })
+        if (EntityGender.IsFemaleOrDualGender(species))
             return true;
         if (IsMixedGenderBreed(species))
             return true;
@@ -61,7 +63,7 @@ public static class Breeding
     /// <summary>
     /// Species that can yield a different baby species when bred.
     /// </summary>
-    public static bool IsSplitBreedNotBabySpecies(ushort species, int generation)
+    public static bool IsSplitBreedNotBabySpecies(ushort species, byte generation)
     {
         if (generation == 3)
             return IsSplitBreedNotBabySpecies3(species);
@@ -128,7 +130,9 @@ public static class Breeding
     /// <summary>
     /// Some species can have forms that cannot exist as egg (event/special forms). Same idea as <see cref="FormInfo.IsTotemForm(ushort,byte,EntityContext)"/>
     /// </summary>
-    /// <returns>True if can be bred.</returns>
+    /// <param name="species">Current species</param>
+    /// <param name="form">Current form, not 0.</param>
+    /// <returns>True if it can be bred.</returns>
     private static bool IsBreedableForm(ushort species, byte form) => species switch
     {
         (int)Pikachu or (int)Eevee => false, // can't get these forms as egg
@@ -136,6 +140,7 @@ public static class Breeding
         (int)Floette when form == 5 => false, // can't get Eternal Flower from egg
         (int)Greninja when form == 1 => false, // can't get Battle Bond Greninja from egg
         (int)Sinistea or (int)Polteageist => false, // can't get Antique eggs
+        (int)Poltchageist or (int)Sinistcha => false, // can't get Masterpiece eggs
         _ => true,
     };
 
@@ -204,6 +209,8 @@ public static class Breeding
         (int)RoaringMoon or (int)IronValiant => false,
         (int)Koraidon or (int)Miraidon => false,
         (int)WalkingWake or (int)IronLeaves => false,
+        (int)Okidogi or (int)Munkidori or (int)Fezandipiti or (int)Ogerpon => false,
+        (int)GougingFire or (int)RagingBolt or (int)IronBoulder or (int)IronCrown or (int)Terapagos or (int)Pecharunt => false,
 
         _ => true,
     };

@@ -27,14 +27,14 @@ partial class CompletionValidator : Command
 
     CompletionValidatorX CreateValidatorX(SaveFile savA, Objective objective)
     {
-        if (savA is SAV1)
-            return new CompletionValidator1(this, (savA as SAV1)!, objective);
+        if (savA is SAV1 sav1)
+            return new CompletionValidator1(this, sav1, objective);
 
-        if (savA is SAV2)
-            return new CompletionValidator2(this, (savA as SAV2)!, objective);
+        if (savA is SAV2 sav2)
+            return new CompletionValidator2(this, sav2, objective);
 
-        if (savA is SAV3E)
-            return new CompletionValidator3(this, (savA as SAV3E)!, objective);
+        if (savA is SAV3E save3e)
+            return new CompletionValidator3(this, save3e, objective);
 
         if (savA is SAV4Pt)
             return new CompletionValidator4(this, (savA as SAV4Pt)!, objective);
@@ -56,6 +56,9 @@ partial class CompletionValidator : Command
 
         if (savA is SAV7_Shuffle)
             return new CompletionValidator7_Shuffle(this, (savA as SAV7_Shuffle)!, objective);
+
+        if (savA is SAV5B2W2 savB2)
+            return new CompletionValidator5(this, savB2, objective);
 
         return new CompletionValidatorX(this, savA, objective);
     }

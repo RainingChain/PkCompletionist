@@ -5,104 +5,106 @@ namespace PKHeX.Core;
 /// </summary>
 public interface IContestStatsReadOnly
 {
-    byte CNT_Cool { get; }
-    byte CNT_Beauty { get; }
-    byte CNT_Cute { get; }
-    byte CNT_Smart { get; }
-    byte CNT_Tough { get; }
-    byte CNT_Sheen { get; }
+    byte ContestCool { get; }
+    byte ContestBeauty { get; }
+    byte ContestCute { get; }
+    byte ContestSmart { get; }
+    byte ContestTough { get; }
+    byte ContestSheen { get; }
 }
 
 public static partial class Extensions
 {
-    /// <summary>
-    /// Checks if any contest stat value is nonzero.
-    /// </summary>
-    /// <param name="stats">Object containing contest stat data.</param>
-    /// <returns>True if has any nonzero contest stat, false if all are zero.</returns>
-    public static bool HasContestStats(this IContestStatsReadOnly stats)
+    extension(IContestStatsReadOnly stats)
     {
-        if (stats.CNT_Cool != 0)
-            return true;
-        if (stats.CNT_Beauty != 0)
-            return true;
-        if (stats.CNT_Cute != 0)
-            return true;
-        if (stats.CNT_Smart != 0)
-            return true;
-        if (stats.CNT_Tough != 0)
-            return true;
-        if (stats.CNT_Sheen != 0)
-            return true;
-        return false;
-    }
+        /// <summary>
+        /// Checks if any contest stat value is nonzero.
+        /// </summary>
+        /// <returns>True if it has any nonzero contest stat, false if all are zero.</returns>
+        public bool HasContestStats()
+        {
+            if (stats.ContestCool != 0)
+                return true;
+            if (stats.ContestBeauty != 0)
+                return true;
+            if (stats.ContestCute != 0)
+                return true;
+            if (stats.ContestSmart != 0)
+                return true;
+            if (stats.ContestTough != 0)
+                return true;
+            if (stats.ContestSheen != 0)
+                return true;
+            return false;
+        }
 
-    public static bool IsContestBelow(this IContestStatsReadOnly current, IContestStatsReadOnly initial) => !current.IsContestAboveOrEqual(initial);
+        public bool IsContestBelow(IContestStatsReadOnly initial) => !stats.IsContestAboveOrEqual(initial);
 
-    public static bool IsContestAboveOrEqual(this IContestStatsReadOnly current, IContestStatsReadOnly initial)
-    {
-        if (current.CNT_Cool   < initial.CNT_Cool)
-            return false;
-        if (current.CNT_Beauty < initial.CNT_Beauty)
-            return false;
-        if (current.CNT_Cute   < initial.CNT_Cute)
-            return false;
-        if (current.CNT_Smart  < initial.CNT_Smart)
-            return false;
-        if (current.CNT_Tough  < initial.CNT_Tough)
-            return false;
-        if (current.CNT_Sheen  < initial.CNT_Sheen)
-            return false;
-        return true;
-    }
+        public bool IsContestAboveOrEqual(IContestStatsReadOnly initial)
+        {
+            if (stats.ContestCool   < initial.ContestCool)
+                return false;
+            if (stats.ContestBeauty < initial.ContestBeauty)
+                return false;
+            if (stats.ContestCute   < initial.ContestCute)
+                return false;
+            if (stats.ContestSmart  < initial.ContestSmart)
+                return false;
+            if (stats.ContestTough  < initial.ContestTough)
+                return false;
+            if (stats.ContestSheen  < initial.ContestSheen)
+                return false;
+            return true;
+        }
 
-    public static bool IsContestEqual(this IContestStatsReadOnly current, IContestStatsReadOnly initial)
-    {
-        if (current.CNT_Cool != initial.CNT_Cool)
-            return false;
-        if (current.CNT_Beauty != initial.CNT_Beauty)
-            return false;
-        if (current.CNT_Cute != initial.CNT_Cute)
-            return false;
-        if (current.CNT_Smart != initial.CNT_Smart)
-            return false;
-        if (current.CNT_Tough != initial.CNT_Tough)
-            return false;
-        if (current.CNT_Sheen != initial.CNT_Sheen)
-            return false;
-        return true;
-    }
+        public bool IsContestEqual(IContestStatsReadOnly initial)
+        {
+            if (stats.ContestCool != initial.ContestCool)
+                return false;
+            if (stats.ContestBeauty != initial.ContestBeauty)
+                return false;
+            if (stats.ContestCute != initial.ContestCute)
+                return false;
+            if (stats.ContestSmart != initial.ContestSmart)
+                return false;
+            if (stats.ContestTough != initial.ContestTough)
+                return false;
+            if (stats.ContestSheen != initial.ContestSheen)
+                return false;
+            return true;
+        }
 
-    public static void CopyContestStatsTo(this IContestStatsReadOnly source, IContestStats dest)
-    {
-        dest.CNT_Cool = source.CNT_Cool;
-        dest.CNT_Beauty = source.CNT_Beauty;
-        dest.CNT_Cute = source.CNT_Cute;
-        dest.CNT_Smart = source.CNT_Smart;
-        dest.CNT_Tough = source.CNT_Tough;
-        dest.CNT_Sheen = source.CNT_Sheen;
+        public void CopyContestStatsTo(IContestStats dest)
+        {
+            dest.ContestCool = stats.ContestCool;
+            dest.ContestBeauty = stats.ContestBeauty;
+            dest.ContestCute = stats.ContestCute;
+            dest.ContestSmart = stats.ContestSmart;
+            dest.ContestTough = stats.ContestTough;
+            dest.ContestSheen = stats.ContestSheen;
+        }
     }
 
     public static void SetAllContestStatsTo(this IContestStats dest, byte value, byte sheen)
     {
-        dest.CNT_Cool = value;
-        dest.CNT_Beauty = value;
-        dest.CNT_Cute = value;
-        dest.CNT_Smart = value;
-        dest.CNT_Tough = value;
-        dest.CNT_Sheen = sheen;
+        dest.ContestCool = value;
+        dest.ContestBeauty = value;
+        dest.ContestCute = value;
+        dest.ContestSmart = value;
+        dest.ContestTough = value;
+        dest.ContestSheen = sheen;
     }
 
     private const byte CONTEST_MAX = 255;
 
     /// <summary>
-    /// Check if any contest stat besides <see cref="IContestStatsReadOnly.CNT_Sheen"/> is equal to <see cref="CONTEST_MAX"/>.
+    /// Check if any contest stat besides <see cref="IContestStatsReadOnly.ContestSheen"/> is equal to <see cref="CONTEST_MAX"/>.
     /// </summary>
     /// <param name="s">Entity to check</param>
     /// <returns>True if any equals <see cref="CONTEST_MAX"/></returns>
-    public static bool IsAnyContestStatMax(this IContestStatsReadOnly s) => CONTEST_MAX == s.CNT_Cool
-                                                                         || CONTEST_MAX == s.CNT_Beauty
-                                                                         || CONTEST_MAX == s.CNT_Cute
-                                                                         || CONTEST_MAX == s.CNT_Smart
-                                                                         || CONTEST_MAX == s.CNT_Tough;
+    public static bool IsAnyContestStatMax(this IContestStatsReadOnly s) => CONTEST_MAX == s.ContestCool
+                                                                         || CONTEST_MAX == s.ContestBeauty
+                                                                         || CONTEST_MAX == s.ContestCute
+                                                                         || CONTEST_MAX == s.ContestSmart
+                                                                         || CONTEST_MAX == s.ContestTough;
 }

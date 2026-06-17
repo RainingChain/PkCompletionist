@@ -65,19 +65,9 @@ public static class StringUtil
     }
 
     /// <summary>
-    /// Converts an all-caps hex string to a byte array. Expects no separation between byte tuples.
-    /// </summary>
-    public static byte[] ToByteArray(this string toTransform)
-    {
-        var result = new byte[toTransform.Length / 2];
-        LoadHexBytesTo(toTransform, result, 2);
-        return result;
-    }
-
-    /// <summary>
     /// Converts an all-caps encoded ASCII-Text hex string to a byte array.
     /// </summary>
-    public static void LoadHexBytesTo(Span<byte> dest, ReadOnlySpan<byte> str, int tupleSize)
+    public static void LoadHexBytesTo(ReadOnlySpan<byte> str, Span<byte> dest, int tupleSize)
     {
         // The input string is 2-char hex values optionally separated.
         // The destination array should always be larger or equal than the bytes written. Let the runtime bounds check us.
@@ -100,20 +90,15 @@ public static class StringUtil
 
     private static byte DecodeTuple(char _0, char _1)
     {
-        byte result;
-        if (char.IsAsciiDigit(_0))
-            result = (byte)((_0 - '0') << 4);
-        else if (char.IsAsciiHexDigitUpper(_0))
-            result = (byte)((_0 - 'A' + 10) << 4);
-        else
-            throw new ArgumentOutOfRangeException(nameof(_0));
+        return (byte)(DecodeChar(_0) << 4 | DecodeChar(_1));
 
-        if (char.IsAsciiDigit(_1))
-            result |= (byte)(_1 - '0');
-        else if (char.IsAsciiHexDigitUpper(_1))
-            result |= (byte)(_1 - 'A' + 10);
-        else
-            throw new ArgumentOutOfRangeException(nameof(_1));
-        return result;
+        static int DecodeChar(char x)
+        {
+            if (char.IsAsciiDigit(x))
+                return (byte)(x - '0');
+            if (char.IsAsciiHexDigitUpper(x))
+                return (byte)(x - 'A' + 10);
+            throw new ArgumentOutOfRangeException(nameof(_0));
+        }
     }
 }

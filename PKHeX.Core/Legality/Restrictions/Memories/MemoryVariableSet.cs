@@ -8,12 +8,12 @@ namespace PKHeX.Core;
 /// <param name="Variable">Argument for the memory</param>
 /// <param name="Intensity">How strongly they remember the memory</param>
 /// <param name="Feeling">How they feel about the memory</param>
-public readonly record struct MemoryVariableSet(string Handler, byte MemoryID, ushort Variable, byte Intensity, byte Feeling)
+public readonly record struct MemoryVariableSet(byte Handler, byte MemoryID, ushort Variable, byte Intensity, byte Feeling)
 {
     public static MemoryVariableSet Read(ITrainerMemories pk, int handler) => handler switch
     {
-        0 => new MemoryVariableSet(LegalityCheckStrings.L_XOT, pk.OT_Memory, pk.OT_TextVar, pk.OT_Intensity, pk.OT_Feeling), // OT
-        1 => new MemoryVariableSet(LegalityCheckStrings.L_XHT, pk.HT_Memory, pk.HT_TextVar, pk.HT_Intensity, pk.HT_Feeling), // HT
-        _ => new MemoryVariableSet(LegalityCheckStrings.L_XOT, 0, 0, 0, 0),
+        0 => new(0, pk.OriginalTrainerMemory, pk.OriginalTrainerMemoryVariable, pk.OriginalTrainerMemoryIntensity, pk.OriginalTrainerMemoryFeeling), // OT
+        1 => new(1, pk.HandlingTrainerMemory, pk.HandlingTrainerMemoryVariable, pk.HandlingTrainerMemoryIntensity, pk.HandlingTrainerMemoryFeeling), // HT
+        _ => new(0, 0, 0, 0, 0),
     };
 }

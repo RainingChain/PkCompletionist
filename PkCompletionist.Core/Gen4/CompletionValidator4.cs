@@ -151,7 +151,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["ArceusFighting"] = HasArceus;
         ow["ArceusPoison"] = HasArceus;
         ow["ArceusGround"] = HasArceus;
-        ow["ArceusFly"] = HasArceus;
+        ow["ArceusFlying"] = HasArceus;
         ow["ArceusPsychic"] = HasArceus;
         ow["ArceusBug"] = HasArceus;
         ow["ArceusRock"] = HasArceus;
@@ -1085,7 +1085,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         };
         ow["NationalPokedex"] = NationalPokedex();
         ow["PokemonContest"] = sav.GetEventFlag(2408) && sav.GetEventFlag(2409) && sav.GetEventFlag(2410) && sav.GetEventFlag(2411) && sav.GetEventFlag(2412);
-        ow["Underground"] = sav.UG_Flags >= 50;
+        ow["Underground"] = sav.UG_FlagsCaptured >= 50;
         ow["BattleTower"] = IsBattleFrontierPrintObtained(0, 2);
     }
 
@@ -1199,7 +1199,7 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["GreetingsHola"] = GetGreetingWordUnlocked(GreetingWord.HOLA);
     }
 
-    public void Generate_geonet()
+    /*public void Generate_geonet()
     {
         var ow = new Dictionary<string, bool>();
         owned["geonet"] = ow;
@@ -1216,7 +1216,8 @@ internal class CompletionValidator4 : CompletionValidatorX
                     ow[$"{country}-{i}"] = geonet.GetCountrySubregion(country, i) != Geonet4.Point.None;
             }
         }
-    }
+    }*/
+    
     public void Generate_jubilifeTvRankings()
     {
         var ow = new Dictionary<string, bool>();

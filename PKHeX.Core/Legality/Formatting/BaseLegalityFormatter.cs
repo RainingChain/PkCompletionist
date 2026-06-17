@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using static PKHeX.Core.LegalityCheckStrings;
 
 namespace PKHeX.Core;
 
@@ -12,66 +11,73 @@ public sealed class BaseLegalityFormatter : ILegalityFormatter
     /// <summary>
     /// Gets a minimal report string for the analysis.
     /// </summary>
-    public string GetReport(LegalityAnalysis l)
+    public string GetReport(in LegalityLocalizationContext la)
     {
+        var l = la.Analysis;
         if (l.Valid)
-            return L_ALegal;
+            return la.Settings.Lines.Legal;
         if (!l.Parsed)
-            return L_AnalysisUnavailable;
+            return la.Settings.Lines.AnalysisUnavailable;
 
-        var lines = GetLegalityReportLines(l);
+        List<string> lines = [];
+        GetLegalityReportLines(la, lines);
         return string.Join(Environment.NewLine, lines);
     }
 
     /// <summary>
     /// Gets a verbose report string for the analysis.
     /// </summary>
-    public string GetReportVerbose(LegalityAnalysis l)
+    public string GetReportVerbose(in LegalityLocalizationContext la)
     {
+        var l = la.Analysis;
         if (!l.Parsed)
-            return L_AnalysisUnavailable;
+            return la.Settings.Lines.AnalysisUnavailable;
 
-        var lines = GetVerboseLegalityReportLines(l);
+        var lines = GetVerboseLegalityReportLines(la);
         return string.Join(Environment.NewLine, lines);
     }
 
-    private static List<string> GetLegalityReportLines(LegalityAnalysis l)
+    private static void GetLegalityReportLines(in LegalityLocalizationContext la, List<string> lines)
     {
-        var lines = new List<string>();
+        var l = la.Analysis;
         var info = l.Info;
         var pk = l.Entity;
 
-        LegalityFormatting.AddMoves(info.Moves, lines, pk.Format, false, pk, l.Info.EvoChainsAllGens);
+        LegalityFormatting.AddMoves(la, info.Moves, lines, pk.Context, false);
         if (pk.Format >= 6)
-            LegalityFormatting.AddRelearn(info.Relearn, lines, false, pk, l.Info.EvoChainsAllGens);
-        LegalityFormatting.AddSecondaryChecksInvalid(l.Results, lines);
-        return lines;
+            LegalityFormatting.AddRelearn(la, info.Relearn, lines, false);
+        LegalityFormatting.AddSecondaryChecksInvalid(la, l.Results, lines);
     }
 
-    private static IReadOnlyList<string> GetVerboseLegalityReportLines(LegalityAnalysis l)
+    private static List<string> GetVerboseLegalityReportLines(in LegalityLocalizationContext la)
     {
-        var lines = l.Valid ? new List<string> {L_ALegal} : GetLegalityReportLines(l);
+        var l = la.Analysis;
+        var lines = new List<string>();
+        if (l.Valid)
+        {
+            lines.Add(la.Settings.Lines.Legal);
+            lines.Add(string.Empty);
+        }
+        else
+        {
+            GetLegalityReportLines(la, lines);
+        }
         var info = l.Info;
         var pk = l.Entity;
-        const string separator = "===";
-        lines.Add(separator);
-        lines.Add(string.Empty);
         int initialCount = lines.Count;
 
-        var format = pk.Format;
-        LegalityFormatting.AddMoves(info.Moves, lines, format, true, pk, l.Info.EvoChainsAllGens);
+        LegalityFormatting.AddMoves(la, info.Moves, lines, pk.Context, true);
 
-        if (format >= 6)
-            LegalityFormatting.AddRelearn(info.Relearn, lines, true, pk, l.Info.EvoChainsAllGens);
+        if (pk.Format >= 6)
+            LegalityFormatting.AddRelearn(la, info.Relearn, lines, true);
 
         if (lines.Count != initialCount) // move info added, break for next section
             lines.Add(string.Empty);
 
-        LegalityFormatting.AddSecondaryChecksValid(l.Results, lines);
+        LegalityFormatting.AddSecondaryChecksValid(la, l.Results, lines);
 
-        lines.Add(separator);
         lines.Add(string.Empty);
-        LegalityFormatting.AddEncounterInfo(l, lines);
+        LegalityFormatting.AddEncounterInfo(la, lines);
 
         return lines;
     }

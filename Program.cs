@@ -20,7 +20,7 @@ internal class Program
             {
                 int numBytesToRead = Convert.ToInt32(fs.Length);
                 byte[] oFileBytes = new byte[(numBytesToRead)];
-                fs.Read(oFileBytes, 0, numBytesToRead);
+                fs.ReadExactly(oFileBytes, 0, numBytesToRead);
                 return oFileBytes;
             }
         }
@@ -101,7 +101,7 @@ internal class Program
         var sav_r = (SAV4_Ranger)Command.GetVariantSAV(savData_ranger, "")!;
 
         sav_r.Decrypt();
-        File.WriteAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before_csharp.sav", sav_r.Write());
+        File.WriteAllBytes("C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\tmp2\\before_csharp.sav", sav_r.Write().ToArray());
         return true;
     }
 
@@ -139,10 +139,10 @@ internal class Program
         sav.Data[0x7238 + 1] = (byte)((wantedSameDaySeed >> 8) & 0xFF);
         sav.Data[0x7238 + 2] = (byte)((wantedSameDaySeed >> 16) & 0xFF); 
         sav.Data[0x7238 + 3] = (byte)((wantedSameDaySeed >> 24) & 0xFF);
-        File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write());
+        File.WriteAllBytes(file_name.Replace(".sav", "2.sav"), sav.Write().ToArray());
         return true;
         /*
-        // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
+        // C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe platinum_setBattleTowerSeeds "C:\Users\Samuel\Game\DS\ROM\14wins.sav" "C:\Users\Samuel\Game\DS\ROM\14wins_after.sav" 0xFDF06E9C 0x0
         // usage: use it once, load savefile, game says it's corrupted. save in-game. run the .exe again. load savefile => works
         if (args[0] == "platinum_setBattleTowerSeeds")
         {
@@ -189,7 +189,7 @@ internal class Program
         var versionHint = "PmdRescueTeam";
 
         /*
-        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net7.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
+        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
         if (args[0] == "overwriteFlags")
         {
@@ -239,7 +239,7 @@ internal class Program
                 return;
 
             var sav = Command.GetVariantSAV(savData, versionHint)!;
-            File.WriteAllBytes(args[1], sav.Write());
+            File.WriteAllBytes(args[1], sav.Write().ToArray());
             return;
         }
 
@@ -255,6 +255,26 @@ internal class Program
 
             if (PkSorter.Execute(savData, versionHint))
                 LastCommandSave(args[2]);
+
+            LastCommandPrintMsgs();                    
+        }
+
+        //mergePkms input.sav input2.sav output.sav
+        if (args[0] == "mergePkms")
+        {
+            if (!ValidateArgLength(args, 4))
+                return;
+
+            var savData = TryReadAllBytes(args[1]);
+            if (savData == null)
+                return;
+
+            var savDataB = TryReadAllBytes(args[2]);
+            if (savDataB == null)
+                return;
+
+            if (PkMerger.Execute(savData, savDataB, versionHint))
+                LastCommandSave(args[3]);
 
             LastCommandPrintMsgs();                    
         }
@@ -292,7 +312,7 @@ internal class Program
 
             var eventName = args[1];
             var inputA = args[2];
-            var outputA = args[3];
+            var outputA = args.Length >= 4 ? args[3] : "";
             var inputB = args.Length >= 6 ? args[4] : "";
             var outputB = args.Length >= 6 ? args[5] : "";
 
@@ -372,7 +392,7 @@ internal class Program
         if (savData == null)
             return;
 
-        var savA = (SAV3E?)SaveUtil.GetVariantSAV(savData);
+        var savA = (SAV3E?)SaveUtil.GetSaveFile(savData);
         if (savA == null)
             return;
         //for (var i = 0; i < savA.EventFlagCount; i++)
@@ -383,11 +403,11 @@ internal class Program
         {
             var kind = savA.Large[0x2B50 + i * 4 + 0];
             var state = savA.Large[0x2B50 + i * 4 + 1];
-            var dayCountdown = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(savA.Large.AsSpan(0x2B50 + i * 4 + 2));
+            var dayCountdown = System.Buffers.Binary.BinaryPrimitives.ReadUInt16LittleEndian(savA.Large[(0x2B50 + i * 4 + 2)..]);
             Console.WriteLine($"kind={kind}, state={state}, dayCountdown={dayCountdown}");
         }
         savA.Large[0x2B50 + 0 * 4 + 0] = 3;
-        File.WriteAllBytes(@"C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - Copy2.sav", savA.Write());
+        File.WriteAllBytes(@"C:\Users\samue\Game\Gameboy\ROMS\Pokemon Emerald - Copy2.sav", savA.Write().ToArray());
     }
 
     static void StartFlagWatcher(string file)
@@ -401,7 +421,7 @@ internal class Program
             if (savData == null)
                 continue;
 
-            var savA = (SAV1?)SaveUtil.GetVariantSAV(savData);
+            var savA = (SAV1?)SaveUtil.GetSaveFile(savData);
             if (savA == null)
                 continue;
 

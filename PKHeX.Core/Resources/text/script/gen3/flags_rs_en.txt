@@ -6,16 +6,17 @@
 0x06B	s	Received HM06 Rock Smash
 0x423	s	Received HM07 Waterfall
 0x07B	s	Received HM08 Dive
+0302	s	Received HM08 Before Groudon/Kyogre Awakening
 0x05A	s	Received Mach Bike/Acro Bike
 
-0x807	*	Received Stone Badge
-0x808	*	Received Knuckle Badge
-0x809	*	Received Dynamo Badge
-0x80A	*	Received Heat Badge
-0x80B	*	Received Balance Badge
-0x80C	*	Received Feather Badge
-0x80D	*	Received Mind Badge (Magma/Aqua Hideout entrance sealed)
-0x80E	*	Received Rain Badge
+0x807	s	Received Stone Badge
+0x808	s	Received Knuckle Badge
+0x809	s	Received Dynamo Badge
+0x80A	s	Received Heat Badge
+0x80B	s	Received Balance Badge
+0x80C	s	Received Feather Badge
+0x80D	s	Received Mind Badge (Magma/Aqua Hideout entrance sealed)
+0x80E	s	Received Rain Badge
 
 0x099	g	Traded in Rustboro City
 0x09A	g	Traded in Pacifidlog Town
@@ -37,8 +38,9 @@
 0x3A7	r	Overworld Hidden (Regirock)
 0x3A8	r	Overworld Hidden (Regice)
 0x3A9	r	Overworld Hidden (Registeel)
-0x3C3	r	Overworld Hidden (Root Fossil)
-0x3C4	r	Overworld Hidden (Claw Fossil)
+0x3C3	g	Overworld Hidden (Root Fossil)
+0x3C4	g	Overworld Hidden (Claw Fossil)
+1133	s	Overworld Hidden (Missed HM08 ball in Steven's House)
 0x3C9	r	Uncovered Kecleon (Fortree City)
 0x3CA	r	Uncovered Kecleon (Route 120, Bridge)
 0x3D5	r	Uncovered Kecleon (Route 120, Bridge)
@@ -57,7 +59,7 @@
 0x3D1	r	Overworld Hidden (Electrode 1 in Hideout)
 0x3D2	r	Overworld Hidden (Electrode 2 in Hideout)
 
-0x800	s	Received Starter Pokemon
+0x800	s	Received Starter Pokémon
 0x801	s	Received Pokedex
 0x802	s	Received PokeNav
 0x804	s	Entered Hall of Fame
@@ -81,7 +83,7 @@
 0x85F	s	Can Receive Shell Bell
 0x860	*	Received Running Shoes
 0x862	*	Reset RTC Enabled
-2090	*	Harsh Sunlight/Rain in Eastern Hoenn
+2090	*	Harsh Sunlight/Rain in eastern Hoenn
 2063	f	Can Fly to Littleroot Town
 2064	f	Can Fly to Oldale Town
 2065	f	Can Fly to Dewford Town
@@ -124,6 +126,30 @@
 2142	m	Visited Sky Pillar
 2147	m	Visited Berry Master's House
 0768	s	Defeated The Winstrate Family
+1800	t	Pokémon Trainer Brendan on Route 103 defeated (Starter Mudkip)
+1801	t	Pokémon Trainer Brendan on Route 110 defeated (Starter Mudkip)
+1802	t	Pokémon Trainer Brendan on Route 119 defeated (Starter Mudkip)
+1803	t	Pokémon Trainer Brendan on Route 103 defeated (Starter Treecko)
+1804	t	Pokémon Trainer Brendan on Route 110 defeated (Starter Treecko)
+1805	t	Pokémon Trainer Brendan on Route 119 defeated (Starter Treecko)
+1806	t	Pokémon Trainer Brendan on Route 103 defeated (Starter Torchic)
+1807	t	Pokémon Trainer Brendan on Route 110 defeated (Starter Torchic)
+1808	t	Pokémon Trainer Brendan on Route 119 defeated (Starter Torchic)
+1809	t	Pokémon Trainer May on Route 103 defeated (Starter Mudkip)
+1810	t	Pokémon Trainer May on Route 110 defeated (Starter Mudkip)
+1811	t	Pokémon Trainer May on Route 119 defeated (Starter Mudkip)
+1812	t	Pokémon Trainer May on Route 103 defeated (Starter Treecko)
+1813	t	Pokémon Trainer May on Route 110 defeated (Starter Treecko)
+1814	t	Pokémon Trainer May on Route 119 defeated (Starter Treecko)
+1815	t	Pokémon Trainer May on Route 103 defeated (Starter Torchic)
+1816	t	Pokémon Trainer May on Route 110 defeated (Starter Torchic)
+1817	t	Pokémon Trainer May on Route 119 defeated (Starter Torchic)
+1941	t	Brendan in Lilycove City defeated (Starter Mudkip)
+1942	t	Brendan in Lilycove City defeated (Starter Treecko)
+1943	t	Brendan in Lilycove City defeated (Starter Torchic)
+1944	t	May in Lilycove City defeated (Starter Mudkip)
+1945	t	May in Lilycove City defeated (Starter Treecko)
+1946	t	May in Lilycove City defeated (Starter Torchic)
 1320	t	Had Aroma Lady Rose 1st Rematch
 1321	t	Had Aroma Lady Rose 2nd Rematch
 1322	t	Had Aroma Lady Rose 3rd Rematch

@@ -1,4 +1,4 @@
-﻿
+
 Saphir
 Rubis
 Émeraude
@@ -14,7 +14,7 @@ Platine
 
 
 Colosseum/XD
-
+Battle Revolution
 
 
 
@@ -50,3 +50,5 @@ Diamant Étincelant
 Perle Scintillante
 Écarlate
 Violet
+Légendes: Z-A
+Champions

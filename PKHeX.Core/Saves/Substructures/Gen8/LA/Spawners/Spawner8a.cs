@@ -15,6 +15,7 @@ public readonly ref struct Spawner8a
     // entry[8]
     // metadata
 
+    // ReSharper disable once ConvertToPrimaryConstructor
     public Spawner8a(Span<byte> data) => Data = data;
 
     public SpawnerEntry8a this[int index] => GetEntry(index);
@@ -44,7 +45,7 @@ public readonly ref struct Spawner8a
     /// Single specific indexes.
     /// </summary>
     /// <param name="indexes">Entry indexes to regenerate.</param>
-    public void Regenerate(Span<int> indexes)
+    public void Regenerate(params Span<int> indexes)
     {
         Span<(ulong, ulong)> output = stackalloc (ulong, ulong)[indexes.Length];
         Meta.Regenerate(output);
@@ -54,9 +55,6 @@ public readonly ref struct Spawner8a
             (entry.GenerateSeed, entry.AlphaSeed) = output[index];
         }
     }
-
-    /// <inheritdoc cref="Regenerate(Span{int})"/>
-    public void Regenerate(params int[] indexes) => Regenerate(indexes.AsSpan());
 
     /// <summary>
     /// Regenerates all entries for the spawner.

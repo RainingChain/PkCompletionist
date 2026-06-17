@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using static PKHeX.Core.LegalityCheckStrings;
 
 namespace PKHeX.Core;
 
@@ -9,50 +8,87 @@ namespace PKHeX.Core;
 /// </summary>
 public static class EncounterText
 {
-    public static IReadOnlyList<string> GetTextLines(this IEncounterInfo enc) => GetTextLines(enc, GameInfo.Strings);
-
-    public static IReadOnlyList<string> GetTextLines(this IEncounterInfo enc, GameStrings strings)
+    private static EncounterDisplayContext GetContext(string language = GameLanguage.DefaultLanguage) => new()
     {
-        var lines = new List<string>();
-        var str = strings.Species;
-        var name = (uint)enc.Species < str.Count ? str[enc.Species] : enc.Species.ToString();
-        var EncounterName = $"{(enc is IEncounterable ie ? ie.LongName : "Special")} ({name})";
-        lines.Add(string.Format(L_FEncounterType_0, EncounterName));
-        if (enc is MysteryGift mg)
+        Localization = EncounterDisplayLocalization.Get(language),
+        Strings = GameInfo.GetStrings(language),
+    };
+
+    extension(IEncounterInfo enc)
+    {
+        public IReadOnlyList<string> GetTextLines(bool verbose = false, string language = GameLanguage.DefaultLanguage) => enc.GetTextLines(GetContext(language), verbose);
+
+        public IReadOnlyList<string> GetTextLines(EncounterDisplayContext ctx, bool verbose = false)
         {
-            lines.AddRange(mg.GetDescription());
-        }
-        else if (enc is IMoveset m)
-        {
-            var moves = m.Moves;
-            if (moves.HasMoves)
+            var lines = new List<string>();
+            var loc = ctx.Localization;
+            var name = ctx.GetSpeciesName(enc);
+            lines.Add(string.Format(loc.Format, loc.EncounterType, name));
+
+            if (enc is MysteryGift mg)
             {
-                string result = moves.GetMovesetLine(strings.movelist);
-                lines.Add(result);
+                lines.AddRange(mg.GetDescription());
             }
+            else if (enc is IMoveset m)
+            {
+                var moves = m.Moves;
+                if (moves.HasMoves)
+                    lines.Add(ctx.GetMoveset(moves));
+            }
+
+            var location = enc.GetEncounterLocation(enc.Generation, enc.Version);
+            if (!string.IsNullOrEmpty(location))
+                lines.Add(string.Format(loc.Format, loc.Location, location));
+
+            lines.Add(ctx.GetVersionDisplay(enc));
+            lines.Add(ctx.GetLevelDisplay(enc));
+
+            if (!verbose)
+                return lines;
+
+            // Record types! Can get a nice summary.
+            // Won't work neatly for Mystery Gift types since those aren't record types, plus they have way too many properties.
+            if (enc is not MysteryGift)
+            {
+                // ReSharper disable once ConstantNullCoalescingCondition
+                var raw = enc.ToString() ?? throw new ArgumentNullException(nameof(enc));
+                lines.AddRange(raw.Split(',', '}', '{'));
+            }
+            return lines;
         }
+    }
+}
 
-        var el = enc as ILocation;
-        var loc = el?.GetEncounterLocation(enc.Generation, (int)enc.Version);
-        if (!string.IsNullOrEmpty(loc))
-            lines.Add(string.Format(L_F0_1, "Location", loc));
+public readonly record struct EncounterDisplayContext
+{
+    public required EncounterDisplayLocalization Localization { get; init; }
+    public required GameStrings Strings { get; init; }
 
-        var game = enc.Version.IsValidSavedVersion() ? strings.gamelist[(int)enc.Version] : enc.Version.ToString();
-        lines.Add(string.Format(L_F0_1, nameof(GameVersion), game));
-        lines.Add(enc.LevelMin == enc.LevelMax
-            ? $"Level: {enc.LevelMin}"
-            : $"Level: {enc.LevelMin}-{enc.LevelMax}");
+    public string GetSpeciesName(IEncounterTemplate enc)
+    {
+        var encSpecies = enc.Species;
+        var str = Strings.Species;
+        var name = (uint)encSpecies < str.Count ? str[encSpecies] : encSpecies.ToString();
+        var EncounterName = $"{(enc is IEncounterable ie ? ie.LongName : "Special")} ({name})";
+        return EncounterName;
+    }
 
-#if DEBUG
-        // Record types! Can get a nice summary.
-        // Won't work neatly for Mystery Gift types since those aren't record types.
-        if (enc is not MysteryGift)
-        {
-            // ReSharper disable once ConstantNullCoalescingCondition
-            var raw = enc.ToString() ?? throw new ArgumentNullException(nameof(enc));
-            lines.AddRange(raw.Split(',', '}', '{'));
-        }
-#endif
-        return lines;
+    public string GetMoveset(Moveset moves) => moves.GetMovesetLine(Strings.movelist);
+
+    public string GetVersionDisplay(IEncounterTemplate enc)
+    {
+        var version = enc.Version;
+        var versionName = version.IsValidSavedVersion()
+            ? Strings.gamelist[(int)version]
+            : version.ToString();
+
+        return string.Format(Localization.Format, Localization.Version, versionName);
+    }
+
+    public string GetLevelDisplay(IEncounterTemplate enc)
+    {
+        if (enc.LevelMin == enc.LevelMax)
+            return string.Format(Localization.Format, Localization.Level, enc.LevelMin);
+        return string.Format(Localization.FormatLevelRange, Localization.LevelRange, enc.LevelMin, enc.LevelMax);
     }
 }

@@ -9,6 +9,7 @@ namespace PKHeX.Core;
 public sealed class EncounterGenerator12 : IEncounterGenerator
 {
     public static readonly EncounterGenerator12 Instance = new();
+    public bool CanGenerateEggs => false;
 
     public IEnumerable<IEncounterable> GetEncounters(PKM pk, LegalInfo info)
     {
@@ -22,15 +23,15 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
     private static IEnumerable<IEncounterable> GetEncounters(PKM pk)
     {
         // If the current data indicates that it must have originated from Crystal, only yield encounter data from Crystal.
-        bool crystal = pk is ICaughtData2 { CaughtData: not 0 } or { Format: >= 7, OT_Gender: 1 };
+        bool crystal = pk is ICaughtData2 { CaughtData: not 0 } or { Format: >= 7, OriginalTrainerGender: 1 };
         if (crystal)
-            return EncounterGenerator2.Instance.GetEncounters(pk, GameVersion.C);
+            return EncounterGenerator2.Instance.GetEncounters(pk);
 
         var visited = GBRestrictions.GetTradebackStatusInitial(pk);
         return visited switch
         {
-            PotentialGBOrigin.Gen1Only => EncounterGenerator1.Instance.GetEncounters(pk, GameVersion.RBY),
-            PotentialGBOrigin.Gen2Only => EncounterGenerator2.Instance.GetEncounters(pk, GameVersion.GSC),
+            PotentialGBOrigin.Gen1Only => EncounterGenerator1.Instance.GetEncounters(pk),
+            PotentialGBOrigin.Gen2Only => EncounterGenerator2.Instance.GetEncounters(pk),
             _ when pk.Korean => GenerateFilteredEncounters12BothKorean(pk),
             _ => GenerateFilteredEncounters12Both(pk),
         };
@@ -42,7 +43,7 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
         // Yield GS first, then Crystal, then RBY. Anything other than GS will be flagged by later checks.
 
         var deferred = new List<IEncounterable>();
-        var get2 = EncounterGenerator2.Instance.GetEncounters(pk, GameVersion.GSC);
+        var get2 = EncounterGenerator2.Instance.GetEncounters(pk);
         foreach (var enc in get2)
         {
             if (enc.Version == GameVersion.C)
@@ -54,7 +55,7 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
         foreach (var enc in deferred)
             yield return enc;
 
-        var get1 = EncounterGenerator1.Instance.GetEncounters(pk, GameVersion.RBY);
+        var get1 = EncounterGenerator1.Instance.GetEncounters(pk);
         foreach (var enc in get1)
             yield return enc;
     }
@@ -63,8 +64,8 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
     {
         // Iterate over both games, consuming from one list at a time until the other list has higher priority encounters
         // Buffer the encounters so that we can consume each iterator separately
-        var get1 = EncounterGenerator1.Instance.GetEncounters(pk, GameVersion.RBY);
-        var get2 = EncounterGenerator2.Instance.GetEncounters(pk, GameVersion.GSC);
+        var get1 = EncounterGenerator1.Instance.GetEncounters(pk);
+        var get2 = EncounterGenerator2.Instance.GetEncounters(pk);
         using var g1i = new PeekEnumerator<IEncounterable>(get1);
         using var g2i = new PeekEnumerator<IEncounterable>(get2);
         while (g2i.PeekIsNext() || g1i.PeekIsNext())
@@ -92,7 +93,7 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
         EncounterTrade1 => GBEncounterPriority.TradeEncounterG1,
         EncounterTrade2 => GBEncounterPriority.TradeEncounterG2,
         EncounterSlot1 or EncounterSlot2 => GBEncounterPriority.WildEncounter,
-        EncounterEgg => GBEncounterPriority.EggEncounter,
+        EncounterEgg2 => GBEncounterPriority.EggEncounter,
         _ => GBEncounterPriority.StaticEncounter,
     };
 
@@ -115,11 +116,11 @@ public sealed class EncounterGenerator12 : IEncounterGenerator
         return GetEncounters(pk, info);
     }
 
-    public IEnumerable<IEncounterable> GetPossible(PKM pk, EvoCriteria[] chain, GameVersion game, EncounterTypeGroup groups)
+    public IEnumerable<IEncounterable> GetPossible(PKM pk, EvoCriteria[] chain, GameVersion version, EncounterTypeGroup groups)
     {
         // Don't call this method.
-        if (game.GetGeneration() == 1)
-            return EncounterGenerator1.Instance.GetPossible(pk, chain, game, groups);
-        return EncounterGenerator2.Instance.GetPossible(pk, chain, game, groups);
+        if (version.Generation == 1)
+            return EncounterGenerator1.Instance.GetPossible(pk, chain, version, groups);
+        return EncounterGenerator2.Instance.GetPossible(pk, chain, version, groups);
     }
 }

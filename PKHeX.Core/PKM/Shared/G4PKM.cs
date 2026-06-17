@@ -1,13 +1,18 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
+using static System.Buffers.Binary.BinaryPrimitives;
 
 namespace PKHeX.Core;
 
 /// <summary> Generation 4 <see cref="PKM"/> format. </summary>
-public abstract class G4PKM : PKM,
-    IRibbonSetEvent3, IRibbonSetEvent4, IRibbonSetUnique3, IRibbonSetUnique4, IRibbonSetCommon3, IRibbonSetCommon4, IRibbonSetRibbons, IContestStats, IGroundTile
+public abstract class G4PKM : PKM, IHandlerUpdate,
+    IRibbonSetEvent3, IRibbonSetEvent4, IRibbonSetUnique3, IRibbonSetUnique4, IRibbonSetCommon3, IRibbonSetCommon4, IRibbonSetRibbons, IContestStats, IGroundTile, IAppliedMarkings4
 {
-    protected G4PKM(byte[] data) : base(data) { }
-    protected G4PKM(int size) : base(size) { }
+    protected G4PKM(Memory<byte> data) : base(data) { }
+    protected G4PKM([ConstantExpected] int size) : base(size) { }
+    protected override void EncryptStored(Span<byte> stored) => PokeCrypto.Encrypt45(stored);
+    protected override void EncryptParty(Span<byte> party) => PokeCrypto.CryptArray(party, EncryptionConstant);
 
     // Maximums
     public sealed override ushort MaxMoveID => Legal.MaxMoveID_4;
@@ -15,17 +20,17 @@ public abstract class G4PKM : PKM,
     public sealed override int MaxAbilityID => Legal.MaxAbilityID_4;
     public sealed override int MaxItemID => Legal.MaxItemID_4_HGSS;
     public sealed override int MaxBallID => Legal.MaxBallID_4;
-    public sealed override int MaxGameID => Legal.MaxGameID_4;
+    public sealed override GameVersion MaxGameID => Legal.MaxGameID_4;
     public sealed override int MaxIV => 31;
-    public sealed override int MaxEV => 255;
-    public sealed override int MaxStringLengthOT => 7;
+    public sealed override int MaxEV => EffortValues.Max255;
+    public sealed override int MaxStringLengthTrainer => 7;
     public sealed override int MaxStringLengthNickname => 10;
 
     public sealed override uint PSV => ((PID >> 16) ^ (PID & 0xFFFF)) >> 3;
     public sealed override uint TSV => (uint)(TID16 ^ SID16) >> 3;
 
     protected bool PtHGSS => Pt || HGSS;
-    protected internal abstract uint IV32 { get; set; }
+    public abstract uint IV32 { get; set; }
     public override int Characteristic => EntityCharacteristic.GetCharacteristic(PID, IV32);
 
     public abstract ushort Sanity { get; set; }
@@ -33,19 +38,22 @@ public abstract class G4PKM : PKM,
     public sealed override void RefreshChecksum() => Checksum = CalculateChecksum();
     public sealed override bool ChecksumValid => CalculateChecksum() == Checksum;
     public override bool Valid { get => Sanity == 0 && ChecksumValid; set { if (!value) return; Sanity = 0; RefreshChecksum(); } }
-    protected virtual ushort CalculateChecksum() => Checksums.Add16(Data.AsSpan()[8..PokeCrypto.SIZE_4STORED]);
+    protected virtual ushort CalculateChecksum() => Checksums.Add16(Data[8..PokeCrypto.SIZE_4STORED]);
 
     // Trash Bytes
-    public sealed override Span<byte> Nickname_Trash => Data.AsSpan(0x48, 22);
-    public sealed override Span<byte> OT_Trash => Data.AsSpan(0x68, 16);
+    public sealed override Span<byte> NicknameTrash => Data.Slice(0x48, 22);
+    public sealed override Span<byte> OriginalTrainerTrash => Data.Slice(0x68, 16);
+    public override int TrashCharCountNickname => 11;
+    public override int TrashCharCountTrainer => 8;
 
     // Future Attributes
     public sealed override uint EncryptionConstant { get => PID; set { } }
-    public sealed override int Nature { get => (int)(PID % 25); set { } }
-    public sealed override int CurrentFriendship { get => OT_Friendship; set => OT_Friendship = value; }
-    public sealed override int CurrentHandler { get => 0; set { } }
+    public sealed override Nature Nature { get => (Nature)(PID % 25); set { } }
+    public sealed override byte CurrentFriendship { get => OriginalTrainerFriendship; set => OriginalTrainerFriendship = value; }
+    public sealed override byte CurrentHandler { get => 0; set { } }
     public sealed override int AbilityNumber { get => 1 << PIDAbility; set { } }
 
+    public abstract byte PokerusState { get; set; }
     public abstract int ShinyLeaf { get; set; }
 
     #region Ribbons
@@ -150,105 +158,128 @@ public abstract class G4PKM : PKM,
     public abstract bool RIBB_7 { get; set; }
     #endregion
 
-    public abstract byte CNT_Cool { get; set; }
-    public abstract byte CNT_Beauty { get; set; }
-    public abstract byte CNT_Cute { get; set; }
-    public abstract byte CNT_Smart { get; set; }
-    public abstract byte CNT_Tough { get; set; }
-    public abstract byte CNT_Sheen { get; set; }
+    public abstract byte ContestCool { get; set; }
+    public abstract byte ContestBeauty { get; set; }
+    public abstract byte ContestCute { get; set; }
+    public abstract byte ContestSmart { get; set; }
+    public abstract byte ContestTough { get; set; }
+    public abstract byte ContestSheen { get; set; }
 
     public abstract GroundTileType GroundTile { get; set; }
     public abstract byte BallDPPt { get; set; }
     public abstract byte BallHGSS { get; set; }
-    public abstract byte PokeathlonStat { get; set; }
-    public override int MarkingCount => 6;
+    public abstract sbyte WalkingMood { get; set; }
+    public int MarkingCount => 6;
+    public abstract byte MarkingValue { get; set; }
 
-    public override int GetMarking(int index)
+    public bool GetMarking(int index)
     {
-        if ((uint)index >= MarkingCount)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        return (MarkValue >> index) & 1;
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)MarkingCount);
+        return ((MarkingValue >> index) & 1) != 0;
     }
 
-    public override void SetMarking(int index, int value)
+    public void SetMarking(int index, bool value)
     {
-        if ((uint)index >= MarkingCount)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        MarkValue = (MarkValue & ~(1 << index)) | ((value & 1) << index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)index, (uint)MarkingCount);
+        MarkingValue = (byte)((MarkingValue & ~(1 << index)) | ((value ? 1 : 0) << index));
     }
 
-    public abstract ushort Egg_LocationDP { get; set; }
-    public abstract ushort Egg_LocationExtended { get; set; }
-    public abstract ushort Met_LocationDP { get; set; }
-    public abstract ushort Met_LocationExtended { get; set; }
+    public bool MarkingCircle   { get => GetMarking(0); set => SetMarking(0, value); }
+    public bool MarkingTriangle { get => GetMarking(1); set => SetMarking(1, value); }
+    public bool MarkingSquare   { get => GetMarking(2); set => SetMarking(2, value); }
+    public bool MarkingHeart    { get => GetMarking(3); set => SetMarking(3, value); }
+    public bool MarkingStar     { get => GetMarking(4); set => SetMarking(4, value); }
+    public bool MarkingDiamond  { get => GetMarking(5); set => SetMarking(5, value); }
 
-    public sealed override int Egg_Location
+    public abstract ushort EggLocationDP { get; set; }
+    public abstract ushort EggLocationExtended { get; set; }
+    public abstract ushort MetLocationDP { get; set; }
+    public abstract ushort MetLocationExtended { get; set; }
+
+    public sealed override ushort EggLocation
     {
         get
         {
-            ushort hgssloc = Egg_LocationExtended;
-            if (hgssloc != 0)
-                return hgssloc;
-            return Egg_LocationDP;
+            ushort pthgss = EggLocationExtended;
+            if (pthgss != 0)
+                return pthgss;
+            return EggLocationDP;
         }
         set
         {
             if (value == 0)
             {
-                Egg_LocationDP = Egg_LocationExtended = 0;
+                EggLocationDP = EggLocationExtended = 0;
             }
             else if (Locations.IsPtHGSSLocation(value) || Locations.IsPtHGSSLocationEgg(value))
             {
                 // Met location not in DP, set to Faraway Place
-                Egg_LocationDP = Locations.Faraway4;
-                Egg_LocationExtended = (ushort)value;
+                EggLocationDP = Locations.Faraway4;
+                EggLocationExtended = value;
             }
             else
             {
-                int pthgss = PtHGSS ? value : 0; // only set to PtHGSS loc if encountered in game
-                Egg_LocationDP = (ushort)value;
-                Egg_LocationExtended = (ushort)pthgss;
+                var pthgss = PtHGSS ? value : default; // only set to PtHGSS loc if encountered in game
+                EggLocationDP = value;
+                EggLocationExtended = pthgss;
             }
         }
     }
 
-    public sealed override int Met_Location
+    public sealed override ushort MetLocation
     {
         get
         {
-            ushort hgssloc = Met_LocationExtended;
+            ushort hgssloc = MetLocationExtended;
             if (hgssloc != 0)
                 return hgssloc;
-            return Met_LocationDP;
+            return MetLocationDP;
         }
         set
         {
             if (value == 0)
             {
-                Met_LocationDP = Met_LocationExtended = 0;
+                MetLocationDP = MetLocationExtended = 0;
             }
             else if (Locations.IsPtHGSSLocation(value) || Locations.IsPtHGSSLocationEgg(value))
             {
                 // Met location not in DP, set to Faraway Place
-                Met_LocationDP = Locations.Faraway4;
-                Met_LocationExtended = (ushort)value;
+                MetLocationDP = Locations.Faraway4;
+                MetLocationExtended = value;
             }
             else
             {
-                int pthgss = PtHGSS ? value : 0; // only set to PtHGSS loc if encountered in game
-                Met_LocationDP = (ushort)value;
-                Met_LocationExtended = (ushort)pthgss;
+                var shouldSet = ShouldSetMetLocationExtended();
+                var pthgss = shouldSet ? value : default; // only set to PtHGSS loc if encountered in game
+                MetLocationDP = value;
+                MetLocationExtended = pthgss;
             }
         }
     }
 
-    public sealed override int Ball
+    private bool ShouldSetMetLocationExtended()
+    {
+        if (!Gen3)
+            return PtHGSS;
+
+        // If transferred from Gen3 into Pt or HG/SS via Pal Park, they set these values.
+        var hasValue = MetLocationExtended != 0 || BallHGSS != 0;
+        var wasDP = PossiblyPalParkDP;
+        if (wasDP && !hasValue)
+            return false; // Keep D/P.
+        if (PossiblyPalParkPt || PossiblyPalParkHGSS)
+            return hasValue || !wasDP;
+        return false; // Assume D/P.
+    }
+
+    public sealed override byte Ball
     {
         // HG/SS added new ball IDs mid-generation, and the previous Gen4 games couldn't handle invalid ball values.
         // Pokémon obtained in HG/SS have the HG/SS ball value set (@0x86) to the capture ball.
         // However, this info is not set in event gift data!
         // Event gift data contains a pre-formatted PK4 template, which is slightly mutated.
         // No HG/SS ball values were used in these event gifts, and no HG/SS ball values are set (0).
+        // Pal Park transfers into HG/SS set this value as well.
 
         // To get the display ball (assume HG/SS +), return the higher of the two values.
         get => Math.Max(BallHGSS, BallDPPt);
@@ -256,36 +287,76 @@ public abstract class G4PKM : PKM,
         {
             static byte Clamp(int value, Ball max) => (uint)value <= (uint)max ? (byte)value : (byte)Core.Ball.Poke;
 
-            // Ball to display in DPPt
+            // Ball to display in D/P/Pt
             BallDPPt = Clamp(value, Core.Ball.Cherish);
 
             // Only set the HG/SS value if it originated in HG/SS and was not an event.
-            if (!HGSS || FatefulEncounter)
-                BallHGSS = 0;
-            else
+            if (WasCreatedInHGSS && this is not BK4)
                 BallHGSS = Clamp(value, Core.Ball.Sport);
+            else
+                BallHGSS = 0;
         }
     }
+
+    private bool WasCreatedInHGSS
+    {
+        get
+        {
+            if (HGSS)
+                return !FatefulEncounter || EggLocation != 0; // Ranger Manaphy was the only egg ever distributed.
+            return Gen3 && PossiblyPalParkHGSS;
+        }
+    }
+
+    // Must only be used for Gen3 origin Pokémon that could have been transferred via Pal Park.
+    public bool PossiblyPalParkDP => MetLocationExtended == 0 && IsTrashPalParkDP();
+    public bool PossiblyPalParkPt => MetLocationExtended != 0 && IsTrashPalParkPt();
+    public bool PossiblyPalParkHGSS => MetLocationExtended != 0 && IsTrashPalParkHGSS();
+
+    private bool IsTrashPalParkDP() => true; // todo
+    private bool IsTrashPalParkPt() => true; // todo
+    private bool IsTrashPalParkHGSS() => true; // todo
 
     // Synthetic Trading Logic
-    public bool Trade(string SAV_Trainer, uint savID32, int SAV_GENDER, int Day = 1, int Month = 1, int Year = 2009)
+    public bool BelongsTo(ITrainerInfo tr)
     {
-        // Eggs do not have any modifications done if they are traded
-        if (IsEgg && !(SAV_Trainer == OT_Name && savID32 == ID32 && SAV_GENDER == OT_Gender))
-        {
-            SetLinkTradeEgg(Day, Month, Year, Locations.LinkTrade4);
-            return true;
-        }
-        return false;
+        if (tr.Version != Version)
+            return false;
+        if (tr.ID32 != ID32)
+            return false;
+        if (tr.Gender != OriginalTrainerGender)
+            return false;
+
+        Span<char> ot = stackalloc char[MaxStringLengthTrainer];
+        int len = LoadString(OriginalTrainerTrash, ot);
+        return ot[..len].SequenceEqual(tr.OT);
     }
 
-    // Enforce DP content only (no PtHGSS)
-    protected void StripPtHGSSContent(PKM pk)
+    public void UpdateHandler(ITrainerInfo tr)
+    {
+        if (IsEgg)
+        {
+            // Don't bother updating eggs that were already traded.
+            const ushort location = Locations.LinkTrade4;
+            if (MetLocation != location && !BelongsTo(tr))
+            {
+                var date = EncounterDate.GetDateNDS();
+                SetLinkTradeEgg(date.Day, date.Month, date.Year, location);
+            }
+        }
+    }
+
+    // Enforce D/P content only (no Pt or HG/SS)
+    protected void StripPtHGSSContent<T>(T pk) where T : G4PKM
     {
         if (Form != 0 && !PersonalTable.DP[Species].HasForms && Species != 201)
             pk.Form = 0;
         if (HeldItem > Legal.MaxItemID_4_DP)
             pk.HeldItem = 0;
+
+        // pk.MetLocationExtended = 0;
+        // pk.EggLocationExtended = 0;
+        pk.BallHGSS = 0;
     }
 
     protected T ConvertTo<T>() where T : G4PKM, new()
@@ -298,13 +369,13 @@ public abstract class G4PKM : PKM,
             TID16 = TID16,
             SID16 = SID16,
             EXP = EXP,
-            OT_Friendship = OT_Friendship,
+            OriginalTrainerFriendship = OriginalTrainerFriendship,
             Ability = Ability,
             Language = Language,
 
             IsEgg = IsEgg,
             IsNicknamed = IsNicknamed,
-            OT_Gender = OT_Gender,
+            OriginalTrainerGender = OriginalTrainerGender,
 
             IV_HP = IV_HP,
             IV_ATK = IV_ATK,
@@ -318,12 +389,12 @@ public abstract class G4PKM : PKM,
             EV_SPE = EV_SPE,
             EV_SPA = EV_SPA,
             EV_SPD = EV_SPD,
-            CNT_Cool = CNT_Cool,
-            CNT_Beauty = CNT_Beauty,
-            CNT_Cute = CNT_Cute,
-            CNT_Smart = CNT_Smart,
-            CNT_Tough = CNT_Tough,
-            CNT_Sheen = CNT_Sheen,
+            ContestCool = ContestCool,
+            ContestBeauty = ContestBeauty,
+            ContestCute = ContestCute,
+            ContestSmart = ContestSmart,
+            ContestTough = ContestTough,
+            ContestSheen = ContestSheen,
 
             Move1 = Move1,
             Move2 = Move2,
@@ -342,24 +413,26 @@ public abstract class G4PKM : PKM,
             Form = Form,
             ShinyLeaf = ShinyLeaf,
             Version = Version,
-            PKRS_Days = PKRS_Days,
-            PKRS_Strain = PKRS_Strain,
+            PokerusDays = PokerusDays,
+            PokerusStrain = PokerusStrain,
             BallDPPt = BallDPPt,
             BallHGSS = BallHGSS,
             GroundTile = GroundTile,
-            PokeathlonStat = PokeathlonStat,
+            WalkingMood = WalkingMood,
             FatefulEncounter = FatefulEncounter,
 
-            Met_Level = Met_Level,
-            Met_Location = Met_Location,
-            Met_Year = Met_Year,
-            Met_Month = Met_Month,
-            Met_Day = Met_Day,
+            MetLevel = MetLevel,
+            MetLocationDP = MetLocationDP,
+            MetLocationExtended = MetLocationExtended,
+            MetYear = MetYear,
+            MetMonth = MetMonth,
+            MetDay = MetDay,
 
-            Egg_Location = Egg_Location,
-            Egg_Year = Egg_Year,
-            Egg_Month = Egg_Month,
-            Egg_Day = Egg_Day,
+            EggLocationDP = EggLocationDP,
+            EggLocationExtended = EggLocationExtended,
+            EggYear = EggYear,
+            EggMonth = EggMonth,
+            EggDay = EggDay,
 
             #region Ribbons
             RibbonChampionSinnoh = RibbonChampionSinnoh,
@@ -462,16 +535,37 @@ public abstract class G4PKM : PKM,
         };
 
         // Transfer Trash Bytes
-        for (int i = 0; i < 11; i++) // Nickname
-        {
-            pk.Data[0x48 + (2 * i)] = Data[0x48 + (2 * i) + 1];
-            pk.Data[0x48 + (2 * i) + 1] = Data[0x48 + (2 * i)];
-        }
-        for (int i = 0; i < 8; i++) // OT_Name
-        {
-            pk.Data[0x68 + (2 * i)] = Data[0x68 + (2 * i) + 1];
-            pk.Data[0x68 + (2 * i) + 1] = Data[0x68 + (2 * i)];
-        }
+        TransferTrashSwap(NicknameTrash, pk.NicknameTrash);
+        TransferTrashSwap(OriginalTrainerTrash, pk.OriginalTrainerTrash);
         return pk;
+    }
+
+    private static void TransferTrashSwap(ReadOnlySpan<byte> src, Span<byte> dest)
+    {
+        // Strings need to change between Little Endian and Big Endian
+        var s = MemoryMarshal.Cast<byte, ushort>(src);
+        var d = MemoryMarshal.Cast<byte, ushort>(dest);
+        ReverseEndianness(s, d);
+    }
+
+    /// <summary>
+    /// Nidoran originating from Korean D/P/Pt games use the Full-width gender symbols instead of the other Gen4-Gen7 games which use Half-width.
+    /// </summary>
+    /// <seealso cref="PK5.CheckKoreanNidoranDPPt"/>
+    protected void CheckKoreanNidoranDPPt(ReadOnlySpan<char> value, ref int language)
+    {
+        if (language != (int)LanguageID.Korean)
+            return;
+        if (IsNicknamed)
+            return;
+        if (Version is not (GameVersion.D or GameVersion.P or GameVersion.Pt))
+            return;
+        // Full-width gender symbols for not-nicknamed Nidoran in D/P/Pt
+        // Full/Half is technically legal either way as trainers can reset the nickname in HG/SS, or vice versa for origins.
+        // Still try to set whichever it originated with. Default would be half, but if it's a Nidoran species name, set full-width.
+        if (Species == (int)Core.Species.NidoranM && value is "니드런♂")
+            language = 1; // Use Japanese to force full-width encoding of the gender symbol.
+        else if (Species == (int)Core.Species.NidoranF && value is "니드런♀")
+            language = 1;
     }
 }
