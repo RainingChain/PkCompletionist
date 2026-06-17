@@ -1,21 +1,10 @@
 using PKHeX.Core;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using static System.Buffers.Binary.BinaryPrimitives;
-using static System.Formats.Asn1.AsnWriter;
-
 namespace PkCompletionist.Core;
-
-/*
- * Modifications to PkHex.Core
- * Geonet
- * 
- * */
 
 internal class CompletionValidator5 : CompletionValidatorX
 {
@@ -28,6 +17,34 @@ internal class CompletionValidator5 : CompletionValidatorX
     }
 
     new SAV5B2W2 sav;
+
+    public override void GenerateAll()
+    {
+        base.GenerateAll(); // pokemon, item
+
+        Generate_pokemonForm();
+        Generate_inGameTrade();
+        Generate_inGameGift();
+
+        Generate_itemInMap();
+        Generate_itemGift();
+
+        Generate_joinAvenue();
+
+        Generate_ribbon();
+        Generate_battleSubway();
+        Generate_pwt();
+        Generate_medal();
+
+        Generate_trainerStar();
+        //Generate_pokestarStudios();
+        //Generate_props();
+        //Generate_pokemonMusical();
+        //Generate_funfest();
+
+        Generate_battle();
+        Generate_misc();
+    }
 
     private static int GetDexFormIndexBW(ushort species, byte formCount)
     {
@@ -70,34 +87,6 @@ internal class CompletionValidator5 : CompletionValidatorX
             645 => 081, // 2 Landorus
             _ => GetDexFormIndexBW(species, formCount),
         };
-    }
-
-    public override void GenerateAll()
-    {
-        base.GenerateAll(); // pokemon, item
-
-        Generate_pokemonForm();
-        Generate_inGameTrade();
-        Generate_inGameGift();
-
-        Generate_itemInMap();
-        Generate_itemGift();
-
-        Generate_joinAvenue();
-
-        Generate_ribbon();
-        Generate_battleSubway();
-        Generate_pwt();
-        Generate_medal();
-
-        Generate_trainerStar();
-        //Generate_pokestarStudios();
-        //Generate_props();
-        //Generate_pokemonMusical();
-        //Generate_funfest();
-
-        Generate_battle();
-        Generate_misc();
     }
 
     public void Generate_pokemonForm()
@@ -226,10 +215,6 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         GetLanguageFlag(species - 1, LANG);
         */
-        const int MALE_GENDERLESS_NON_SHINY = 0;
-        const int FEMALE_NON_SHINY = 1;
-        const int MALE_GENDERLESS_SHINY = 2;
-        const int FEMALE_SHINY = 3;
 
         
         ow["AllMaleFemaleForms"] = new Func<bool>(() =>
@@ -248,14 +233,14 @@ internal class CompletionValidator5 : CompletionValidatorX
                     continue;
                 }
                 
-                if (!this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_NON_SHINY) && 
-                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
+                if (!this.sav.Zukan.GetSeen(i, 0, false) && 
+                    !this.sav.Zukan.GetSeen(i, 0, true))
                 {
                     retStr.Add($"#{i} (Male)");
                     continue;
                 }
-                if (!this.sav.Zukan.GetSeen(i, FEMALE_NON_SHINY) && 
-                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                if (!this.sav.Zukan.GetSeen(i, 1, false) && 
+                    !this.sav.Zukan.GetSeen(i, 1, true))
                 {
                     retStr.Add($"#{i} (Female)");
                     continue;
@@ -279,8 +264,8 @@ internal class CompletionValidator5 : CompletionValidatorX
                     continue;
                 }
 
-                if (!this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY) && 
-                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                if (!this.sav.Zukan.GetSeen(i, 0, true) && 
+                    !this.sav.Zukan.GetSeen(i, 1, true))
                 {
                     retStr.Add($"#{i}");
                     continue;
@@ -301,14 +286,14 @@ internal class CompletionValidator5 : CompletionValidatorX
                 var pi = this.sav.Personal[i];
                 
                 if (!pi.OnlyFemale && 
-                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 0, true))
                 {
                     retStr.Add($"#{i} (Male)");
                     continue;
                 }
 
                 if (!(pi.OnlyMale || pi.Genderless) && 
-                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 1, true))
                 {
                     retStr.Add($"#{i} (Female)");
                     continue;
@@ -355,35 +340,33 @@ internal class CompletionValidator5 : CompletionValidatorX
                 ("GenesectShock", 649, 2), ("GenesectBurn", 649, 3), ("GenesectChill", 649, 4),
             };
 
-            const int FORM_NON_SHINY = 0;
-            const int FORM_SHINY = 1;
             for (ushort i = 1; i <= 649; i++)
             {
                 var pi = this.sav.Personal[i];
 
                 if (!pi.OnlyFemale && 
-                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_NON_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 0, false))
                 {
                     retStr.Add($"#{i} (Male Non-Shiny)");
                     continue;
                 }
 
                 if (!(pi.OnlyMale || pi.Genderless) && 
-                    !this.sav.Zukan.GetSeen(i, FEMALE_NON_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 1, false))
                 {
                     retStr.Add($"#{i} (Female Non-Shiny)");
                     continue;
                 }
 
                 if (!pi.OnlyFemale && 
-                    !this.sav.Zukan.GetSeen(i, MALE_GENDERLESS_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 0, true))
                 {
                     retStr.Add($"#{i} (Male Shiny)");
                     continue;
                 }
 
                 if (!(pi.OnlyMale || pi.Genderless) && 
-                    !this.sav.Zukan.GetSeen(i, FEMALE_SHINY))
+                    !this.sav.Zukan.GetSeen(i, 1, true))
                 {
                     retStr.Add($"#{i} (Female Shiny)");
                     continue;
@@ -398,9 +381,9 @@ internal class CompletionValidator5 : CompletionValidatorX
                     continue;
 
                 formIndex += form;
-                if (!this.sav.Zukan.GetFormFlag(formIndex, FORM_NON_SHINY))
+                if (!this.sav.Zukan.GetFormSeen(formIndex, false))
                     retStr.Add($"{name} (Non-Shiny)");
-                if (!this.sav.Zukan.GetFormFlag(formIndex, FORM_SHINY))
+                if (!this.sav.Zukan.GetFormSeen(formIndex, true))
                     retStr.Add($"{name} (Shiny)");
             }
 
@@ -434,15 +417,10 @@ internal class CompletionValidator5 : CompletionValidatorX
 
     public bool HasSeenPkmForm(ushort species, byte form)
     {
-        var pi = this.sav.Personal[species];
+        short formIndex = (short)GetDexFormIndexB2W2(species, this.sav.Personal[species].FormCount);
 
-        var fc = pi.FormCount;
-        int f = GetDexFormIndexB2W2(species, fc);
-
-        const int NON_SHINY = 0;
-        const int SHINY = 0;
-
-        return this.sav.Zukan.GetFormFlag(f + form, NON_SHINY) || this.sav.Zukan.GetFormFlag(f + form, SHINY);
+        return this.sav.Zukan.GetFormSeen(formIndex + form, false) || 
+                this.sav.Zukan.GetFormSeen(formIndex + form, true);
     }
 
     public bool HasOrSeenPkmBasedOnObjective2(ushort species, byte form)
@@ -583,7 +561,13 @@ internal class CompletionValidator5 : CompletionValidatorX
     
     public void Generate_medal()
     {
-        
+        var ow = new Dictionary<string, bool>();
+        owned["medal"] = ow;
+
+        var medals = MedalList5.GetMedals(this.sav.Medals.Data.ToArray());
+
+        for (int i = 0; i < medals.Length; i++)
+            ow[i.ToString()] = medals[i].IsObtained;        
     }
 
 
@@ -874,18 +858,19 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         var NationalPokedex = () =>
         {
-            for (ushort i = 0; i <= 493; i++)
+            var exclude = new HashSet<ushort> {151, 249,250,251,385,386,489,490,491,492,493, 494, 647, 648, 649};
+            for (ushort i = 0; i <= sav.MaxSpeciesID; i++)
             {
-                //TODO
-                if (i == 151 || i == 249 || i == 250 || i == 251 || i == 385 || i == 386 || i == 489 || i == 490 || i == 491 || i == 492 || i == 493)
+                //TODO 
+                if (exclude.Contains(i))
                     continue;
                 if (!sav.Zukan.GetCaught(i))
                     return false;
             }
             return true;
-        };
+        };    
         ow["NationalPokedex"] = NationalPokedex();
-        //TODO
+        
     }
 
     public bool GetThoughWordUnlocked(ThoughWord word)
