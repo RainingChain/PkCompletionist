@@ -13,52 +13,52 @@ public static class PersonalTable
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen9a"/>.
     /// </summary>
-    public static readonly PersonalTable9ZA ZA = new(GetTable("za"));
+    public static readonly PersonalTable9ZA ZA = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen9"/>.
     /// </summary>
-    public static readonly PersonalTable9SV SV = new(GetTable("sv"));
+    public static readonly PersonalTable9SV SV = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen8a"/>.
     /// </summary>
-    public static readonly PersonalTable8LA LA = new(GetTable("la"));
+    public static readonly PersonalTable8LA LA = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen8b"/>.
     /// </summary>
-    public static readonly PersonalTable8BDSP BDSP = new(GetTable("bdsp"));
+    public static readonly PersonalTable8BDSP BDSP = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen8"/>.
     /// </summary>
-    public static readonly PersonalTable8SWSH SWSH = new(GetTable("swsh"));
+    public static readonly PersonalTable8SWSH SWSH = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="EntityContext.Gen7b"/>.
     /// </summary>
-    public static readonly PersonalTable7GG GG = new(GetTable("gg"));
+    public static readonly PersonalTable7GG GG = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.USUM"/>.
     /// </summary>
-    public static readonly PersonalTable7 USUM = new(GetTable("uu"), Legal.MaxSpeciesID_7_USUM);
+    public static readonly PersonalTable7 USUM = new(Memory<byte>.Empty, Legal.MaxSpeciesID_7_USUM);
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.SM"/>.
     /// </summary>
-    public static readonly PersonalTable7 SM = new(GetTable("sm"), Legal.MaxSpeciesID_7);
+    public static readonly PersonalTable7 SM = new(Memory<byte>.Empty, Legal.MaxSpeciesID_7);
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.ORAS"/>.
     /// </summary>
-    public static readonly PersonalTable6AO AO = new(GetTable("ao"));
+    public static readonly PersonalTable6AO AO = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.XY"/>.
     /// </summary>
-    public static readonly PersonalTable6XY XY = new(GetTable("xy"));
+    public static readonly PersonalTable6XY XY = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.B2W2"/>.
@@ -68,12 +68,12 @@ public static class PersonalTable
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.BW"/>.
     /// </summary>
-    public static readonly PersonalTable5BW BW = new(GetTable("bw"));
+    public static readonly PersonalTable5BW BW = new(Memory<byte>.Empty);
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.HGSS"/>.
     /// </summary>
-    public static readonly PersonalTable4 HGSS = new(GetTable("hgss"));
+    public static readonly PersonalTable4 HGSS = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.Pt"/>.
@@ -83,17 +83,17 @@ public static class PersonalTable
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.DP"/>.
     /// </summary>
-    public static readonly PersonalTable4 DP = new(GetTable("dp"));
+    public static readonly PersonalTable4 DP = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.LG"/>.
     /// </summary>
-    public static readonly PersonalTable3 LG = new(GetTable("lg"));
+    public static readonly PersonalTable3 LG = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.FR"/>.
     /// </summary>
-    public static readonly PersonalTable3 FR = new(GetTable("fr"));
+    public static readonly PersonalTable3 FR = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.E"/>.
@@ -103,7 +103,7 @@ public static class PersonalTable
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.RS"/>.
     /// </summary>
-    public static readonly PersonalTable3 RS = new(GetTable("rs"));
+    public static readonly PersonalTable3 RS = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.C"/>.
@@ -113,12 +113,12 @@ public static class PersonalTable
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.GS"/>.
     /// </summary>
-    public static readonly PersonalTable2 GS = new(GetTable("gs"));
+    public static readonly PersonalTable2 GS = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.RB"/>.
     /// </summary>
-    public static readonly PersonalTable1 RB = new(GetTable("rb"));
+    public static readonly PersonalTable1 RB = new(Memory<byte>.Empty); // RC
 
     /// <summary>
     /// Personal Table used in <see cref="GameVersion.YW"/>.
@@ -129,8 +129,8 @@ public static class PersonalTable
 
     static PersonalTable() // Finish Setup
     {
-        PopulateGen3Tutors();
-        PopulateGen4Tutors();
+        //PopulateGen3Tutors(); // RC
+        //PopulateGen4Tutors(); // RC
     }
 
     private static void PopulateGen3Tutors()

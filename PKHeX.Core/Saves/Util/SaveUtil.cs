@@ -647,7 +647,8 @@ public static class SaveUtil
         BW => new SAV5BW(data),
         B2W2 => new SAV5B2W2(data),
 
-        XY => new SAV6XY(data),
+        // RC to reduce size
+        /*XY => new SAV6XY(data),
         AO => new SAV6AO(data),
         AODemo => new SAV6AODemo(data),
 
@@ -675,7 +676,7 @@ public static class SaveUtil
         Ranch => new SAV4Ranch(data),
         Bulk3 => new Bank3(data),
         Bulk4 => new Bank4(data),
-        Bulk7 => Bank7.GetBank7(data),
+        Bulk7 => Bank7.GetBank7(data),*/
 
         // No pattern matched
         _ => null,

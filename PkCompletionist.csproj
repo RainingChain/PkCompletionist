@@ -21,6 +21,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Remove="PKHeX.Core\Resources\legality\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\localize\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\text\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\levelup\**" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\personal\**" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_y" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_c" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_e" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_pt" />
+		<EmbeddedResource Include="PKHeX.Core\Resources\byte\personal\personal_b2w2" />
+		<EmbeddedResource Remove="PKHeX.Core\Resources\byte\zukan_research\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="index.html" />
 		<Content Include="index.html" />
     </ItemGroup>
