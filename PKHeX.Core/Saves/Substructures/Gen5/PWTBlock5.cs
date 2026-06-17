@@ -11,6 +11,12 @@ public sealed class PWTBlock5(SAV5B2W2 sav, Memory<byte> raw) : SaveBlock<SAV5B2
     public ushort GetPWTRecord(PWTRecordID id) => ReadUInt16LittleEndian(Data[GetRecordOffset(id)..]);
     public void SetPWTRecord(PWTRecordID id, ushort value) => WriteUInt16LittleEndian(Data[GetRecordOffset(id)..], value);
 
+    public ushort GetFlags(int id) // RC
+    {
+        int ofs = 0x5C + ((int)29 * 2) + id;
+        return ReadUInt16LittleEndian(Data[ofs..]);
+    }
+
     private static int GetRecordOffset(PWTRecordID id)
     {
         if (id is < PWTRecordID.Normal or > PWTRecordID.MixMaster)

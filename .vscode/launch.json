@@ -13,6 +13,17 @@
       "stopAtEntry": false
     },
     {
+      "name": "Validate3 (Debug: exe)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "compile: exe",
+      "program": "${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe",
+      "args": ["validate", "C:\\Users\\Samuel\\MyDocuments\\Backup-Game\\Pokemon\\3 Emerald\\Pokemon Emerald 100% except wireless.sav"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
       "name": "Event (Debug: exe)",
       "type": "coreclr",
       "request": "launch",

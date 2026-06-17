@@ -55,7 +55,7 @@ partial class Command
         if (pmdSky != null)
             return pmdSky;
 
-        return SaveUtil.GetVariantSAV(data);
+        return SaveUtil.GetSaveFile(data);
     }
 
     public SaveFile? SetSavA(byte[] data, string VersionHint)

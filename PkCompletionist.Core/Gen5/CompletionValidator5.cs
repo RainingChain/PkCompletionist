@@ -599,7 +599,7 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         foreach (var id in list)
         {
-            var val = sav.GetEventFlag(id);
+            var val = sav.EventWork.GetEventFlag(id);
             if (!val && untrackable.Contains(id))
                 continue;
             ow[id.ToString()] = val;
@@ -614,7 +614,7 @@ internal class CompletionValidator5 : CompletionValidatorX
         var list = new List<int> {};
 
         foreach (var id in list)
-            ow[id.ToString()] = sav.GetEventFlag(id);
+            ow[id.ToString()] = sav.EventWork.GetEventFlag(id);
     }
     public bool has_rank_10_join_avenue_shop(int ShopType)
     {
@@ -675,12 +675,12 @@ internal class CompletionValidator5 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["inGameTrade"] = ow;
 
-        ow["PetililforCottonee"] = sav.GetEventFlag(0x0412);
-        ow["EmolgaforGigalith"] = sav.GetEventFlag(0x0256);
-        ow["MantineforTangrowth"] = sav.GetEventFlag(0x0405);
-        ow["DittoforRotom"] = sav.GetEventFlag(0x0259);
-        ow["ExcadrillforAmbipom"] = sav.GetEventFlag(0x0431);
-        ow["HippowdonforAlakazam"] = sav.GetEventFlag(0x0432);
+        ow["PetililforCottonee"] = sav.EventWork.GetEventFlag(0x0412);
+        ow["EmolgaforGigalith"] = sav.EventWork.GetEventFlag(0x0256);
+        ow["MantineforTangrowth"] = sav.EventWork.GetEventFlag(0x0405);
+        ow["DittoforRotom"] = sav.EventWork.GetEventFlag(0x0259);
+        ow["ExcadrillforAmbipom"] = sav.EventWork.GetEventFlag(0x0431);
+        ow["HippowdonforAlakazam"] = sav.EventWork.GetEventFlag(0x0432);
 
         var yancySpecies = new HashSet<int>();
         var curtisSpecies = new HashSet<int>();
@@ -726,15 +726,15 @@ internal class CompletionValidator5 : CompletionValidatorX
         owned["inGameGift"] = ow;
 
         ow["StarterPokemon"] = true;
-        ow["Zorua"] = sav.GetEventFlag(0x0121);
+        ow["Zorua"] = sav.EventWork.GetEventFlag(0x0121);
         
-        ow["Deerling"] = sav.GetEventFlag(0x01AA);
-        ow["Eevee"] = sav.GetEventFlag(0x018A);
-        ow["Magikarp"] = sav.GetEventFlag(0x00FA);
-        ow["Happiny Egg"] = sav.GetEventFlag(0x01B5);
-        ow["TirtougaorArchen"] = sav.GetEventFlag(0x01BD);
+        ow["Deerling"] = sav.EventWork.GetEventFlag(0x01AA);
+        ow["Eevee"] = sav.EventWork.GetEventFlag(0x018A);
+        ow["Magikarp"] = sav.EventWork.GetEventFlag(0x00FA);
+        ow["Happiny Egg"] = sav.EventWork.GetEventFlag(0x01B5);
+        ow["TirtougaorArchen"] = sav.EventWork.GetEventFlag(0x01BD);
         // ow["Shiny Dratini"] = false; // White2
-        ow["Shiny Gible"] = sav.GetEventFlag(0x0121);
+        ow["Shiny Gible"] = sav.EventWork.GetEventFlag(0x0121);
     }
 
     public void Generate_pcWallPaper()
@@ -861,7 +861,7 @@ internal class CompletionValidator5 : CompletionValidatorX
     }
     public bool EnteredHallOfFame()
     {
-        return false; //TODO sav.GetEventFlag(2404);
+        return false; //TODO sav.EventWork.GetEventFlag(2404);
     }
 
 
@@ -932,7 +932,7 @@ internal class CompletionValidator5 : CompletionValidatorX
         /* TODO
         for (var i = 1; i < 928; i++)
         {
-            var got = sav.GetEventFlag(0x550 + i);
+            var got = sav.EventWork.GetEventFlag(0x550 + i);
             if (!got && untrackable.Contains(i))
                 continue;
             ow[i.ToString()] = got;

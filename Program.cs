@@ -392,7 +392,7 @@ internal class Program
         if (savData == null)
             return;
 
-        var savA = (SAV3E?)SaveUtil.GetVariantSAV(savData);
+        var savA = (SAV3E?)SaveUtil.GetSaveFile(savData);
         if (savA == null)
             return;
         //for (var i = 0; i < savA.EventFlagCount; i++)
@@ -421,7 +421,7 @@ internal class Program
             if (savData == null)
                 continue;
 
-            var savA = (SAV1?)SaveUtil.GetVariantSAV(savData);
+            var savA = (SAV1?)SaveUtil.GetSaveFile(savData);
             if (savA == null)
                 continue;
 

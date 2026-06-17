@@ -22,7 +22,7 @@ public abstract class SAV4 : SaveFile, IEventFlag37, IDaycareStorage, IDaycareRa
     // SaveData is chunked into two pieces.
     private readonly Memory<byte> StorageBuffer;
     protected internal readonly Memory<byte> GeneralBuffer;
-    protected Span<byte> Storage => StorageBuffer.Span;
+    public Span<byte> Storage => StorageBuffer.Span; // RC public
     public Span<byte> General => GeneralBuffer.Span;
     protected sealed override Span<byte> BoxBuffer => Storage;
     protected sealed override Span<byte> PartyBuffer => General;

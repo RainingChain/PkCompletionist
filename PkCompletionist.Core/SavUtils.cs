@@ -133,8 +133,14 @@ internal class SavUtils
         if (!gift.IsCardCompatible(sav, out string msg))
             return msg;
 
-        if (sav is not IMysteryGiftStorage giftStorage)
+        IMysteryGiftStorage giftStorage;
+        if (sav is IMysteryGiftStorage giftStorage2)
+            giftStorage = giftStorage2;
+        else if (sav is SAV4 sav4) {
+            giftStorage = sav4.Mystery;
+        } else {
             return "Error: This save file does not support mystery gift storage.";
+        }
 
         int index = GetLastUnfilledByType(gift, giftStorage);
         if (index == -1)

@@ -221,14 +221,14 @@ internal class CompletionValidator3 : CompletionValidatorX
             return span.ToArray().Contains(deco);
         };
         return
-            CheckSpan(sav.Decorations.Chair) ||
-            CheckSpan(sav.Decorations.Cushion) ||
-            CheckSpan(sav.Decorations.Desk) ||
-            CheckSpan(sav.Decorations.Doll) ||
-            CheckSpan(sav.Decorations.Mat) ||
-            CheckSpan(sav.Decorations.Ornament) ||
-            CheckSpan(sav.Decorations.Plant) ||
-            CheckSpan(sav.Decorations.Poster);
+            CheckSpan(sav.LargeBlock.Decorations.Chair) ||
+            CheckSpan(sav.LargeBlock.Decorations.Cushion) ||
+            CheckSpan(sav.LargeBlock.Decorations.Desk) ||
+            CheckSpan(sav.LargeBlock.Decorations.Doll) ||
+            CheckSpan(sav.LargeBlock.Decorations.Mat) ||
+            CheckSpan(sav.LargeBlock.Decorations.Ornament) ||
+            CheckSpan(sav.LargeBlock.Decorations.Plant) ||
+            CheckSpan(sav.LargeBlock.Decorations.Poster);
     }
 
     public void Generate_decoration()
@@ -624,7 +624,7 @@ internal class CompletionValidator3 : CompletionValidatorX
 
     public bool HasPokeblock(PokeBlock3Color color)
     {
-        return sav.PokeBlocks.Blocks.Any(b => b.Color == color);
+        return sav.LargeBlock.PokeBlocks.Blocks.Any(b => b.Color == color);
     }
 
     public void Generate_pokeblock()
@@ -727,9 +727,8 @@ internal class CompletionValidator3 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["gameStat"] = ow;
 
-        Record3 rec3 = new(this.sav);
-        for (int i = 0; i < (byte)RecID3Emerald.BERRY_CRUSH_WITH_FRIENDS; i++)
-            ow[i.ToString()] = rec3.GetRecord(i) > 0;
+        for (int i = 0; i <= 51; i++)
+            ow[i.ToString()] = sav.GetRecord(i) > 0;
     }
 
     public void Generate_misc()
@@ -744,7 +743,7 @@ internal class CompletionValidator3 : CompletionValidatorX
         // ow["BeatFallarborBattleTent"] = true; // Not trackable
         ow["UnlockMysteryGiftSystem"] = sav.GetEventFlag(0x08DB);
         ow["UnlockNationalPokedex"] = sav.GetEventFlag(0x0896);
-        ow["UnlockWaldaCustomWallpaper"] = sav.WaldaUnlocked;
+        ow["UnlockWaldaCustomWallpaper"] = sav.LargeBlock.WaldaUnlocked;
         
         var TrainerHill = (int offset) =>
         {
@@ -765,10 +764,10 @@ internal class CompletionValidator3 : CompletionValidatorX
         ow["SetBerryBlenderRecord3Players"] = BerryBlenderRecord(0x9BC + 2);
         ow["SetBerryBlenderRecord4Players"] = BerryBlenderRecord(0x9BC + 4);
 
-        ow["SetPokemonJumpRecord"] = sav.JoyfulJumpScore > 0;
-        ow["SetPokemonJumpExcellentsinaRowRecord"] = sav.JoyfulJump5InRow > 0;
-        ow["SetBerryPickingRecord"] = sav.JoyfulBerriesScore > 0;
-        ow["SetBerryPickingInrowwith5playersRecord"] = sav.JoyfulBerries5InRow > 0;
+        ow["SetPokemonJumpRecord"] = sav.SmallBlock.JoyfulJumpScore > 0;
+        ow["SetPokemonJumpExcellentsinaRowRecord"] = sav.SmallBlock.JoyfulJump5InRow > 0;
+        ow["SetBerryPickingRecord"] = sav.SmallBlock.JoyfulBerriesScore > 0;
+        ow["SetBerryPickingInrowwith5playersRecord"] = sav.SmallBlock.JoyfulBerries5InRow > 0;
 
         ow["NewLotadSizeRecord"] = sav.GetWork(0x4F) > 0x8000;
         ow["NewSeedotSizeRecord"] = sav.GetWork(0x47) > 0x8000;

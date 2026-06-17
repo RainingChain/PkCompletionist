@@ -43,6 +43,7 @@
       "label": "compil & publish: wasm",
       "type": "shell",
       "command": "& \"${workspaceFolder}/publish.ps1\"",
+      "dependsOn": "compile: wasm",
       "problemMatcher": "$msCompile"
     },
     {

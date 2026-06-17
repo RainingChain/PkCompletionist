@@ -1,0 +1,4 @@
+{
+  "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "openFiles",
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "openFiles"
+}
