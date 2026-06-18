@@ -1,4 +1,5 @@
 {
   "dotnet.backgroundAnalysis.compilerDiagnosticsScope": "openFiles",
-  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "openFiles"
+  "dotnet.backgroundAnalysis.analyzerDiagnosticsScope": "openFiles",
+  "terminal.integrated.scrollback": 20000
 }

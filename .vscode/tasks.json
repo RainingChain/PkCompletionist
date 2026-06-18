@@ -60,6 +60,13 @@
       "command": "\"${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe\" ${input:exeAnyInput}",
       "dependsOn": "compile: exe",
       "problemMatcher": []
+    },
+    {
+      "label": "compare flags",
+      "type": "shell",
+      "command": "\"${workspaceFolder}/bin/Debug/net10.0/win-x64/publish/PkCompletionist.exe\" analyzeFlags \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\before.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\after.sav\" \"C:\\Users\\Samuel\\Game\\DS\\ROM\\cmp\\before_altered.sav\" ${input:compareFlagsRangeInput}",
+      "dependsOn": "compile: exe",
+      "problemMatcher": []
     }
   ],
   "inputs": [
@@ -68,6 +75,12 @@
       "type": "promptString",
       "description": "Input for PkCompletionist.exe",
       "default": "validate \"C:\\Users\\Samuel\\Game\\DS\\ROM\\Pokemon Black2.sav\""
+    },
+    {
+      "id": "compareFlagsRangeInput",
+      "type": "promptString",
+      "description": "Input for compare flag",
+      "default": "0,0"
     }
   ]
 }
