@@ -38,11 +38,13 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         Generate_trainerStar();
         //Generate_pokestarStudios();
-        //Generate_props();
+        Generate_props();
+        Generate_uiSkin();
         //Generate_pokemonMusical();
         //Generate_funfest();
 
         Generate_battle();
+        Generate_record();
         Generate_misc();
     }
 
@@ -872,7 +874,42 @@ internal class CompletionValidator5 : CompletionValidatorX
         
 
         // TODO Pokéstar Studios etc
+
+        //ow[fmt("Pokéstar Studios")] = 
+        // sav.BattleSubwayPlay
     }
+
+    public void Generate_record()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["record"] = ow;
+
+        for (int i = 0; i <= 53; i++)
+            ow[i.ToString()] = sav.Records.GetRecord32(i) > 0;
+
+        for (int i = 0; i <= 60; i++)
+            ow["s" + i.ToString()] = sav.Records.GetRecord16(i) > 0;
+    }
+
+    public void Generate_props()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["props"] = ow;
+
+        for (int i = 0; i <= 99; i++)
+            ow[i.ToString()] = sav.Musical.GetHasProp(i);
+    }
+
+    public void Generate_uiSkin()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["uiSkin"] = ow;
+
+        // can't be tracked easily. in the save file, its a bitmap image.
+    }
+
+
+// Musical5GetHasProp
 
     public void Generate_easyChatSystemWord()
     {
@@ -926,5 +963,7 @@ internal class CompletionValidator5 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["misc"] = ow;
         //TODO
+
+        // Misc.PokeTransferMinigameScore
     }
 }
