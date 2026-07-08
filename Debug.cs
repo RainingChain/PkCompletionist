@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace PkCompletionist;
 
@@ -12,33 +13,15 @@ internal class Debug
 {
     public static void OnStart()
     {
-        var vanilla = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_vanilla.bin")!;
-        var modded = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_modded.bin")!;
-        var pixel = Program.TryReadAllBytes(@"C:\Users\Samuel\Game\3DS\Shuffle\savedata_pixel.bin")!;
-        //var dest = @"C:\Users\Samuel\AppData\Roaming\Azahar\sdmc\Nintendo 3DS\00000000000000000000000000000000\00000000000000000000000000000000\title\00040000\00141000\data\00000001\savedata.bin";
-
-
-        for (int i = 0; i < pixel.Length; i++)
-        {
-            if (vanilla[i] != modded[i])
-            {
-                Console.WriteLine("" + i + ", " + modded[i]);
-                pixel[i] = modded[i];
-            }
-        }
-        //File.WriteAllBytes(dest, pixel);
-    }
-    public static void OnStart_old()
-    {
-        var file = "C:\\Users\\samue\\Game\\Gameboy\\ROMS\\pmdTest2\\Pokemon Mystery Dungeon - Red Rescue Team (U)";
-        var versionHint = "PmdRescueTeam";
+        var file = @"C:\Users\Samuel\Game\DS\ROM\Pokemon Black2";
+        var versionHint = "";
         var bytes = Program.TryReadAllBytes($"{file}.sav");
         if (bytes == null)
             return;
         
-        var sav = (SAV3_PmdRescueTeam)Command.GetVariantSAV(bytes, versionHint)!;
-        for (var i = 0x70; i <= 0x80; i++)
-            sav.Data[i] = 0;
+        var sav = (SAV5B2W2)Command.GetVariantSAV(bytes, versionHint)!;
+        sav.EventWork.SetEventFlag(0x015b, false);
+
         /*
         sav.Data[sav.off.MakuhitaDojoCompletedOffset] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 1] = 0xFF;
@@ -62,7 +45,8 @@ internal class Debug
             }
         }
         */
-        File.WriteAllBytes($"{file}_2.sav", sav.Write().ToArray());
+        File.Copy($"{file}.sav", $"{file}.sav" + DateTime.Now.ToFileTimeUtc());
+        File.WriteAllBytes($"{file}.sav", sav.Write().ToArray());
         return;
 
         /* For debug:

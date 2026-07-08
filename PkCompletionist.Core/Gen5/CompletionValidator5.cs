@@ -6,6 +6,29 @@ using System.Text.RegularExpressions;
 using static System.Buffers.Binary.BinaryPrimitives;
 namespace PkCompletionist.Core;
 
+/*
+not working
+
+Yes	
+Emolga for Gigalith		Route 7
+	Yes	
+Mantine for Tangrowth		Humilau City
+	Yes	
+Ditto for Rotom		Route 15
+	Yes	
+Excadrill for Ambipom		Accumula Town
+	Yes	
+Hippowdon for Alakazam		Accumula Town
+
+--------------------
+to check in old save
+
+yancy trades
+
+
+
+*/
+
 internal class CompletionValidator5 : CompletionValidatorX
 {
     public CompletionValidator5(Command command, SAV5B2W2 sav, Objective objective) : base(command, sav, objective)
@@ -26,8 +49,9 @@ internal class CompletionValidator5 : CompletionValidatorX
         Generate_inGameTrade();
         Generate_inGameGift();
 
-        Generate_itemInMap();
+        Generate_itemInMap(); 
         Generate_itemGift();
+        Generate_battle();
 
         Generate_joinAvenue();
 
@@ -37,13 +61,14 @@ internal class CompletionValidator5 : CompletionValidatorX
         Generate_medal();
 
         Generate_trainerStar();
-        //Generate_pokestarStudios();
+        Generate_easyChatSystemWord();
+        Generate_pokestarStudios();
         Generate_props();
+        Generate_pokemonMusical();
+        Generate_funfest();
+        Generate_pcWallpaper();
         Generate_uiSkin();
-        //Generate_pokemonMusical();
-        //Generate_funfest();
 
-        Generate_battle();
         Generate_record();
         Generate_misc();
     }
@@ -440,124 +465,122 @@ internal class CompletionValidator5 : CompletionValidatorX
         var ow = new Dictionary<string, bool>();
         owned["pwt"] = ow;
 
-        // Kinda bad. It doesn't track each variant of the challenge.
-        var val = this.sav.PWT.GetFlags(0) == 65535 && this.sav.PWT.GetFlags(1) == 65535;
-        ow["DriftveilSingle"] = val;
-        ow["DriftveilDouble"] = val;
-        ow["DriftveilTriple"] = val;
-        ow["DriftveilRotation"] = val;
-        ow["RentalSingle"] = val;
-        ow["RentalDouble"] = val;
-        ow["RentalTriple"] = val;
-        ow["RentalRotation"] = val;
-        ow["MixSingle"] = val;
-        ow["MixDouble"] = val;
-        ow["MixTriple"] = val;
-        ow["MixRotation"] = val;
-        ow["UnovaLeadersSingle"] = val;
-        ow["UnovaLeadersDouble"] = val;
-        ow["UnovaLeadersTriple"] = val;
-        ow["UnovaLeadersRotation"] = val;
-        ow["KantoLeadersSingle"] = val;
-        ow["KantoLeadersDouble"] = val;
-        ow["KantoLeadersTriple"] = val;
-        ow["KantoLeadersRotation"] = val;
-        ow["JohtoLeadersSingle"] = val;
-        ow["JohtoLeadersDouble"] = val;
-        ow["JohtoLeadersTriple"] = val;
-        ow["JohtoLeadersRotation"] = val;
-        ow["HoennLeadersSingle"] = val;
-        ow["HoennLeadersDouble"] = val;
-        ow["HoennLeadersTriple"] = val;
-        ow["HoennLeadersRotation"] = val;
-        ow["SinnohLeadersSingle"] = val;
-        ow["SinnohLeadersDouble"] = val;
-        ow["SinnohLeadersTriple"] = val;
-        ow["SinnohLeadersRotation"] = val;
-        ow["WorldLeadersSingle"] = val;
-        ow["WorldLeadersDouble"] = val;
-        ow["WorldLeadersTriple"] = val;
-        ow["WorldLeadersRotation"] = val;
-        ow["ChampionsSingle"] = val;
-        ow["ChampionsDouble"] = val;
-        ow["ChampionsTriple"] = val;
-        ow["ChampionsRotation"] = val;
-        ow["RentalMastersSingle"] = val;
-        ow["RentalMastersDouble"] = val;
-        ow["RentalMastersTriple"] = val;
-        ow["RentalMastersRotation"] = val;
-        ow["MixMastersSingle"] = val;
-        ow["MixMastersDouble"] = val;
-        ow["MixMastersTriple"] = val;
-        ow["MixMastersRotation"] = val;
-        ow["TypeExpertNormalSingle"] = val;
-        ow["TypeExpertNormalDouble"] = val;
-        ow["TypeExpertNormalTriple"] = val;
-        ow["TypeExpertNormalRotation"] = val;
-        ow["TypeExpertFightingSingle"] = val;
-        ow["TypeExpertFightingDouble"] = val;
-        ow["TypeExpertFightingTriple"] = val;
-        ow["TypeExpertFightingRotation"] = val;
-        ow["TypeExpertFlyingSingle"] = val;
-        ow["TypeExpertFlyingDouble"] = val;
-        ow["TypeExpertFlyingTriple"] = val;
-        ow["TypeExpertFlyingRotation"] = val;
-        ow["TypeExpertPoisonSingle"] = val;
-        ow["TypeExpertPoisonDouble"] = val;
-        ow["TypeExpertPoisonTriple"] = val;
-        ow["TypeExpertPoisonRotation"] = val;
-        ow["TypeExpertGroundSingle"] = val;
-        ow["TypeExpertGroundDouble"] = val;
-        ow["TypeExpertGroundTriple"] = val;
-        ow["TypeExpertGroundRotation"] = val;
-        ow["TypeExpertRockSingle"] = val;
-        ow["TypeExpertRockDouble"] = val;
-        ow["TypeExpertRockTriple"] = val;
-        ow["TypeExpertRockRotation"] = val;
-        ow["TypeExpertBugSingle"] = val;
-        ow["TypeExpertBugDouble"] = val;
-        ow["TypeExpertBugTriple"] = val;
-        ow["TypeExpertBugRotation"] = val;
-        ow["TypeExpertGhostSingle"] = val;
-        ow["TypeExpertGhostDouble"] = val;
-        ow["TypeExpertGhostTriple"] = val;
-        ow["TypeExpertGhostRotation"] = val;
-        ow["TypeExpertSteelSingle"] = val;
-        ow["TypeExpertSteelDouble"] = val;
-        ow["TypeExpertSteelTriple"] = val;
-        ow["TypeExpertSteelRotation"] = val;
-        ow["TypeExpertFireSingle"] = val;
-        ow["TypeExpertFireDouble"] = val;
-        ow["TypeExpertFireTriple"] = val;
-        ow["TypeExpertFireRotation"] = val;
-        ow["TypeExpertWaterSingle"] = val;
-        ow["TypeExpertWaterDouble"] = val;
-        ow["TypeExpertWaterTriple"] = val;
-        ow["TypeExpertWaterRotation"] = val;
-        ow["TypeExpertGrassSingle"] = val;
-        ow["TypeExpertGrassDouble"] = val;
-        ow["TypeExpertGrassTriple"] = val;
-        ow["TypeExpertGrassRotation"] = val;
-        ow["TypeExpertElectricSingle"] = val;
-        ow["TypeExpertElectricDouble"] = val;
-        ow["TypeExpertElectricTriple"] = val;
-        ow["TypeExpertElectricRotation"] = val;
-        ow["TypeExpertPsychicSingle"] = val;
-        ow["TypeExpertPsychicDouble"] = val;
-        ow["TypeExpertPsychicTriple"] = val;
-        ow["TypeExpertPsychicRotation"] = val;
-        ow["TypeExpertIceSingle"] = val;
-        ow["TypeExpertIceDouble"] = val;
-        ow["TypeExpertIceTriple"] = val;
-        ow["TypeExpertIceRotation"] = val;
-        ow["TypeExpertDragonSingle"] = val;
-        ow["TypeExpertDragonDouble"] = val;
-        ow["TypeExpertDragonTriple"] = val;
-        ow["TypeExpertDragonRotation"] = val;
-        ow["TypeExpertDarkSingle"] = val;
-        ow["TypeExpertDarkDouble"] = val;
-        ow["TypeExpertDarkTriple"] = val;
-        ow["TypeExpertDarkRotation"] = val;
+        ow["DriftveilSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Driftveil) >= 1;
+        ow["DriftveilDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Driftveil) >= 2;
+        ow["DriftveilTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Driftveil) >= 3;
+        ow["DriftveilRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Driftveil) >= 4;
+        ow["RentalSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Rental) >= 1;
+        ow["RentalDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Rental) >= 2;
+        ow["RentalTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Rental) >= 3;
+        ow["RentalRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Rental) >= 4;
+        ow["MixSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Mix) >= 1;
+        ow["MixDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Mix) >= 2;
+        ow["MixTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Mix) >= 3;
+        ow["MixRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Mix) >= 4;
+        ow["UnovaLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Unova) >= 1;
+        ow["UnovaLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Unova) >= 2;
+        ow["UnovaLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Unova) >= 3;
+        ow["UnovaLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Unova) >= 4;
+        ow["KantoLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Kanto) >= 1;
+        ow["KantoLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Kanto) >= 2;
+        ow["KantoLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Kanto) >= 3;
+        ow["KantoLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Kanto) >= 4;
+        ow["JohtoLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Johto) >= 1;
+        ow["JohtoLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Johto) >= 2;
+        ow["JohtoLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Johto) >= 3;
+        ow["JohtoLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Johto) >= 4;
+        ow["HoennLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Hoenn) >= 1;
+        ow["HoennLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Hoenn) >= 2;
+        ow["HoennLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Hoenn) >= 3;
+        ow["HoennLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Hoenn) >= 4;
+        ow["SinnohLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Sinnoh) >= 1;
+        ow["SinnohLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Sinnoh) >= 2;
+        ow["SinnohLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Sinnoh) >= 3;
+        ow["SinnohLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Sinnoh) >= 4;
+        ow["WorldLeadersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.World) >= 1;
+        ow["WorldLeadersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.World) >= 2;
+        ow["WorldLeadersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.World) >= 3;
+        ow["WorldLeadersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.World) >= 4;
+        ow["ChampionsSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Champion) >= 1;
+        ow["ChampionsDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Champion) >= 2;
+        ow["ChampionsTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Champion) >= 3;
+        ow["ChampionsRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Champion) >= 4;
+        ow["RentalMastersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.RentalMaster) >= 1;
+        ow["RentalMastersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.RentalMaster) >= 2;
+        ow["RentalMastersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.RentalMaster) >= 3;
+        ow["RentalMastersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.RentalMaster) >= 4;
+        ow["MixMastersSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.MixMaster) >= 1;
+        ow["MixMastersDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.MixMaster) >= 2;
+        ow["MixMastersTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.MixMaster) >= 3;
+        ow["MixMastersRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.MixMaster) >= 4;
+        ow["TypeExpertNormalSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Normal) >= 1;
+        ow["TypeExpertNormalDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Normal) >= 2;
+        ow["TypeExpertNormalTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Normal) >= 3;
+        ow["TypeExpertNormalRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Normal) >= 4;
+        ow["TypeExpertFightingSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Fighting) >= 1;
+        ow["TypeExpertFightingDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Fighting) >= 2;
+        ow["TypeExpertFightingTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Fighting) >= 3;
+        ow["TypeExpertFightingRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Fighting) >= 4;
+        ow["TypeExpertFlyingSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Flying) >= 1;
+        ow["TypeExpertFlyingDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Flying) >= 2;
+        ow["TypeExpertFlyingTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Flying) >= 3;
+        ow["TypeExpertFlyingRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Flying) >= 4;
+        ow["TypeExpertPoisonSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Poison) >= 1;
+        ow["TypeExpertPoisonDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Poison) >= 2;
+        ow["TypeExpertPoisonTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Poison) >= 3;
+        ow["TypeExpertPoisonRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Poison) >= 4;
+        ow["TypeExpertGroundSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Ground) >= 1;
+        ow["TypeExpertGroundDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Ground) >= 2;
+        ow["TypeExpertGroundTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Ground) >= 3;
+        ow["TypeExpertGroundRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Ground) >= 4;
+        ow["TypeExpertRockSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Rock) >= 1;
+        ow["TypeExpertRockDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Rock) >= 2;
+        ow["TypeExpertRockTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Rock) >= 3;
+        ow["TypeExpertRockRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Rock) >= 4;
+        ow["TypeExpertBugSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Bug) >= 1;
+        ow["TypeExpertBugDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Bug) >= 2;
+        ow["TypeExpertBugTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Bug) >= 3;
+        ow["TypeExpertBugRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Bug) >= 4;
+        ow["TypeExpertGhostSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Ghost) >= 1;
+        ow["TypeExpertGhostDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Ghost) >= 2;
+        ow["TypeExpertGhostTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Ghost) >= 3;
+        ow["TypeExpertGhostRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Ghost) >= 4;
+        ow["TypeExpertSteelSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Steel) >= 1;
+        ow["TypeExpertSteelDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Steel) >= 2;
+        ow["TypeExpertSteelTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Steel) >= 3;
+        ow["TypeExpertSteelRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Steel) >= 4;
+        ow["TypeExpertFireSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Fire) >= 1;
+        ow["TypeExpertFireDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Fire) >= 2;
+        ow["TypeExpertFireTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Fire) >= 3;
+        ow["TypeExpertFireRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Fire) >= 4;
+        ow["TypeExpertWaterSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Water) >= 1;
+        ow["TypeExpertWaterDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Water) >= 2;
+        ow["TypeExpertWaterTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Water) >= 3;
+        ow["TypeExpertWaterRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Water) >= 4;
+        ow["TypeExpertGrassSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Grass) >= 1;
+        ow["TypeExpertGrassDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Grass) >= 2;
+        ow["TypeExpertGrassTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Grass) >= 3;
+        ow["TypeExpertGrassRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Grass) >= 4;
+        ow["TypeExpertElectricSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Electric) >= 1;
+        ow["TypeExpertElectricDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Electric) >= 2;
+        ow["TypeExpertElectricTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Electric) >= 3;
+        ow["TypeExpertElectricRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Electric) >= 4;
+        ow["TypeExpertPsychicSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Psychic) >= 1;
+        ow["TypeExpertPsychicDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Psychic) >= 2;
+        ow["TypeExpertPsychicTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Psychic) >= 3;
+        ow["TypeExpertPsychicRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Psychic) >= 4;
+        ow["TypeExpertIceSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Ice) >= 1;
+        ow["TypeExpertIceDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Ice) >= 2;
+        ow["TypeExpertIceTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Ice) >= 3;
+        ow["TypeExpertIceRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Ice) >= 4;
+        ow["TypeExpertDragonSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Dragon) >= 1;
+        ow["TypeExpertDragonDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Dragon) >= 2;
+        ow["TypeExpertDragonTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Dragon) >= 3;
+        ow["TypeExpertDragonRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Dragon) >= 4;
+        ow["TypeExpertDarkSingle"] = sav.PWT.GetPWTRecord(PWTRecordID.Dark) >= 1;
+        ow["TypeExpertDarkDouble"] = sav.PWT.GetPWTRecord(PWTRecordID.Dark) >= 2;
+        ow["TypeExpertDarkTriple"] = sav.PWT.GetPWTRecord(PWTRecordID.Dark) >= 3;
+        ow["TypeExpertDarkRotation"] = sav.PWT.GetPWTRecord(PWTRecordID.Dark) >= 4;
     }
 
     
@@ -658,15 +681,16 @@ internal class CompletionValidator5 : CompletionValidatorX
 
     public void Generate_inGameTrade()
     {
+        // wb_flag_define.h
         var ow = new Dictionary<string, bool>();
         owned["inGameTrade"] = ow;
 
-        ow["PetililforCottonee"] = sav.EventWork.GetEventFlag(0x0412);
-        ow["EmolgaforGigalith"] = sav.EventWork.GetEventFlag(0x0256);
-        ow["MantineforTangrowth"] = sav.EventWork.GetEventFlag(0x0405);
-        ow["DittoforRotom"] = sav.EventWork.GetEventFlag(0x0259);
-        ow["ExcadrillforAmbipom"] = sav.EventWork.GetEventFlag(0x0431);
-        ow["HippowdonforAlakazam"] = sav.EventWork.GetEventFlag(0x0432);
+        ow["PetililforCottonee"] = sav.EventWork.GetEventFlag(412);
+        ow["EmolgaforGigalith"] = sav.EventWork.GetEventFlag(256);
+        ow["MantineforTangrowth"] = sav.EventWork.GetEventFlag(405);
+        ow["DittoforRotom"] = sav.EventWork.GetEventFlag(259);
+        ow["ExcadrillforAmbipom"] = sav.EventWork.GetEventFlag(431);
+        ow["HippowdonforAlakazam"] = sav.EventWork.GetEventFlag(432);
 
         var yancySpecies = new HashSet<int>();
         var curtisSpecies = new HashSet<int>();
@@ -680,30 +704,30 @@ internal class CompletionValidator5 : CompletionValidatorX
                 curtisSpecies.Add(pk.Species);
         }
 
-        ow["AnyforMeowthYancymaleplayercharacteronly"] = yancySpecies.Contains(52);
-        ow["AnyforWobbuffetYancymaleplayercharacteronly"] = yancySpecies.Contains(202);
-        ow["AnyforRaltsYancymaleplayercharacteronly"] = yancySpecies.Contains(280);
-        ow["AnyforShieldonYancymaleplayercharacteronly"] = yancySpecies.Contains(410);
-        ow["AnyforRhyhornYancymaleplayercharacteronly"] = yancySpecies.Contains(111);
-        ow["AnyforShellosYancymaleplayercharacteronly"] = yancySpecies.Contains(422);
-        ow["AnyforMawileYancymaleplayercharacteronly"] = yancySpecies.Contains(303);
-        ow["AnyforSpiritombYancymaleplayercharacteronly"] = yancySpecies.Contains(442);
-        ow["AnyforSnorlaxYancymaleplayercharacteronly"] = yancySpecies.Contains(143);
-        ow["AnyforTeddiursaYancymaleplayercharacteronly"] = yancySpecies.Contains(216);
-        ow["AnyforSpindaYancymaleplayercharacteronly"] = yancySpecies.Contains(327);
-        ow["AnyforTogepiYancymaleplayercharacteronly"] = yancySpecies.Contains(175);
-        ow["AnyforMankeyCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(56);
-        ow["AnyforWobbuffetCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(202);
-        ow["AnyforRaltsCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(280);
-        ow["AnyforCranidosCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(408);
-        ow["AnyforRhyhornCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(111);
-        ow["AnyforShellosCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(422);
-        ow["AnyforSableyeCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(302);
-        ow["AnyforSpiritombCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(442);
-        ow["AnyforSnorlaxCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(143);
-        ow["AnyforPhanpyCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(231);
-        ow["AnyforSpindaCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(327);
-        ow["AnyforTogepiCurtisfemaleplayercharacteronly"] = curtisSpecies.Contains(175);
+        ow["AnyforMeowthYancy"] = yancySpecies.Contains(52);
+        ow["AnyforWobbuffetYancy"] = yancySpecies.Contains(202);
+        ow["AnyforRaltsYancy"] = yancySpecies.Contains(280);
+        ow["AnyforShieldonYancy"] = yancySpecies.Contains(410);
+        ow["AnyforRhyhornYancy"] = yancySpecies.Contains(111);
+        ow["AnyforShellosYancy"] = yancySpecies.Contains(422);
+        ow["AnyforMawileYancy"] = yancySpecies.Contains(303);
+        ow["AnyforSpiritombYancy"] = yancySpecies.Contains(442);
+        ow["AnyforSnorlaxYancy"] = yancySpecies.Contains(143);
+        ow["AnyforTeddiursaYancy"] = yancySpecies.Contains(216);
+        ow["AnyforSpindaYancy"] = yancySpecies.Contains(327);
+        ow["AnyforTogepiYancy"] = yancySpecies.Contains(175);
+        ow["AnyforMankeyCurtis"] = curtisSpecies.Contains(56);
+        ow["AnyforWobbuffetCurtis"] = curtisSpecies.Contains(202);
+        ow["AnyforRaltsCurtis"] = curtisSpecies.Contains(280);
+        ow["AnyforCranidosCurtis"] = curtisSpecies.Contains(408);
+        ow["AnyforRhyhornCurtis"] = curtisSpecies.Contains(111);
+        ow["AnyforShellosCurtis"] = curtisSpecies.Contains(422);
+        ow["AnyforSableyeCurtis"] = curtisSpecies.Contains(302);
+        ow["AnyforSpiritombCurtis"] = curtisSpecies.Contains(442);
+        ow["AnyforSnorlaxCurtis"] = curtisSpecies.Contains(143);
+        ow["AnyforPhanpyCurtis"] = curtisSpecies.Contains(231);
+        ow["AnyforSpindaCurtis"] = curtisSpecies.Contains(327);
+        ow["AnyforTogepiCurtis"] = curtisSpecies.Contains(175);
 
     }
     public void Generate_inGameGift()
@@ -847,7 +871,7 @@ internal class CompletionValidator5 : CompletionValidatorX
     }
     public bool EnteredHallOfFame()
     {
-        return false; //TODO sav.EventWork.GetEventFlag(2404);
+        return sav.Records.GetRecord32(2) > 0;
     }
 
 
@@ -872,11 +896,64 @@ internal class CompletionValidator5 : CompletionValidatorX
         };    
         ow["NationalPokedex"] = NationalPokedex();
         
+        var Pokestar = () => {
+            for (int i = 0; i <= 39; i++) {
+                if (!HasCompletedPokestar(i))
+                    return false;
+            }
+            return true;
+        };    
+        ow[fmt("Pokéstar Studios")] = Pokestar();
 
-        // TODO Pokéstar Studios etc
+        ow[fmt("Champions Tournament")] = sav.PWT.GetPWTRecord(PWTRecordID.Champion) >= 1;
+        
+        ow[fmt("Entralink")] = this.sav.Entralink.BlackCityLevel >= 30 && this.sav.Entralink.WhiteForestLevel >= 30;
+    }
+    
 
-        //ow[fmt("Pokéstar Studios")] = 
-        // sav.BattleSubwayPlay
+    enum PokestarMovieEnding {
+        Normal,
+        Bad,
+        Strange,
+    }
+
+    private bool GetBit(int byte_offset, int bit_index)
+    {
+        int offset = bit_index / 8;
+        int bit_index_in_byte = bit_index % 8;
+        return ((sav.Data[byte_offset + offset] >> bit_index) & 1) != 0;
+    }
+
+    bool HasPokestarEnding(int scenarioIdx, PokestarMovieEnding ending) {
+        const int success_flag_offset = 0x10;
+        const int bad_flag_offset = 0x2C4;
+        const int weird_flag_offset = 0x2B4;
+        int flagOffsetToUse = ending switch
+        {
+            PokestarMovieEnding.Normal => success_flag_offset,
+            PokestarMovieEnding.Bad => bad_flag_offset,
+            PokestarMovieEnding.Strange => weird_flag_offset,
+            _ => success_flag_offset,
+        };
+       return GetBit(SAV5B2W2.PokestarOffset + flagOffsetToUse, scenarioIdx);        
+    }
+
+    bool HasCompletedPokestar(int scenarioIdx) {
+        return HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Normal)
+             || HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Bad) 
+             || HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Strange);
+    }
+
+    void Generate_pokestarStudios(){
+        var ow = new Dictionary<string, bool>();
+        owned["pokestarStudios"] = ow;
+
+        for (int scenarioIdx = 0; scenarioIdx <= 39; scenarioIdx++)
+        {
+            ow[$"{scenarioIdx}N"] = HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Normal);
+            ow[$"{scenarioIdx}B"] = HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Bad);
+            ow[$"{scenarioIdx}S"] = HasPokestarEnding(scenarioIdx, PokestarMovieEnding.Strange);
+        }
     }
 
     public void Generate_record()
@@ -913,6 +990,7 @@ internal class CompletionValidator5 : CompletionValidatorX
 
     public void Generate_easyChatSystemWord()
     {
+        //TODO in pokecompletion
         var ow = new Dictionary<string, bool>();
         owned["easyChatSystemWord"] = ow;
 
@@ -958,6 +1036,45 @@ internal class CompletionValidator5 : CompletionValidatorX
 
     }
 
+    public void Generate_pokemonMusical()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["pokemonMusical"] = ow;
+
+        // not trackable
+    }
+
+    public void Generate_funfest()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["funfest"] = ow;
+
+        // TODO
+    }
+
+    public void Generate_pcWallpaper()
+    {
+        var ow = new Dictionary<string, bool>();
+        owned["pcWallpaper"] = ow;
+
+        var autoGot = new List<string> {"Forest", "City", "Desert", "Savanna", "Crag", "Volcano", "Snow", "Cave", "Beach", "Seafloor", "River", "Sky", "Checks", "Poké Center", "Machine", "Simple"};
+
+        foreach (var pcWallpaper in autoGot){
+            ow[fmt(pcWallpaper)] = true;
+        }
+
+        var onHallOfFame = new List<string> {"Monochrome", "Team Plasma", "Movie", "PWT"};
+        foreach (var pcWallpaper in onHallOfFame){
+            ow[fmt(pcWallpaper)] = EnteredHallOfFame();
+        }
+        
+        var onPk = new List<string> {"Black Kyurem", "White Kyurem", "Reshiram", "Zekrom", };
+        var zekKyu = HasPkm(644) && HasPkm(646);
+        foreach (var pcWallpaper in onHallOfFame){
+            ow[fmt(pcWallpaper)] = zekKyu;
+        }
+    }
+
     public void Generate_misc()
     {
         var ow = new Dictionary<string, bool>();
@@ -966,4 +1083,5 @@ internal class CompletionValidator5 : CompletionValidatorX
 
         // Misc.PokeTransferMinigameScore
     }
+
 }
