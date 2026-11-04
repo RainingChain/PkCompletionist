@@ -9,7 +9,7 @@ dotnet test tests/PkCompletionist.Tests/PkCompletionist.Tests.csproj
 The suite calls `CompletionValidator.Execute` directly for each save in `Saves`,
 with both `normal` and `living` objectives and an empty version hint. It compares
 the return value, obtained-status array, completion-hints array, and command
-messages with committed JSON fixtures. Array order and empty strings are retained.
+messages with committed JSON fixtures in `Fixtures/Completion/`. Array order and empty strings are retained.
 Each fixture also records the input filename, SHA-256, objective, and version hint.
 Mismatch messages identify the save, objective, field, and array index.
 

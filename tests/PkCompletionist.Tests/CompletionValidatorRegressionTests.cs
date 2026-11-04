@@ -15,7 +15,7 @@ public sealed class CompletionValidatorRegressionTests
     {
         var testCase = ValidatorCase.All().Single(c => c.Id == id && c.Objective == objective);
         var context = $"{testCase.SaveFile} ({objective})";
-        var fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", testCase.FixtureFile);
+        var fixturePath = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Completion", testCase.FixtureFile);
         Assert.True(File.Exists(fixturePath), $"{context}: missing fixture {fixturePath}. Generate fixtures explicitly; tests never create them.");
         var expected = JsonSerializer.Deserialize<ValidatorSnapshot>(File.ReadAllText(fixturePath));
         Assert.NotNull(expected);

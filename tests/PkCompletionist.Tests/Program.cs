@@ -50,7 +50,7 @@ internal static class Program
             return (testCase.FixtureFile, Json: JsonSerializer.Serialize(snapshot, ValidatorSnapshot.JsonOptions) + "\n");
         }).ToArray();
 
-        var fixturesDirectory = Path.Combine(projectDirectory, "Fixtures");
+        var fixturesDirectory = Path.Combine(projectDirectory, "Fixtures", "Completion");
         Directory.CreateDirectory(fixturesDirectory);
         foreach (var (file, json) in snapshots)
         {
