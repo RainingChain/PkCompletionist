@@ -1,0 +1,41 @@
+[package]
+name = "pkcompletionist-wasm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+path = "Program.rs"
+crate-type = ["cdylib", "rlib"]
+
+[workspace]
+members = ["PKHeX.Core", "PkCompletionist.Core"]
+default-members = ["."]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.86"
+license = "GPL-3.0-or-later"
+
+[workspace.dependencies]
+pkhex-core = { path = "PKHeX.Core" }
+pkcompletionist-core = { path = "PkCompletionist.Core" }
+serde_json = "=1.0.140"
+wasm-bindgen = "=0.2.100"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[dependencies]
+pkcompletionist-core.workspace = true
+wasm-bindgen.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+sha2 = "0.10"
+
+[lints]
+workspace = true

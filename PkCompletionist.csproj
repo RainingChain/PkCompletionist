@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>$(NoWarn);CA1416</NoWarn>
-		<DefaultItemExcludes>$(DefaultItemExcludes);PkCompletionist.Core\bin\**;PkCompletionist.Core\obj\**;PKHeX.Core\bin\**;PKHeX.Core\obj\**;tests\**</DefaultItemExcludes>
+		<DefaultItemExcludes>$(DefaultItemExcludes);PkCompletionist.Core\bin\**;PkCompletionist.Core\obj\**;PKHeX.Core\bin\**;PKHeX.Core\obj\**;tests\**;rust\**</DefaultItemExcludes>
 	</PropertyGroup>
 
 	<ItemGroup>
