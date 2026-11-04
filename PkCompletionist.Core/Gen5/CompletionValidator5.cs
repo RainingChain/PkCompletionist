@@ -921,7 +921,7 @@ internal class CompletionValidator5 : CompletionValidatorX
     {
         int offset = bit_index / 8;
         int bit_index_in_byte = bit_index % 8;
-        return ((sav.Data[byte_offset + offset] >> bit_index) & 1) != 0;
+        return ((sav.Data[byte_offset + offset] >> bit_index_in_byte) & 1) != 0;
     }
 
     bool HasPokestarEnding(int scenarioIdx, PokestarMovieEnding ending) {
@@ -1070,7 +1070,7 @@ internal class CompletionValidator5 : CompletionValidatorX
         
         var onPk = new List<string> {"Black Kyurem", "White Kyurem", "Reshiram", "Zekrom", };
         var zekKyu = HasPkm(644) && HasPkm(646);
-        foreach (var pcWallpaper in onHallOfFame){
+        foreach (var pcWallpaper in onPk){
             ow[fmt(pcWallpaper)] = zekKyu;
         }
     }
