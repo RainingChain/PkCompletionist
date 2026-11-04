@@ -189,7 +189,7 @@ internal class Program
         var versionHint = "PmdRescueTeam";
 
         /*
-        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe analyzeFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
+        C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
         if (args[0] == "analyzeFlags")
         {
