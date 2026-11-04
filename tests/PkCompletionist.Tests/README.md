@@ -38,9 +38,9 @@ make an unexpected regression pass.
 To add coverage, place an unchanged save in `Saves`, add its ID and filename to
 `ValidatorCase.All`, then generate and review both objective fixtures. Set a
 case-specific version hint there if a future save requires it. Commit the save
-and fixtures together. The supplied nine saves cover Yellow, Crystal, Emerald,
-Platinum, Black2, Red Rescue Team, Pinball Ruby & Sapphire, Ranger, and Shuffle
-(18 regression cases). Other validators require additional saves.
+and fixtures together. The supplied ten saves cover Yellow, Crystal, Emerald,
+Platinum, Black2, Red Rescue Team, Explorers of Sky, Pinball Ruby & Sapphire,
+Ranger, and Shuffle (20 regression cases). Other validators require additional saves.
 
 The test project references the root application because it compiles both core
 source trees and the required resources. The root project excludes `tests/**`

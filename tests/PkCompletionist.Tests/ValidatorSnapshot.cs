@@ -19,6 +19,7 @@ internal sealed record ValidatorCase(string Id, string SaveFile, string Objectiv
             ("platinum", "Pokemon Platinum.sav"),
             ("black2", "Pokemon Black2.sav"),
             ("red-rescue-team", "Pokemon Mystery Dungeon - Red Rescue Team.sav"),
+            ("explorers-of-sky", "Pokemon Mystery Dungeon - Explorers of Sky.sav"),
             ("pinball-ruby-sapphire", "Pokemon Pinball - Ruby & Sapphire.sav"),
             ("ranger", "Pokemon Ranger.dsv"),
             ("shuffle", "Pokemon Shuffle.bin"),
