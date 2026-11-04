@@ -110,3 +110,22 @@ Crystal's `MysteryGift` and `MysteryGiftx1000` cases capture the missing-save-B
 error and resulting save A. Successful two-player gifts use an unseeded random
 generator, so their random outcomes are not covered by output hash fixtures.
 No production behavior is changed to generate these baselines.
+
+## FlagAnalyzer Crystal regression test
+
+The test compares `Pokemon Crystal - FlagBefore.sav` (save A) with
+`Pokemon Crystal - FlagAfter.sav` (save B), using an empty version hint and
+`0,2147483647` as the change range to apply every detected, non-ignored difference.
+`Fixtures/crystal.flag-analyzer.json` records the input filenames and SHA-256 hashes,
+range, return value, error, ordered messages, and both complete output-save hashes.
+The snapshot captures current behavior, including Crystal's ignored time/checksum
+offsets and save serialization. Input saves are never overwritten, and command
+static state is reset before and after capture. Missing fixtures fail the test.
+
+Generate only this fixture explicitly:
+
+```powershell
+dotnet run --project tests/PkCompletionist.Tests -- --generate-flag-analyzer-fixture tests/PkCompletionist.Tests
+```
+
+The normal test command runs this test alongside the existing regression tests.

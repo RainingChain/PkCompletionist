@@ -7,15 +7,27 @@ internal static class Program
     // This entry point runs only through dotnet run; dotnet test uses the xUnit adapter.
     private static int Main(string[] args)
     {
-        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture" && args[0] != "--generate-event-fixtures"))
+        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture" && args[0] != "--generate-event-fixtures" && args[0] != "--generate-flag-analyzer-fixture"))
         {
-            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture|--generate-event-fixtures> <test-project-directory>");
+            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture|--generate-event-fixtures|--generate-flag-analyzer-fixture> <test-project-directory>");
             return 1;
         }
 
         var projectDirectory = Path.GetFullPath(args[1]);
         if (!File.Exists(Path.Combine(projectDirectory, "PkCompletionist.Tests.csproj")))
             throw new ArgumentException("The destination must be the PkCompletionist.Tests project directory.");
+
+        if (args[0] == "--generate-flag-analyzer-fixture")
+        {
+            var snapshot = FlagAnalyzerSnapshot.Capture(Path.Combine(projectDirectory, "Saves"));
+            if (!snapshot.Success)
+                throw new InvalidOperationException($"Crystal flag analysis failed: {string.Join("; ", snapshot.Messages)}");
+            Directory.CreateDirectory(Path.Combine(projectDirectory, "Fixtures"));
+            File.WriteAllText(Path.Combine(projectDirectory, "Fixtures", FlagAnalyzerSnapshot.FixtureFile),
+                JsonSerializer.Serialize(snapshot, ValidatorSnapshot.JsonOptions) + "\n");
+            Console.WriteLine($"Generated {FlagAnalyzerSnapshot.FixtureFile}");
+            return 0;
+        }
 
         if (args[0] == "--generate-event-fixtures")
         {
