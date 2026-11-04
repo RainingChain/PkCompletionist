@@ -46,3 +46,21 @@ The test project references the root application because it compiles both core
 source trees and the required resources. The root project excludes `tests/**`
 from its default inputs, keeping test sources, data, and build outputs out of
 application builds. No changes to `PKHeX.Core` are required.
+
+## PkSorter Emerald regression test
+
+One additional test sorts `Pokemon Emerald.sav` through `PkSorter.Execute`,
+writes the result to a unique temporary save, and reloads that file as Emerald.
+It compares the national dex numbers in PC box order (box first, then slot)
+with `Fixtures/emerald.sorted-boxes.txt`. This fixture is a single comma-separated
+string, including `0` for empty slots, with no trailing newline. Party Pokemon
+are excluded. The temporary file is deleted after capture, even on failure;
+the input save is never overwritten.
+
+Generate only this fixture explicitly using the current implementation:
+
+```powershell
+dotnet run --project tests/PkCompletionist.Tests -- --generate-sorter-fixture tests/PkCompletionist.Tests
+```
+
+The normal test command runs this test alongside the validator tests.
