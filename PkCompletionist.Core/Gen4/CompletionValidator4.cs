@@ -1073,10 +1073,12 @@ internal class CompletionValidator4 : CompletionValidatorX
         ow["HallofFame"] = EnteredHallOfFame();
 
         var NationalPokedex = () =>
-        {
+        {   
+            var exclude = new HashSet<ushort> {151, 249,250,251,385,386,489,490,491,492,493};
+
             for(ushort i = 0; i <= 493; i++)
             {
-                if (i == 151 || i == 249 || i == 250 || i == 251 || i == 385 || i == 386 || i == 489 || i == 490 || i == 491 || i == 492 || i == 493)
+                if (exclude.Contains(i))
                     continue;
                 if (!sav.Dex.GetCaught(i))
                     return false;

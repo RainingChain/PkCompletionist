@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PKHeX.Core;
 
 namespace PkCompletionist;
 
@@ -36,9 +37,9 @@ internal class Debug
         if (bytes == null)
             return;
         
-        var sav = (SAV3_PmdRescueTeam)Command.GetVariantSAV(bytes, versionHint)!;
-        for (var i = 0x70; i <= 0x80; i++)
-            sav.Data[i] = 0;
+        var sav = (SAV5B2W2)Command.GetVariantSAV(bytes, versionHint)!;
+        sav.EventWork.SetEventFlag(0x015b, false);
+
         /*
         sav.Data[sav.off.MakuhitaDojoCompletedOffset] = 0xFF;
         sav.Data[sav.off.MakuhitaDojoCompletedOffset + 1] = 0xFF;

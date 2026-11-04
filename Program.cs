@@ -191,7 +191,7 @@ internal class Program
         /*
         C:\Users\samuel\source\repos\PkCompletionist\bin\Debug\net10.0\PkCompletionist.exe overwriteFlags before.sav after.sav "Pokemon Platinum.sav" "0,0"
         */
-        if (args[0] == "overwriteFlags")
+        if (args[0] == "analyzeFlags")
         {
             Console.WriteLine(System.String.Join(' ', args));
 
