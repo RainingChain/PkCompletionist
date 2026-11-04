@@ -6,8 +6,12 @@
 		<Nullable>enable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<NoWarn>$(NoWarn);CA1416</NoWarn>
-		<DefaultItemExcludes>$(DefaultItemExcludes);PkCompletionist.Core\bin\**;PkCompletionist.Core\obj\**;PKHeX.Core\bin\**;PKHeX.Core\obj\**</DefaultItemExcludes>
+		<DefaultItemExcludes>$(DefaultItemExcludes);PkCompletionist.Core\bin\**;PkCompletionist.Core\obj\**;PKHeX.Core\bin\**;PKHeX.Core\obj\**;tests\**</DefaultItemExcludes>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="PkCompletionist.Tests" />
+	</ItemGroup>
 
 	<PropertyGroup Condition="'$(RuntimeIdentifier)' == 'browser-wasm'">
 		<WasmMainJSPath>main.js</WasmMainJSPath>
