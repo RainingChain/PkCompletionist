@@ -22,6 +22,14 @@ export function createApi(bindings) {
         EventSimulator: {
             Execute: (name, bytes, hint, second = null) => command.event(name, bytes, hint, second),
         },
+        Meta: { GetVersion: () => command.version() },
+        SavDescriptor: {
+            Execute(bytes, hint) {
+                command.describe(bytes, hint);
+                return result().Descriptor;
+            },
+        },
+        PkSorter: { Execute: (bytes,hint) => command.sort_pokemon(bytes,hint) },
         FlagAnalyzer: {
             Execute: (before, after, ranges, hint) => command.analyze_flags(before, after, ranges, hint),
         },

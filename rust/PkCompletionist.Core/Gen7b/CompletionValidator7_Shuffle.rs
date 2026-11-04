@@ -1,18 +1,118 @@
-use crate::{category, CommandResult, shuffle_save::{bit, has_mon, mega_stone}};
+#![allow(non_snake_case, non_camel_case_types)]
+use crate::{
+    category,
+    shuffle_save::{bit, has_mon, mega_stone},
+    CommandResult,
+};
 use std::collections::HashSet;
-pub fn validate(data: &[u8], result: &mut CommandResult) {
-    const UNOBTAINABLE: &[usize] = &[201,202,204,206,207,208,210,211,212,213,215,216,217,218,219,220,221,222,223,224,225,226,789,793,794,802,813,825,828,829,838,859,862,912,913];
-    category(result, "pokemon", (1..=1022).filter(|id| !UNOBTAINABLE.contains(id)).map(|id| (id.to_string(), has_mon(data, id))));
-    const MISSIONS: &[usize] = &[3,8,8,5,5,7,5,7,7,5,5,6,7,3,5,7,3,4,4];
-    category(result, "missionCard", MISSIONS.iter().enumerate().map(|(card, count)| ((card + 1).to_string(), (0..*count).all(|mission| bit(data, 0xb6fc, card * 10 + mission)))));
-    const ENHANCEMENTS: &[&str] = &["MegaSpeedup","RaiseMaxLevel","LevelUp","ExpBoosterS","ExpBoosterM","ExpBoosterL","SkillBoosterS","SkillBoosterM","SkillBoosterL","SkillSwapper"];
-    category(result, "enhancement", ENHANCEMENTS.iter().enumerate().map(|(index, name)| (name.to_string(), (data[0x2d4c + index] >> 1) & 0x7f != 0)));
-    const MEGAS: &[usize] = &[3,6,9,18,573,386,181,361,241,463,115,329,483,80,281,284,287,330,94,389,239,142,150,413,235,400,275,381,346,127,337,480,309,510,779,335,407,408,350,495,333,15,130,65,256,403];
-    category(result, "megaStone", MEGAS.iter().map(|id| (format!("{id}-0"), mega_stone(data, *id, 0))).chain([6,150].into_iter().map(|id| (format!("{id}-1"), mega_stone(data, id, 1)))));
-    let species: HashSet<_> = MON_SPECIES.iter().filter(|(id, _)| has_mon(data, *id)).map(|(_, species)| species).collect();
-    category(result, "misc", [("maxTrainerRank".into(), species.len() >= 802)]);
+struct CompletionValidator7_Shuffle<'a> {
+    sav: &'a [u8],
 }
+pub fn validate(data: &[u8], result: &mut CommandResult) {
+    CompletionValidator7_Shuffle { sav: data }.GenerateAll(result);
+}
+impl CompletionValidator7_Shuffle<'_> {
+    fn GenerateAll(&self, result: &mut CommandResult) {
+        self.Generate_pokemon(result);
+        self.Generate_missionCard(result);
+        self.Generate_enhancement(result);
+        self.Generate_megaStone(result);
+        self.Generate_misc(result);
+    }
+    fn Generate_pokemon(&self, result: &mut CommandResult) {
+        let data = self.sav;
+        const UNOBTAINABLE: &[usize] = &[
+            201, 202, 204, 206, 207, 208, 210, 211, 212, 213, 215, 216, 217, 218, 219, 220, 221,
+            222, 223, 224, 225, 226, 789, 793, 794, 802, 813, 825, 828, 829, 838, 859, 862, 912,
+            913,
+        ];
+        category(
+            result,
+            "pokemon",
+            (1..=1022)
+                .filter(|id| !UNOBTAINABLE.contains(id))
+                .map(|id| (id.to_string(), has_mon(data, id))),
+        );
+    }
 
+    fn Generate_missionCard(&self, result: &mut CommandResult) {
+        let data = self.sav;
+        const MISSIONS: &[usize] = &[3, 8, 8, 5, 5, 7, 5, 7, 7, 5, 5, 6, 7, 3, 5, 7, 3, 4, 4];
+        category(
+            result,
+            "missionCard",
+            MISSIONS.iter().enumerate().map(|(card, count)| {
+                (
+                    (card + 1).to_string(),
+                    (0..*count).all(|mission| bit(data, 0xb6fc, card * 10 + mission)),
+                )
+            }),
+        );
+    }
+
+    fn Generate_enhancement(&self, result: &mut CommandResult) {
+        let data = self.sav;
+        const ENHANCEMENTS: &[&str] = &[
+            "MegaSpeedup",
+            "RaiseMaxLevel",
+            "LevelUp",
+            "ExpBoosterS",
+            "ExpBoosterM",
+            "ExpBoosterL",
+            "SkillBoosterS",
+            "SkillBoosterM",
+            "SkillBoosterL",
+            "SkillSwapper",
+        ];
+        category(
+            result,
+            "enhancement",
+            ENHANCEMENTS
+                .iter()
+                .enumerate()
+                .map(|(index, name)| (name.to_string(), (data[0x2d4c + index] >> 1) & 0x7f != 0)),
+        );
+    }
+
+    fn Generate_megaStone(&self, result: &mut CommandResult) {
+        let data = self.sav;
+        const MEGAS: &[usize] = &[
+            3, 6, 9, 18, 573, 386, 181, 361, 241, 463, 115, 329, 483, 80, 281, 284, 287, 330, 94,
+            389, 239, 142, 150, 413, 235, 400, 275, 381, 346, 127, 337, 480, 309, 510, 779, 335,
+            407, 408, 350, 495, 333, 15, 130, 65, 256, 403,
+        ];
+        category(
+            result,
+            "megaStone",
+            MEGAS
+                .iter()
+                .map(|id| (format!("{id}-0"), mega_stone(data, *id, 0)))
+                .chain(
+                    [6, 150]
+                        .into_iter()
+                        .map(|id| (format!("{id}-1"), mega_stone(data, id, 1))),
+                ),
+        );
+    }
+    fn GetSpeciesObtainedCount(&self) -> usize {
+        MON_SPECIES
+            .iter()
+            .filter(|(id, _)| has_mon(self.sav, *id))
+            .map(|(_, species)| species)
+            .collect::<HashSet<_>>()
+            .len()
+    }
+    fn Generate_misc(&self, result: &mut CommandResult) {
+        category(
+            result,
+            "misc",
+            [(
+                "maxTrainerRank".into(),
+                self.GetSpeciesObtainedCount() >= 802,
+            )],
+        );
+    }
+}
 // Data ported from CompletionValidator7_Shuffle.cs; retain source order.
 const MON_SPECIES: &[(usize, u16)] = &[
     (1, 1),

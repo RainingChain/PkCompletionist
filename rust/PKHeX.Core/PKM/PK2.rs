@@ -10,13 +10,23 @@ pub struct Pk2 {
 
 impl Pk2 {
     pub fn read(data: &[u8]) -> Self {
-        Self { species: u16::from(data[0]), held_item: u16::from(data[1]), trainer_id: u16::from_be_bytes([data[6],data[7]]), dvs: u16::from_be_bytes([data[0x15],data[0x16]]), pokerus: data[0x1c] }
+        Self {
+            species: u16::from(data[0]),
+            held_item: u16::from(data[1]),
+            trainer_id: u16::from_be_bytes([data[6], data[7]]),
+            dvs: u16::from_be_bytes([data[0x15], data[0x16]]),
+            pokerus: data[0x1c],
+        }
     }
 
-    pub fn is_shiny(&self) -> bool { self.dvs & 0x2fff == 0x2aaa }
+    pub fn is_shiny(&self) -> bool {
+        self.dvs & 0x2fff == 0x2aaa
+    }
 
     pub fn form(&self) -> u8 {
-        if self.species != 201 { return 0; }
+        if self.species != 201 {
+            return 0;
+        }
         let atk = self.dvs >> 12;
         let def = (self.dvs >> 8) & 15;
         let spe = (self.dvs >> 4) & 15;

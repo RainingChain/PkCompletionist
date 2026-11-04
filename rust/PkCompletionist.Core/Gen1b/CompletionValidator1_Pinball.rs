@@ -1,5 +1,22 @@
+#![allow(non_snake_case, non_camel_case_types)]
 use crate::{category, CommandResult};
-
+struct CompletionValidator1_Pinball<'a> {
+    sav: &'a [u8],
+}
 pub fn validate(data: &[u8], result: &mut CommandResult) {
-    category(result, "pokemon", (1..=151).map(|id| (id.to_string(), data[0x10c + id - 1] == 3)));
+    CompletionValidator1_Pinball { sav: data }.GenerateAll(result);
+}
+impl CompletionValidator1_Pinball<'_> {
+    fn GenerateAll(&self, result: &mut CommandResult) {
+        self.Generate_pokemon(result);
+    }
+    fn Generate_pokemon(&self, result: &mut CommandResult) {
+        let data = self.sav;
+
+        category(
+            result,
+            "pokemon",
+            (1..=151).map(|id| (id.to_string(), data[0x10c + id - 1] == 3)),
+        );
+    }
 }

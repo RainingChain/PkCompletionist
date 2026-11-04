@@ -1,12 +1,42 @@
 //! Only the PKHeX subset used by PkCompletionist; paths mirror the C# source.
 pub mod binary;
+#[path = "Saves/Util/Checksums.rs"]
+pub mod checksums;
+#[path = "Saves/SAV3E.rs"]
+pub mod emerald;
+#[path = "PKM/Util/Experience.rs"]
+pub mod experience;
+#[path = "Saves/SAV1.rs"]
+pub mod gen1;
 #[path = "Saves/SAV2.rs"]
 pub mod gen2;
-#[path = "PKM/Shared/PokeList2.rs"]
-mod poke_list2;
-#[path = "PKM/PK2.rs"]
-pub mod pk2;
-#[path = "Items/Bags/PlayerBag2.rs"]
-pub mod player_bag2;
+#[path = "Saves/SAV3.rs"]
+pub mod gen3;
 #[path = "Items/ItemStorage2.rs"]
 pub mod item_storage2;
+#[path = "Items/ItemStorage3E.rs"]
+pub mod item_storage3e;
+#[path = "PKM/PK1.rs"]
+pub mod pk1;
+#[path = "PKM/PK2.rs"]
+pub mod pk2;
+#[path = "PKM/PK3.rs"]
+pub mod pk3;
+#[path = "Items/Bags/PlayerBag2.rs"]
+pub mod player_bag2;
+#[path = "Items/Bags/PlayerBag3E.rs"]
+pub mod player_bag3e;
+#[path = "PKM/Util/PokeCrypto.rs"]
+pub mod poke_crypto;
+#[path = "PKM/Shared/PokeList1.rs"]
+mod poke_list1;
+#[path = "PKM/Shared/PokeList2.rs"]
+mod poke_list2;
+#[path = "PKM/Util/Conversion/SpeciesConverter.rs"]
+pub mod species_converter;
+#[path = "PKM/Strings/StringConverter1.rs"]
+pub mod string_converter1;
+#[path = "PKM/Strings/StringConverter2.rs"]
+pub mod string_converter2;
+#[path = "PKM/Strings/StringConverter3.rs"]
+pub mod string_converter3;

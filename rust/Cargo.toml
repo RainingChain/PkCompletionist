@@ -36,6 +36,7 @@ wasm-bindgen.workspace = true
 [dev-dependencies]
 serde_json.workspace = true
 sha2 = "0.10"
+pkhex-core.workspace = true
 
 [lints]
 workspace = true

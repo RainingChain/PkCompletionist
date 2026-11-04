@@ -129,3 +129,17 @@ dotnet run --project tests/PkCompletionist.Tests -- --generate-flag-analyzer-fix
 ```
 
 The normal test command runs this test alongside the existing regression tests.
+
+## SavDescriptor regression tests
+
+The ten saves used for completion validation also have descriptor snapshots in
+`Fixtures/Descriptors/`. Each captures the input SHA-256, version hint, exact
+three-string descriptor, and command messages. These preserve version/language
+values, trainer names, Unicode time separators, and play-time formatting for the
+Rust/WASM migration. Input saves are never overwritten.
+
+Generate only these fixtures explicitly:
+
+```powershell
+dotnet run --project tests/PkCompletionist.Tests -- --generate-descriptor-fixtures tests/PkCompletionist.Tests
+```

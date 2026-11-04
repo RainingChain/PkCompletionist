@@ -105,6 +105,7 @@ name = "pkcompletionist-wasm"
 version = "0.1.0"
 dependencies = [
  "pkcompletionist-core",
+ "pkhex-core",
  "serde_json",
  "sha2",
  "wasm-bindgen",

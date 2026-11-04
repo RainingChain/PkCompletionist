@@ -24,44 +24,52 @@ function Convert-Rule([string]$expression) {
     $expression = $expression.Replace('this.ownedMonList.Contains(', 'has(').Replace('ownedMonList.Contains(', 'has(')
     $expression = $expression.Replace('this.ownedItemList.Contains(', 'item(').Replace('ownedItemList.Contains(', 'item(')
     $expression = $expression.Replace('Has2(', 'item(').Replace('Has(', 'has(')
-    $expression = $expression.Replace('HasCompletedSkyTower()', 'story(3)').Replace('HasCompletedStory(', 'story(')
+    $expression = $expression.Replace('HasCompletedSkyTower()', 'self.HasCompletedSkyTower()').Replace('HasCompletedStory(', 'story(')
     $expression = [regex]::Replace($expression, 'HasFriendArea\(FriendArea\.(\w+)\)', { param($m) 'friend(' + $friends[$m.Groups[1].Value] + ')' })
     $expression = [regex]::Replace($expression, 'HasCompletedMakuhitaDojo\(MakuhitaDojo\.(\w+)\)', { param($m) 'dojo(' + $dojos[$m.Groups[1].Value] + ')' })
     $expression = $expression.Replace('this.sav.Data[', 'data[').Replace('sav.Data[', 'data[')
     $expression = $expression.Replace('UnownRelic()', '(201..=226).any(has)').Replace('HasUnown()', '(201..=228).any(has)')
     $expression = $expression.Replace('ExplorerRankPoints', 'points').Replace('pts', 'points')
-    $expression = $expression.Replace('DidStory', 'has(532)').Replace('didSomething', 'true')
+    $expression = $expression.Replace('DidStory', 'self.HasFinishedPostCreditStory()').Replace('didSomething', 'true')
     $expression = $expression.Replace('GoldenChest()', '(59..=65).all(item)').Replace('HasTreasure()', '(59..=65).any(item)')
+    $expression = $expression.Replace('has(534) || has(535)', 'self.GotShaymin()')
     return $expression
 }
-function Write-Rules([string]$source, [string[]]$methods, [string]$header, [string]$destination) {
+function Write-Rules([string]$source, [string[]]$methods, [string]$typeName, [string]$destination) {
     $clean = [regex]::Replace($source, '//[^\r\n]*', '')
-    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines = [Collections.Generic.List[string]]::new()
     $existing = Get-Content $destination -Raw
     $marker = $existing.IndexOf('// Ported rule expressions;')
-    if ($marker -lt 0) { throw "Missing generated-rule boundary: $destination" }
-    $lines.Add($existing.Substring(0, $marker).TrimEnd())
+    if ($marker -lt 0) {throw "Missing generated-rule boundary: $destination"}
+    $lines.Add($existing.Substring(0,$marker).TrimEnd())
     $lines.Add('// Ported rule expressions; regenerate with rust/tools/port-pmd-rules.ps1.')
-    $lines.Add('#[allow(clippy::vec_init_then_push, clippy::too_many_arguments)]')
-    $lines.Add($header)
+    $lines.Add('impl ' + $typeName + ' {')
     foreach ($method in $methods) {
-        $body = [regex]::Match($clean, ('public void Generate_' + $method + '\(\)\s*\{(.*?)\n    \}'), 'Singleline').Groups[1].Value
-        if (!$body) { throw "Method not found: $method" }
-        $category = [regex]::Match($body, 'owned\["([^"]+)"\]').Groups[1].Value
-        $hasRules = [regex]::IsMatch($body, 'ow\["')
-        $lines.Add($(if ($hasRules) { '    let mut entries = Vec::new();' } else { '    let entries = Vec::new();' }))
-        foreach ($rule in [regex]::Matches($body, 'ow\["([^"]+)"\]\s*=\s*(.*?);', 'Singleline')) {
-            $key = $rule.Groups[1].Value; $expression = Convert-Rule $rule.Groups[2].Value
-            $line = 'entries.push(("' + $key + '", ' + $expression + '));'
-            if ($key -eq 'OblivionForest') { $line = 'if points < 17000 { ' + $line + ' }' }
-            $lines.Add('    ' + $line)
+        $body = [regex]::Match($clean,('public void Generate_' + $method + '\(\)\s*\{(.*?)\n    \}'),'Singleline').Groups[1].Value
+        if (!$body) {throw "Method not found: $method"}
+        $category = [regex]::Match($body,'owned\["([^"]+)"\]').Groups[1].Value
+        $lines.Add('    #[allow(clippy::vec_init_then_push)]')
+        $lines.Add('    fn Generate_' + $method + '(&self,result: &mut CommandResult) {')
+        $rules = @([regex]::Matches($body,'ow\["([^"]+)"\]\s*=\s*(.*?);','Singleline') | ForEach-Object { [pscustomobject]@{Key=$_.Groups[1].Value;Expression=(Convert-Rule $_.Groups[2].Value)} })
+        $expressions = ($rules | ForEach-Object {$_.Expression}) -join ' '
+        foreach ($binding in @(@('has','|id| self.HasMon(id)'),@('item','|id| self.HasItem(id)'),@('story','|id| self.HasCompletedStory(id)'),@('friend','|id| self.HasFriendArea(id)'),@('dojo','|id| self.HasCompletedMakuhitaDojo(id)'))) {
+            if ($expressions -match ('\b' + $binding[0] + '\b')) {$lines.Add('        let ' + $binding[0] + ' = ' + $binding[1] + ';')}
         }
-        $lines.Add('    ordered_category(result, "' + $category + '", &entries);')
+        if ($expressions -match '\bdata\b') {$lines.Add('        let data = self.sav;')}
+        if ($expressions -match '\bpoints\b') {$lines.Add('        let points = self.points;')}
+        $lines.Add($(if ($rules.Count -gt 0) {'        let mut entries = Vec::new();'} else {'        let entries = Vec::new();'}))
+        foreach ($rule in $rules) {
+            $line = 'entries.push(("' + $rule.Key + '", ' + $rule.Expression + '));'
+            if ($rule.Key -eq 'OblivionForest') {$line = 'if self.points < 17000 { ' + $line + ' }'}
+            $lines.Add('        ' + $line)
+        }
+        $lines.Add('        ordered_category(result,"' + $category + '",&entries);')
+        $lines.Add('    }')
     }
     $lines.Add('}')
     $lines | Set-Content $destination
 }
-Write-Rules $rescue @('friendArea','makuhitaDojo','rank','dungeon','adventureLog','progressIcon','teamBaseFigure') 'fn populate(data: &[u8], result: &mut CommandResult, has: impl Fn(u32) -> bool + Copy, item: impl Fn(u32) -> bool + Copy, story: impl Fn(usize) -> bool, friend: impl Fn(usize) -> bool, dojo: impl Fn(usize) -> bool, points: i32) {' (Join-Path $coreDirectory 'Gen3c/CompletionValidator3_PmdRescueTeam.rs')
-Write-Rules $sky @('rank','dungeon','adventureLog','specialEpisode','progressIcon') 'fn populate(result: &mut CommandResult, has: impl Fn(u32) -> bool + Copy, item: impl Fn(u32) -> bool + Copy, points: i32) {' (Join-Path $coreDirectory 'Gen4b/CompletionValidator4_PmdSky.rs')
+Write-Rules $rescue @('friendArea','makuhitaDojo','rank','dungeon','adventureLog','progressIcon','teamBaseFigure') 'CompletionValidator3_PmdRescueTeam<''_>' (Join-Path $coreDirectory 'Gen3c/CompletionValidator3_PmdRescueTeam.rs')
+Write-Rules $sky @('rank','dungeon','adventureLog','specialEpisode','progressIcon') 'CompletionValidator4_PmdSky' (Join-Path $coreDirectory 'Gen4b/CompletionValidator4_PmdSky.rs')
 $unobtainable = [regex]::Match($sky, 'this.unobtainableItems = new List<int>\s*\{(.*?)\};', 'Singleline').Groups[1].Value
 Add-Content (Join-Path $coreDirectory 'Gen4b/CompletionValidator4_PmdSky.rs') ('const UNOBTAINABLE: &[u32] = &[' + $unobtainable + '];')

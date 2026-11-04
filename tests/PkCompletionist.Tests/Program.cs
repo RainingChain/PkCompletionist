@@ -7,15 +7,30 @@ internal static class Program
     // This entry point runs only through dotnet run; dotnet test uses the xUnit adapter.
     private static int Main(string[] args)
     {
-        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture" && args[0] != "--generate-event-fixtures" && args[0] != "--generate-flag-analyzer-fixture"))
+        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture" && args[0] != "--generate-event-fixtures" && args[0] != "--generate-flag-analyzer-fixture" && args[0] != "--generate-descriptor-fixtures"))
         {
-            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture|--generate-event-fixtures|--generate-flag-analyzer-fixture> <test-project-directory>");
+            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture|--generate-event-fixtures|--generate-flag-analyzer-fixture|--generate-descriptor-fixtures> <test-project-directory>");
             return 1;
         }
 
         var projectDirectory = Path.GetFullPath(args[1]);
         if (!File.Exists(Path.Combine(projectDirectory, "PkCompletionist.Tests.csproj")))
             throw new ArgumentException("The destination must be the PkCompletionist.Tests project directory.");
+
+        if (args[0] == "--generate-descriptor-fixtures")
+        {
+            var descriptorSnapshots = DescriptorSnapshot.Cases.Select(testCase =>
+                (testCase.Id, Snapshot: DescriptorSnapshot.Capture(Path.Combine(projectDirectory, "Saves"), testCase))).ToArray();
+            var directory = Path.Combine(projectDirectory, "Fixtures", "Descriptors");
+            Directory.CreateDirectory(directory);
+            foreach (var (id, snapshot) in descriptorSnapshots)
+            {
+                File.WriteAllText(Path.Combine(directory, id + ".json"),
+                    JsonSerializer.Serialize(snapshot, ValidatorSnapshot.JsonOptions) + "\n");
+                Console.WriteLine($"Generated {id}");
+            }
+            return 0;
+        }
 
         if (args[0] == "--generate-flag-analyzer-fixture")
         {
@@ -46,9 +61,10 @@ internal static class Program
 
         if (args[0] == "--generate-sorter-fixture")
         {
-            var order = SorterSnapshot.Capture(Path.Combine(projectDirectory, "Saves"));
+            var order = SorterSnapshot.Capture(Path.Combine(projectDirectory, "Saves"), out var outputHash);
             Directory.CreateDirectory(Path.Combine(projectDirectory, "Fixtures"));
             File.WriteAllText(Path.Combine(projectDirectory, "Fixtures", SorterSnapshot.FixtureFile), order);
+            File.WriteAllText(Path.Combine(projectDirectory, "Fixtures", SorterSnapshot.HashFixtureFile), outputHash);
             Console.WriteLine($"Generated {SorterSnapshot.FixtureFile}");
             return 0;
         }

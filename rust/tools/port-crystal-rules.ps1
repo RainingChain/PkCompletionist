@@ -30,11 +30,13 @@ if ($marker -lt 0) { throw 'Missing generated boundary' }
 $output = [Collections.Generic.List[string]]::new()
 $output.Add($existing.Substring(0, $marker).TrimEnd())
 $output.Add('// Generated literal tables and simple rules follow. See tools/port-crystal-rules.ps1.')
+$output.Add('impl CompletionValidator2 {')
 foreach ($pair in @(@('inGameGift','in_game_gift'), @('inGameTrade','in_game_trade'), @('decoration','decoration'), @('phone','phone'), @('pokegear','pokegear'))) {
     $body = [regex]::Match($source, ('void Generate_' + $pair[0] + '\(\)\s*\{(.*?)\n    \}'), 'Singleline').Groups[1].Value
     if (!$body) { throw ('Missing method ' + $pair[0]) }
     $category = [regex]::Match($body, 'owned\["([^"]+)"\]').Groups[1].Value
-    $output.Add('fn simple_' + $pair[1] + '(save: &CrystalSave, result: &mut CommandResult) {')
+    $output.Add('fn Generate_' + $pair[0] + '(&self,result: &mut CommandResult) {')
+    $output.Add('    let save = &self.save;')
     if ($pair[0] -eq 'pokegear') { $output.Add('    let _ = save;') }
     $output.Add('    let mut entries = Checklist::default();')
     foreach ($rule in [regex]::Matches($body, 'ow\["([^"]+)"\]\s*=\s*([^;]+);')) {
@@ -44,6 +46,7 @@ foreach ($pair in @(@('inGameGift','in_game_gift'), @('inGameTrade','in_game_tra
     }
     $output.Add('    entries.emit(result,"' + $category + '");'); $output.Add('}')
 }
+$output.Add('}')
 foreach ($pair in @(@('itemInMap','MAP_ITEMS'), @('itemGift','GIFT_ITEMS'))) {
     $body = [regex]::Match($source, ('void Generate_' + $pair[0] + '\(\)\s*\{(.*?)\n    \}'), 'Singleline').Groups[1].Value
     $list = [regex]::Match($body, 'var list = new List<int>\s*\{([^}]+)\}').Groups[1].Value
@@ -74,3 +77,18 @@ foreach ($pair in @(@('General','GENERAL'), @('Balls','BALLS'), @('KeyCrystal','
 $target = Join-Path $repoDirectory 'rust/PKHeX.Core/Items/ItemStorage2.rs'
 [IO.Directory]::CreateDirectory((Split-Path $target -Parent)) | Out-Null
 $output | Set-Content $target
+$giftSource = Get-Content (Join-Path $repoDirectory 'PkCompletionist.Core/Gen2/MysteryGiftSimulator2.cs') -Raw
+$giftSource = [regex]::Replace($giftSource, '/\*.*?\*/', '', 'Singleline')
+$giftSource = [regex]::Replace($giftSource, '//[^\r\n]*', '')
+$giftTarget = Join-Path $coreDirectory 'MysteryGiftSimulator2.rs'
+$giftExisting = Get-Content $giftTarget -Raw
+$giftMarker = $giftExisting.IndexOf('// Literal gift tables ported')
+$giftLines = [Collections.Generic.List[string]]::new()
+$giftLines.Add($giftExisting.Substring(0, $giftMarker).TrimEnd())
+$giftLines.Add('// Literal gift tables ported from MysteryGiftSimulator2.cs.')
+foreach ($pair in @(@('MysteryGiftItemList','ITEMS','u8'), @('MysteryGiftDecoList','DECORATIONS','usize'), @('MysteryGiftItemNameList','ITEM_NAMES','&str'), @('MysteryGiftDecoNameList','DECORATION_NAMES','&str'))) {
+    $body = [regex]::Match($giftSource, ($pair[0] + '\s*=\s*new List<\w+>\s*\{(.*?)\};'), 'Singleline').Groups[1].Value
+    if (!$body) { throw ('Missing gift table ' + $pair[0]) }
+    $giftLines.Add('const ' + $pair[1] + ': &[' + $pair[2] + '] = &[' + $body + '];')
+}
+$giftLines | Set-Content $giftTarget

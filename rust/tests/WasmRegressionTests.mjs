@@ -11,9 +11,18 @@ const root = new URL('../../tests/PkCompletionist.Tests/', import.meta.url);
 const read = path => readFileSync(new URL(path, root));
 const fixture = path => JSON.parse(read(path));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCase();
-const games = ['pinball-ruby-sapphire', 'shuffle', 'ranger', 'red-rescue-team', 'explorers-of-sky'];
+const games = ['pinball-ruby-sapphire', 'shuffle', 'ranger', 'red-rescue-team', 'explorers-of-sky', 'crystal', 'yellow', 'emerald'];
 
 for (const id of games) {
+    test(`${id}: descriptor through browser API`, () => {
+        const expected = fixture(`Fixtures/Descriptors/${id}.json`);
+        const api = createApi(bindings);
+        try {
+            assert.deepEqual(api.SavDescriptor.Execute(read(`Saves/${expected.SaveFile}`), expected.VersionHint), expected.Descriptor);
+            assert.deepEqual(api.Command.GetMessages(), expected.Messages);
+            assert.equal(api.Meta.GetVersion(), '1.2');
+        } finally { api.dispose(); }
+    });
     for (const [objective, number] of [['normal', 0], ['living', 1]]) {
         test(`${id}: ${objective} completion through browser API`, () => {
             const expected = fixture(`Fixtures/Completion/${id}.${objective}.json`);
@@ -66,4 +75,13 @@ test('independent API instances retain separate command state', () => {
         assert.equal(first.CompletionValidator.GetLastObtainedStatus()[0], 'pokemon');
         assert.deepEqual(second.CompletionValidator.GetLastObtainedStatus(), []);
     } finally { first.dispose(); second.dispose(); }
+});
+
+test('Emerald sorting matches complete C# output hash through browser API', () => {
+    const api = createApi(bindings);
+    try {
+        assert.equal(api.PkSorter.Execute(read('Saves/Pokemon Emerald.sav'), ''), true);
+        assert.equal(hash(api.Command.GetSavA()), read('Fixtures/emerald.sorted-save.sha256.txt').toString());
+        assert.deepEqual(api.Command.GetMessages(), []);
+    } finally { api.dispose(); }
 });
