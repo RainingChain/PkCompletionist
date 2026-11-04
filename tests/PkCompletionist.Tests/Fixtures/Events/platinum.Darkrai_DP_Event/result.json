@@ -1,0 +1,13 @@
+{
+  "Event": "Darkrai_DP_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "2580D4349B37816FB30D939E657DAEFC68A9E743D006BE7739167E2B59B4F4B2",
+  "OutputSaveBSha256": null
+}

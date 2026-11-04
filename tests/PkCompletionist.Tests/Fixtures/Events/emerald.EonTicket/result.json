@@ -1,0 +1,13 @@
+{
+  "Event": "EonTicket",
+  "SaveFile": "Pokemon Emerald - Events.sav",
+  "SaveSha256": "B5918B2853CB538D99855692D46F4BD3D282A6AC60792C65630A327458AB971B",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "39C4AF1F76C7525A91261E7A8D59799453BA27AD56CD9158114975C18D4F7563",
+  "OutputSaveBSha256": null
+}

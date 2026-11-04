@@ -1,0 +1,13 @@
+{
+  "Event": "PikachuSurf",
+  "SaveFile": "Pokemon Yellow.sav",
+  "SaveSha256": "1554572FD55D177C72C708703F794B4454B79461884F26383E6EFA1F5C9ABCB1",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "458434D87B4FF1370544FFA0511BBBF3224C44E0CB8D7DE45E14214613D969CC",
+  "OutputSaveBSha256": null
+}

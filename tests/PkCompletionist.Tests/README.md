@@ -64,3 +64,49 @@ dotnet run --project tests/PkCompletionist.Tests -- --generate-sorter-fixture te
 ```
 
 The normal test command runs this test alongside the validator tests.
+
+## EventSimulator regression tests
+
+The suite enumerates every member of the seven `PK_EVENT*` enums and invokes
+`EventSimulator.Execute` on fresh bytes from the corresponding supplied save.
+There are 60 named-event cases, plus the missing-secondary-save Aurora Ticket
+case and unsupported-generation cases for Red Rescue Team, Explorers of Sky,
+and Ranger (64 event cases; 85 tests in the full suite).
+
+Each `Fixtures/Events/<game>.<event>/result.json` contains the event name,
+input filenames and SHA-256 hashes, version hint, return value, exact error
+(including null on success), and ordered messages. `OutputSaveASha256` is the
+SHA-256 of the complete bytes returned by `Command.GetSavA()`, including on
+errors. `OutputSaveBSha256` hashes `Command.GetSavB()` when a second input is
+supplied, and is null otherwise. Resulting save binaries are not stored.
+
+The tests compare the output SHA-256 hashes along with the messages and metadata.
+Input files are never overwritten. Static command state is reset around each
+capture and the suite runs serially. Fixture generation uses the same capture
+helper and captures all cases before writing any baseline files.
+
+Generate only the event fixtures explicitly:
+
+```powershell
+dotnet run --project tests/PkCompletionist.Tests -- --generate-event-fixtures tests/PkCompletionist.Tests
+```
+
+Existing saves determine whether each event succeeds or returns an error; these
+tests capture current behavior rather than force every event to succeed. All
+enum names automatically become cases, so adding an event without generating
+its fixtures fails the tests.
+
+Emerald event cases use `Pokemon Emerald - Events.sav`. Platinum's Aurora Ticket
+event uses that same save as save B and checks both output hashes. Completion
+and sorter tests continue to use `Pokemon Emerald.sav`.
+Platinum event cases use `Pokemon Platinum - Events.sav`, including both
+independently loaded inputs for Ranch Mew. The outcome depends on that save's
+Pokemon count. Completion tests use `Pokemon Platinum.sav`.
+Black2's Ranch Mew case uses a single save
+and captures the count requirement error: supplying two copies currently throws
+a PK4/PK5 format exception, which is outside this snapshot case.
+
+Crystal's `MysteryGift` and `MysteryGiftx1000` cases capture the missing-save-B
+error and resulting save A. Successful two-player gifts use an unseeded random
+generator, so their random outcomes are not covered by output hash fixtures.
+No production behavior is changed to generate these baselines.

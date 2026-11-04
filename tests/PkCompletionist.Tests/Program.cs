@@ -7,15 +7,30 @@ internal static class Program
     // This entry point runs only through dotnet run; dotnet test uses the xUnit adapter.
     private static int Main(string[] args)
     {
-        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture"))
+        if (args.Length != 2 || (args[0] != "--generate-fixtures" && args[0] != "--generate-sorter-fixture" && args[0] != "--generate-event-fixtures"))
         {
-            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture> <test-project-directory>");
+            Console.Error.WriteLine("Usage: dotnet run --project tests/PkCompletionist.Tests -- <--generate-fixtures|--generate-sorter-fixture|--generate-event-fixtures> <test-project-directory>");
             return 1;
         }
 
         var projectDirectory = Path.GetFullPath(args[1]);
         if (!File.Exists(Path.Combine(projectDirectory, "PkCompletionist.Tests.csproj")))
             throw new ArgumentException("The destination must be the PkCompletionist.Tests project directory.");
+
+        if (args[0] == "--generate-event-fixtures")
+        {
+            var eventSnapshots = EventCase.All().Select(testCase =>
+                (testCase.Id, Snapshot: EventSnapshot.Capture(Path.Combine(projectDirectory, "Saves"), testCase))).ToArray();
+            foreach (var (id, snapshot) in eventSnapshots)
+            {
+                var directory = Path.Combine(projectDirectory, "Fixtures", "Events", id);
+                Directory.CreateDirectory(directory);
+                File.WriteAllText(Path.Combine(directory, "result.json"),
+                    JsonSerializer.Serialize(snapshot, ValidatorSnapshot.JsonOptions) + "\n");
+                Console.WriteLine($"Generated {id}");
+            }
+            return 0;
+        }
 
         if (args[0] == "--generate-sorter-fixture")
         {

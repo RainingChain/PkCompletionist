@@ -1,0 +1,13 @@
+{
+  "Event": "MemberCard_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "7D41704A38B230823D8274F32849299764FF08586E6052D3FD6FBF49D24C86BF",
+  "OutputSaveBSha256": null
+}

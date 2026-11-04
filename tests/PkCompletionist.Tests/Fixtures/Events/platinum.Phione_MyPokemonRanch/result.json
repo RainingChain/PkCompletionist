@@ -1,0 +1,15 @@
+{
+  "Event": "Phione_MyPokemonRanch",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Error: You already have that pokemon.",
+  "Messages": [
+    "Error: You already have that pokemon."
+  ],
+  "OutputSaveASha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "OutputSaveBSha256": null
+}

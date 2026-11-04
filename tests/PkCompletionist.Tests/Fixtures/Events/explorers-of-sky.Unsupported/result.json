@@ -1,0 +1,15 @@
+{
+  "Event": "Unsupported",
+  "SaveFile": "Pokemon Mystery Dungeon - Explorers of Sky.sav",
+  "SaveSha256": "4E3314892132DEE67374336C54989CC32566AEC707E8D68D670809C6AA205F12",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Unsupported generation.",
+  "Messages": [
+    "Unsupported generation."
+  ],
+  "OutputSaveASha256": "4E3314892132DEE67374336C54989CC32566AEC707E8D68D670809C6AA205F12",
+  "OutputSaveBSha256": null
+}

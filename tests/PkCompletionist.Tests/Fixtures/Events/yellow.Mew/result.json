@@ -1,0 +1,15 @@
+{
+  "Event": "Mew",
+  "SaveFile": "Pokemon Yellow.sav",
+  "SaveSha256": "1554572FD55D177C72C708703F794B4454B79461884F26383E6EFA1F5C9ABCB1",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Error: You already have that pokemon.",
+  "Messages": [
+    "Error: You already have that pokemon."
+  ],
+  "OutputSaveASha256": "822A22A06F14336FA19425FF12B833ED21DB7A1423692F84553BB78B4F7FE614",
+  "OutputSaveBSha256": null
+}

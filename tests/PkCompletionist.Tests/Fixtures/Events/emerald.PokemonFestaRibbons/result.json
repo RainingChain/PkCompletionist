@@ -1,0 +1,13 @@
+{
+  "Event": "PokemonFestaRibbons",
+  "SaveFile": "Pokemon Emerald - Events.sav",
+  "SaveSha256": "B5918B2853CB538D99855692D46F4BD3D282A6AC60792C65630A327458AB971B",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "F416D93CB97AD769472D9F0A52888048FF110D4BF42474C5C7CC3F0C89A8BA26",
+  "OutputSaveBSha256": null
+}

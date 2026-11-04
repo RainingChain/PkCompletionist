@@ -1,0 +1,15 @@
+{
+  "Event": "Unsupported",
+  "SaveFile": "Pokemon Ranger.dsv",
+  "SaveSha256": "95FB587BD105387DB4F0AE52660D818E9AA3F7221DC386F917A7495AC450E014",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Unsupported generation.",
+  "Messages": [
+    "Unsupported generation."
+  ],
+  "OutputSaveASha256": "AEF41FB96B32CFDDC6D29D6CD3A89A7FA98CE061F1CB9C122A7DEE5B9EB2C4F9",
+  "OutputSaveBSha256": null
+}

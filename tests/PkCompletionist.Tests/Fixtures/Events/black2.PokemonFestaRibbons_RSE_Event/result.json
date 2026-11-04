@@ -1,0 +1,13 @@
+{
+  "Event": "PokemonFestaRibbons_RSE_Event",
+  "SaveFile": "Pokemon Black2.sav",
+  "SaveSha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "808D4EC365F98C6745909DD722F94B0A62580D1BA736DA38282B66DFF34FEADB",
+  "OutputSaveBSha256": null
+}

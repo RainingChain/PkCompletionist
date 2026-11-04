@@ -1,0 +1,15 @@
+{
+  "Event": "Unsupported",
+  "SaveFile": "Pokemon Mystery Dungeon - Red Rescue Team.sav",
+  "SaveSha256": "74DF24F131A5A6B2614567C966A9A3BC5234E68C35AFEE7958A17F70191E737F",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Unsupported generation.",
+  "Messages": [
+    "Unsupported generation."
+  ],
+  "OutputSaveASha256": "74DF24F131A5A6B2614567C966A9A3BC5234E68C35AFEE7958A17F70191E737F",
+  "OutputSaveBSha256": null
+}

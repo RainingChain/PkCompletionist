@@ -1,0 +1,13 @@
+{
+  "Event": "Jirachi_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "CEAD9D6E1E40F90AFD9972F6EBCD56262C37B884387FD4EDCF4A8BADD6B9BE4A",
+  "OutputSaveBSha256": null
+}
