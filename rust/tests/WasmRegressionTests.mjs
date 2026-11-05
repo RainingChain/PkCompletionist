@@ -11,7 +11,7 @@ const root = new URL('../../tests/PkCompletionist.Tests/', import.meta.url);
 const read = path => readFileSync(new URL(path, root));
 const fixture = path => JSON.parse(read(path));
 const hash = bytes => createHash('sha256').update(bytes).digest('hex').toUpperCase();
-const games = ['pinball-ruby-sapphire', 'shuffle', 'ranger', 'red-rescue-team', 'explorers-of-sky', 'crystal', 'yellow', 'emerald'];
+const games = ['pinball-ruby-sapphire', 'shuffle', 'ranger', 'red-rescue-team', 'explorers-of-sky', 'crystal', 'yellow', 'emerald', 'black2'];
 
 for (const id of games) {
     test(`${id}: descriptor through browser API`, () => {

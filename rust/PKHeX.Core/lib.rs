@@ -1,5 +1,9 @@
 //! Only the PKHeX subset used by PkCompletionist; paths mirror the C# source.
 pub mod binary;
+#[path = "Saves/SAV5B2W2.rs"]
+pub mod black2;
+#[path = "Saves/Access/SaveBlockAccessor5B2W2.rs"]
+mod blocks5;
 #[path = "Saves/Util/Checksums.rs"]
 pub mod checksums;
 #[path = "Saves/SAV3E.rs"]
@@ -12,26 +16,38 @@ pub mod gen1;
 pub mod gen2;
 #[path = "Saves/SAV3.rs"]
 pub mod gen3;
+#[path = "Saves/SAV5.rs"]
+pub mod gen5;
 #[path = "Items/ItemStorage2.rs"]
 pub mod item_storage2;
 #[path = "Items/ItemStorage3E.rs"]
 pub mod item_storage3e;
+#[path = "Items/ItemStorage5.rs"]
+pub mod item_storage5;
+#[path = "Items/ItemStorage5B2W2.rs"]
+pub mod item_storage5b2w2;
 #[path = "PKM/PK1.rs"]
 pub mod pk1;
 #[path = "PKM/PK2.rs"]
 pub mod pk2;
 #[path = "PKM/PK3.rs"]
 pub mod pk3;
+#[path = "PKM/PK5.rs"]
+pub mod pk5;
 #[path = "Items/Bags/PlayerBag2.rs"]
 pub mod player_bag2;
 #[path = "Items/Bags/PlayerBag3E.rs"]
 pub mod player_bag3e;
+#[path = "Items/Bags/PlayerBag5B2W2.rs"]
+pub mod player_bag5b2w2;
 #[path = "PKM/Util/PokeCrypto.rs"]
 pub mod poke_crypto;
 #[path = "PKM/Shared/PokeList1.rs"]
 mod poke_list1;
 #[path = "PKM/Shared/PokeList2.rs"]
 mod poke_list2;
+#[path = "Saves/Substructures/Gen5/Record5.rs"]
+pub mod record5;
 #[path = "PKM/Util/Conversion/SpeciesConverter.rs"]
 pub mod species_converter;
 #[path = "PKM/Strings/StringConverter1.rs"]
@@ -40,3 +56,7 @@ pub mod string_converter1;
 pub mod string_converter2;
 #[path = "PKM/Strings/StringConverter3.rs"]
 pub mod string_converter3;
+#[path = "PKM/Strings/StringConverter5.rs"]
+pub mod string_converter5;
+#[path = "Saves/Substructures/PokeDex/Zukan5.rs"]
+pub mod zukan5;

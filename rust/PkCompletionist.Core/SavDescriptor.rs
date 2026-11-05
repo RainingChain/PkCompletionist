@@ -13,6 +13,23 @@ pub fn describe(bytes: &[u8], hint: &str) -> CommandResult {
         }
     };
     let (version, language, trainer, hours, minutes, seconds) = match format {
+        Format::Black2 => (
+            if data[0x1941f] == 23 { "B2" } else { "W2" },
+            match data[0x1941e] {
+                1 => "1",
+                2 => "2",
+                3 => "3",
+                4 => "4",
+                5 => "5",
+                7 => "7",
+                8 => "8",
+                _ => "0",
+            },
+            pkhex_core::string_converter5::decode(&data[0x19404..0x19414]),
+            pkhex_core::binary::u16_le(&data, 0x19424).unwrap(),
+            data[0x19426],
+            data[0x19427],
+        ),
         Format::Emerald => {
             let save = match pkhex_core::gen3::Save3::read(&data) {
                 Ok(save) => save,

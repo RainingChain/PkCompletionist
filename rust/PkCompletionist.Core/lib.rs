@@ -1,6 +1,10 @@
 //! Paths mirror PkCompletionist.Core/*.cs. Runtime state belongs to each command.
 #[path = "Gen3c/BitBlock.rs"]
 pub mod bit_block;
+#[path = "Gen5/EventSimulator5.rs"]
+mod black2_events;
+#[path = "Gen5/CompletionValidator5.rs"]
+mod black2_validator;
 #[path = "Gen2/Cnst2.rs"]
 pub mod cnst2;
 #[path = "Command.rs"]

@@ -41,6 +41,10 @@ node --test rust/tests/WasmRegressionTests.mjs
 The Node tests execute the **web-targeted WASM artifact**, supplying the WASM bytes where
 the browser would fetch them. Rebuild before running them after Rust changes.
 Both suites reuse the committed C# save/JSON fixtures. Tests never regenerate baselines.
+To run all native tests for one game, run `cargo test emerald_` from `rust/`
+(or `cargo test --manifest-path rust/Cargo.toml emerald_` from the repository root).
+Game-specific tests share a `<game>_` prefix, including completion, events, flags,
+descriptors, and sorting where available.
 `cargo fmt --manifest-path rust/Cargo.toml --all -- --check` and
 `cargo clippy --manifest-path rust/Cargo.toml --workspace --all-targets -- -D warnings`
 check formatting and diagnostics.

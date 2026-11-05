@@ -22,6 +22,9 @@ pub fn event(
     if format == Format::Emerald {
         return crate::emerald_events::execute(name, &data);
     }
+    if format == Format::Black2 {
+        return crate::black2_events::execute(name, &data, second, hint);
+    }
     let mut result = CommandResult::default();
     if let Some(second) = second {
         match load(second, hint).and_then(|(format, bytes)| write(format, bytes)) {

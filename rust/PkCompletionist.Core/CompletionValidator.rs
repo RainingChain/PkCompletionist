@@ -14,6 +14,11 @@ pub fn validate(data: &[u8], hint: &str, objective: i32) -> CommandResult {
         ..CommandResult::default()
     };
     match format {
+        Format::Black2 => {
+            if let Err(error) = crate::black2_validator::validate(&data, objective, &mut result) {
+                return CommandResult::failure(error.to_string());
+            }
+        }
         Format::Emerald => {
             if let Err(error) = crate::emerald_validator::validate(&data, objective, &mut result) {
                 return CommandResult::failure(error.to_string());

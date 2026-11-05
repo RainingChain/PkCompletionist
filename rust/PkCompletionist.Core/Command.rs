@@ -44,6 +44,7 @@ pub(crate) enum Format {
     Crystal,
     Yellow,
     Emerald,
+    Black2,
 }
 
 fn detect(data: &[u8], hint: &str) -> Option<Format> {
@@ -66,6 +67,8 @@ fn detect(data: &[u8], hint: &str) -> Option<Format> {
         Some(Format::Crystal)
     } else if pkhex_core::emerald::is_valid(data) {
         Some(Format::Emerald)
+    } else if pkhex_core::black2::is_valid(data) {
+        Some(Format::Black2)
     } else {
         None
     }
@@ -84,6 +87,9 @@ pub(crate) fn load(data: &[u8], hint: &str) -> Result<(Format, Vec<u8>), Invalid
 }
 
 pub(crate) fn write(format: Format, mut data: Vec<u8>) -> Result<Vec<u8>, InvalidData> {
+    if format == Format::Black2 {
+        return Ok(pkhex_core::gen5::Save5::read(&data)?.write());
+    }
     if format == Format::Emerald {
         return Ok(pkhex_core::gen3::Save3::read(&data)?.write());
     }
