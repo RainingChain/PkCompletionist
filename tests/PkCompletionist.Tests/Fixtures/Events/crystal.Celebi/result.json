@@ -1,0 +1,13 @@
+{
+  "Event": "Celebi",
+  "SaveFile": "Pokemon Crystal.sav",
+  "SaveSha256": "822B441A06FD1A4E5F7491736857ED9596456B4462249E0A5DEBCD48768E2C62",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "1299454CC1807EE9368CA96C09ADB41BDD4F1E845946C1FB267B383FFE615782",
+  "OutputSaveBSha256": null
+}

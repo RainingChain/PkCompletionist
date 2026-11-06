@@ -1,0 +1,15 @@
+{
+  "Event": "PremierRibbon_BW_Event",
+  "SaveFile": "Pokemon Black2.sav",
+  "SaveSha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Error: This save file does not support mystery gift storage.",
+  "Messages": [
+    "Error: This save file does not support mystery gift storage."
+  ],
+  "OutputSaveASha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "OutputSaveBSha256": null
+}

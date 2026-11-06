@@ -1,0 +1,13 @@
+{
+  "Event": "AddCoins",
+  "SaveFile": "Pokemon Shuffle.bin",
+  "SaveSha256": "9199216C958F75227F85B3E79A7876DE6A310C5BD29081244294EA9AD04D7C07",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "6742C5DB57D96858600C323CE6F37AABFDB7E935DBE6DB9650117DF9B643134E",
+  "OutputSaveBSha256": null
+}

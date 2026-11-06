@@ -1,0 +1,15 @@
+{
+  "Event": "Mew_MyPokemonRanch",
+  "SaveFile": "Pokemon Black2.sav",
+  "SaveSha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Error: You must own at least 999 Pok\u00E9mon within both savefiles to obtain Mew from My Pok\u00E9mon Ranch. You currently only own 724 Pok\u00E9mon.",
+  "Messages": [
+    "Error: You must own at least 999 Pok\u00E9mon within both savefiles to obtain Mew from My Pok\u00E9mon Ranch. You currently only own 724 Pok\u00E9mon."
+  ],
+  "OutputSaveASha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "OutputSaveBSha256": null
+}

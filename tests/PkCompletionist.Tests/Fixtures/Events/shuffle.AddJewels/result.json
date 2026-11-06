@@ -1,0 +1,13 @@
+{
+  "Event": "AddJewels",
+  "SaveFile": "Pokemon Shuffle.bin",
+  "SaveSha256": "9199216C958F75227F85B3E79A7876DE6A310C5BD29081244294EA9AD04D7C07",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "D0CD2774A55FA32A313051D93A6EF8ACBD27772F26C4EB6EEE0B1BDF9A63B759",
+  "OutputSaveBSha256": null
+}

@@ -1,0 +1,13 @@
+{
+  "Event": "SecretKey_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "E7D8AE90346E76C772B9BCF41A18B6854CC834CB60DAB68C0655188A8D2FD491",
+  "OutputSaveBSha256": null
+}

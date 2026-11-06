@@ -1,0 +1,13 @@
+{
+  "Event": "TransmitDexWithEReaderMons",
+  "SaveFile": "Pokemon Pinball - Ruby \u0026 Sapphire.sav",
+  "SaveSha256": "F2E19871AA18F5C17566A83FEC7266C59BFC6CF500EBFFE0A791DD32863156D5",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "F2E19871AA18F5C17566A83FEC7266C59BFC6CF500EBFFE0A791DD32863156D5",
+  "OutputSaveBSha256": null
+}

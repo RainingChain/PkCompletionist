@@ -1,0 +1,13 @@
+{
+  "Event": "LucarioDoll_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "1ABE26C92EAA030B523E2FDDB3FA8CEB3ADF16EA27D3E3CCFEA314821BC30640",
+  "OutputSaveBSha256": null
+}

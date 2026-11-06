@@ -1,0 +1,15 @@
+{
+  "Event": "BrickMail_DP_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "Error: You don\u0027t own a Japanese Lvl10\u002B Roselia holding Air Mail.",
+  "Messages": [
+    "Error: You don\u0027t own a Japanese Lvl10\u002B Roselia holding Air Mail."
+  ],
+  "OutputSaveASha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "OutputSaveBSha256": null
+}

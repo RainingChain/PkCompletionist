@@ -1,0 +1,13 @@
+{
+  "Event": "MirageMail",
+  "SaveFile": "Pokemon Crystal.sav",
+  "SaveSha256": "822B441A06FD1A4E5F7491736857ED9596456B4462249E0A5DEBCD48768E2C62",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "B166CB112F86D4788C071B5256A39E9D381167C1658F2263EC4A667A17E6743C",
+  "OutputSaveBSha256": null
+}

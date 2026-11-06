@@ -1,0 +1,13 @@
+{
+  "Event": "OaksLetter_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "870D2097717DD2A77E9594E7543FD7025FCEB48F506BAAA35363C73576EC2D8F",
+  "OutputSaveBSha256": null
+}

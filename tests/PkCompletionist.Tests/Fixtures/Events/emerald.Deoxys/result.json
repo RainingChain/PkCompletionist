@@ -1,0 +1,13 @@
+{
+  "Event": "Deoxys",
+  "SaveFile": "Pokemon Emerald - Events.sav",
+  "SaveSha256": "B5918B2853CB538D99855692D46F4BD3D282A6AC60792C65630A327458AB971B",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "4EF815EEBEF19B57D4091E4001911CD87A4744AECA64FD739CDED9AC58EC2495",
+  "OutputSaveBSha256": null
+}

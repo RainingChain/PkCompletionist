@@ -1,0 +1,15 @@
+{
+  "Event": "MysteryGiftx1000",
+  "SaveFile": "Pokemon Crystal.sav",
+  "SaveSha256": "822B441A06FD1A4E5F7491736857ED9596456B4462249E0A5DEBCD48768E2C62",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": false,
+  "Error": "The second savefile is not generation 2.",
+  "Messages": [
+    "The second savefile is not generation 2."
+  ],
+  "OutputSaveASha256": "F603F6A5F5754032F097C643CDAE285D3E99BC76A5FEAAB6528D298D06028331",
+  "OutputSaveBSha256": null
+}

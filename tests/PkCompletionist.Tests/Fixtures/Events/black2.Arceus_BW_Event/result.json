@@ -1,0 +1,13 @@
+{
+  "Event": "Arceus_BW_Event",
+  "SaveFile": "Pokemon Black2.sav",
+  "SaveSha256": "F8A023BF49D5D0A571A6D4A9ED0571D54322EFC41453713586C6B95BF22F221C",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "A2936C1475EC9B33181C3512250F11577865C30E7F0F350CD839A0D3D668EEDE",
+  "OutputSaveBSha256": null
+}

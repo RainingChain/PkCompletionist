@@ -1,0 +1,13 @@
+{
+  "Event": "CelebiJaboca_Event",
+  "SaveFile": "Pokemon Platinum - Events.sav",
+  "SaveSha256": "6910FA0E734EB6E73B58949EA7EF266281E9567E1623964239F32F74B8F92B14",
+  "SecondSaveFile": null,
+  "SecondSaveSha256": null,
+  "VersionHint": "",
+  "Success": true,
+  "Error": null,
+  "Messages": [],
+  "OutputSaveASha256": "E28DD1FC49539A1A5B63EEB4253A0F55795D3CEA9A06AB2B8F0CA9272BD79F01",
+  "OutputSaveBSha256": null
+}
